@@ -1,0 +1,29 @@
+# ToDo:
+Build Editor into Executable
+Executable version of Editor should be able to update itself
+Guide for Building Engine into Executable 
+Polish Event Editor
+    - Make sure Event Autocomplete works well 
+        - Event autocomplete not cut off by top of window
+        - Tab autocompletion works as expected
+Polish Overworld Editor and Engine implementation
+    - Implement Enemies on map
+    - Confirm multiple parties works
+Combat Palette color swapping
+Arena (including Arena in base)
+Polish Translations GUI
+Polish Map Animation GUI Update
+Unit Menu
+World Map in Codex
+Polish AI Skip Phase
+Polish Fatigue
+Level up Quotes
+Dialogue Preview in Event Editor
+
+# Potential Future Features
+Dialogue Log
+Portraits and Backgrounds in Event editor have a graphical representation
+Skill Swap
+Repair Shop (including Repair shop in base)
+Joystick Remapping
+Achievement System

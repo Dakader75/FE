@@ -1,0 +1,218 @@
+Stats:
+NID
+Name
+Maximum
+Description
+
+HP and movement are locked and must exist
+
+Terrain:
+NID
+Name
+Platform -- Platforms
+Minimap -- Minimap
+Movement Type -- Movement
+Status -- Statuses
+
+Class:
+NID
+Short Name
+Long Name
+Tier
+Weapon Experience Gained on Promotion x Weapon -- Weapons
+Weapons allowed -- Weapons (will be a checkbox next to each weapon)
+Promotion Options #List -- Class
+Default promotes from -- Class
+Movement Group -- Movement
+Tags -- Tags
+Skills (Level x Skill) -- Statuses
+Growths x #Stats -- Stats
+Bases x #Stats -- Stats
+Promotion Gains x #Stats -- Stats
+Max Stats x #Stats -- Stats  (These will have a button that reveals average stats at each level)
+Description
+Max Level
+Exp Multiplier
+Opponent Exp Multiplier
+
+Citizen is locked and must exist
+
+Weapons:
+NID
+Name
+Icon/Gray Icon
+Is Magic
+Advantage vs -- Weapon
+    Bonuses vs that weapon
+Disadvantage vs -- Weapon
+    Penalties vs that weapon
+Rank Bonuses -- Rank
+
+Default (Consumable) is locked and must exist
+
+Units:
+NID
+Name
+Portrait
+Gender
+Starting Weapon Experience x Weapon -- Weapons
+Bases x #Stats -- Stats
+Growths x #Stats -- Stats  (These will havea button that reveals average stats at each level)
+Starting Inventory #List -- Items
+Level
+Class -- Class
+Description
+Tags -- Tags
+Personal Skills (Level x Skill) -- Statuses
+
+Faction:
+NID
+Name
+Icon
+Description
+
+AI:
+NID
+Possible Actions it can take (set of checkboxes)
+ -- Move, Attack, Steal, Attack Tiles, Loot Villages, Unlock, Escape, Seize
+Possible Targets (Priority 1) (set of checkboxes)
+ -- Opponents, Allies, Unlooted Villages, Tiles with HP, Locked Chests/Doors, Escape, Bosses, Seize, Specific Unit ID
+Possible Targets (Priority 2) (set of checkboxes)
+Won't target:
+ -- Specific Unit ID
+View Range (Don't look | Movement*2 + Maximum Item Range | Entire Map | Custom Range (Integer))
+AI Priority
+
+Supports:
+Global Section:
+Kind
+Bonus
+Range
+Growth Range
+End Chapter Bonus
+End Turn Bonus
+Combat Bonus
+Interact Bonus
+Support Level Limit
+S Support Limit
+
+Local Section:
+Displays list of units
+Affinity
+Then let's you add a support w/ another unit
+Mark how many points needed for first support, how many points needed for second support, etc.
+
+Constants:
+# Will have notes on what each one does
+Maximum Items
+Maximum Runes
+Turnwheel Bool
+Overworld Bool
+Weapon Line of Sight
+Spell Line of Sight
+Aura Line of Sight
+Defense Double
+RNG
+Auto Promote
+Minimum Damage
+Boss Crit
+Unarmed Punish
+Enemy Leveling
+Steal
+Save Slot Count
+Attribution
+Title
+# Music section
+Main Title
+Game Over
+Armory
+Vendor
+Arena
+Promotion
+# Wexp section
+Fatal Wexp
+Double Wexp
+Miss Wexp
+# Exp section
+Exp Curve
+Exp Magnitude
+Exp Offset -- Will have button to display exp gain from different levels fighting each other
+Kill Multiplier
+Status Exp
+Heal Curve
+Heal Magnitude
+Heal Min -- Will have button to dispaly exp gain from different healing
+Boss Bonus
+Minimum Exp
+# Arena section
+True Death
+Supplies Weapons?
+Basic Weapons -- Weapons
+Minimum Wager
+Maximum Wager
+Arena Level Range
+
+Equations:
+AS = SPD - max(0, WEIGHT - CON)
+DOUBLE_ATK = AS - 3
+DOUBLE_DEF = AS
+HIT = SKL*2 + LCK//2
+AVOID = AS*2 + LCK
+CRIT_HIT = SKL//2
+CRIT_AVOID = LCK
+DAMAGE = STR
+DEFENSE = DEF
+MAGIC_DAMAGE = MAG
+MAGIC_DEFENSE = RES
+CRIT_DAMAGE = STR*3
+CRIT_DEFENSE = DEF*3
+CRIT_MAGIC_DAMAGE = MAG*3
+CRIT_MAGIC_DEFENSE = RES*3
+RATING = (HP - 10)//2 + max(STR, MAG) + SKL + SPD + LCK//2 + DEF + RES
+RESCUE_AID = max(0, 15 - CON) if 'Mounted' in unit.tags else max(0, CON - 1)
+RESCUE_WEIGHT = CON
+STEAL_ATK = SPD
+STEAL_DEF = SPD
+HEAL = MAG
+
+
+# All of these are locked and must exist
+
+Items:
+NID
+Name
+Sprite
+Description
+Range
+Value
+Components
+--------
+List of components
+Can add components as you want from the great list of item components. It will let you change its value when its been added
+Uses Story:
+Click "Add Component"
+Navigate to "Uses" and click add
+Shows up in list of components with default value next to it. Modify that value if you wish
+Weapon Story:
+Click "Add Component"
+Navigate to "Weapon" and click add
+Shows up in list of components several times, with default values next to each
+Weapon TYPE
+Weapon MT
+Weapon HIT
+Weapon LVL
+
+Statuses:
+NID
+Name
+Sprite
+Description
+Components
+--------
+
+
+
+
+
+
+

@@ -1,0 +1,93 @@
+# Item System Hooks
+# Exclamation point means only one of this hook can be present on an item at once
+
+is_weapon! bool False
+is_spell! bool False
+is_accessory! bool False
+
+buy_price! int None # How much is item worth
+sell_price! int None  # How much is item worth when sold
+
+equippable! bool False  # Whether item can be equipped
+can_use! bool False  # Whether item can be "Used"
+
+available bool True  # Checks to see whether item can be utilized (Uses, Chapter Uses, HP Cost, Cooldown)
+
+# Determines the number of times this item should target
+# Used for things like searing daggers
+num_targets! int 1
+allow_same_target! bool True  # Determines whether you can target the same space more than once
+
+*valid_targets set  # Determines the valid targets of the item -- Is this actually how this should work??
+target_restrict input defender splash bool # Returns whether this is a valid target
+
+minimum_range! int 0
+maximum_range! int 0
+get_range # returns set of range(min, max)
+
+# Given a target position, determines the main defender and any splash that are effected
+splash extra input target position tuple (main_defender, splash) None, []
+
+# Given a target position, determines all positions affected by the item
+splash_positions input target position set
+
+weapon_type! WeaponType None
+weapon_rank! WeaponRank None
+modify_weapon_triangle! int 1  # 2 would be double effective, 0 would be no effect, -1 would be reaver
+
+damage! int None
+hit! int None
+crit! int None
+
+exp input target int 0
+wexp input target int 0
+locked! bool False  # Whether this item can be dropped or traded
+can_counter!+ bool False  # Whether this item can counter on defense
+can_be_countered!+ bool False  # Whether this item can be countered while attacking
+can_double!+ bool False  # Whether this item can double attack
+
+item_icon_mod unit item target sprite -> sprite
+
+# Use these formulas to change how items determine their combat stats
+# Like for magic items -- Is this actually useful?? Should I be using equations at all... hmmm...
+*damage_formula! equation DAMAGE
+resist_formula! equation DEFENSE
+accuracy_formula! equation HIT
+avoid_formula! equation AVOID
+crit_accuracy_formula! CRIT_HIT
+crit_avoid_formula! CRIT_AVOID
+attack_speed_formula! ATTACK_SPEED
+defense_speed_formula! DEFENSE_SPEED
+
+dynamic_damage input target mode int 0
+dynamic_accuracy input target mode int 0
+dynamic_crit_accuracy input target mode int 0
+dynamic_attack_speed input target mode int 0
+modify_damage
+modify_resist
+modfiy_accuracy
+modify_avoid
+modify_crit_accuracy
+modify_crit_avoid
+modify_attack_speed
+modify_defense_speed
+dynamic_multiattacks input target mode int 1  # Used for things like brave
+
+# Event behaviours
+init  # Called when item is created
+on_use  # Called whenever the item is used
+on_broken returns True when user should be alerted# Called whenever the item becomes not usable after being used in an interaction
+on_end_chapter  # Called on ending the chapter
+on_upkeep  # Called on owner's upkeep
+on_endstep  # Called on owner's endstep
+on_hit  has_playback  # Called whenever item hits
+on_crit  has_playback  # Called whenever item crits
+on_miss  has_playback  # Called whenever item misses
+on_equip  # Called whenever the item becomes equipped
+on_unequip  # Called whenever the item becomes unequipped
+on_hold  # Called whenever the item enters owner's possession
+on_drop  # Called whenever the item leaves owner's possession
+
+# Special components
+MultiItem  # Creates a super item that holds several items within (used for items that have multiple different kinds of ways of use -- Like Awakening style Falchion)
+SequenceItem  # Creates a super item that does several items in order during combat (used for advanced items like Warp and Rescue, that need to do multiple things in order)

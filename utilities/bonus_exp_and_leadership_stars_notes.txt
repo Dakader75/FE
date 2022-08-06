@@ -1,0 +1,9 @@
+# Potential Improvements to Bonus Experience
+Support for defining a custom equation
+Make the state transparent so we get to see some movement (basically, allow it to still show the select menu)
+Make exp increment not an int, so we can support bonus exp -> level of less than 100
+
+# Potential Improvements to Leadership Stars
+Genealogy style leadership stars (Bonus only when within X tiles)
+Should units get the benefits of their own stars? (they do currently)
+Consider supporting lead_damage, lead_resist, lead_crit, lead_dodge, lead_attackspeed, lead_defensespeed

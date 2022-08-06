@@ -1,0 +1,112 @@
+Utilities
+    - Data object
+    - Prefab object
+
+Resources
+    - Icons (16x16, 32x32, 80x72)
+    - Portraits
+    - Backgrounds
+    - Map Sprites
+        - Palettes
+    - Map Animations
+    - Combat Animations
+    - Combat Effects
+    - Music
+    - Sound Effects
+    - Tileset
+    - Tilemap
+        - Tilemap Editor
+
+    - Platforms
+    - Fonts
+
+Data
+    - UnitPrefab (ID, Name, Description, Starting Items, Personal Skills, Animation Variant, Level, Class, Tags, Bases, Growths, Weapon Experience, Alternate Classes, Portrait)
+    - Unit
+    - Class (ID, Name, Description, Tier, Movement Group, Promotion Options, Tags, Max Level, Bases, Growths, Growth Bonus, Promotion Gains, Max Stats, Class Skills, Weapon Experience, Icon, Map Sprite, Combat Anim)
+    - Item (ID, Name, Description, Icon)
+        - ItemComponents (ID, Name, Description, Tag, Requires, Exclusive, Value)
+            - ItemSystem Hooks
+    - PartyPrefab (ID, Name, Leader)
+    - Party (ID, Name, Leader, Units, Convoy, Money, Bonus Exp)
+    - Tag
+    - Faction (ID, Name, Description, Icon)
+    - Constants
+    - Stats (ID, Name, Description)
+        - HP
+        - Fatigue
+        - Mana
+    - Equations
+    - Terrain (ID, Name, Status, Color, Minimap, Platform, Movement Type)
+    - Movement Costs (Movement Type by Movement Group)
+    - Status (ID, Name, Description, Icon)
+        - StatusComponents (ID, Name, Description, Tag, Requires, Exclusive, Value)
+            - StatusSystem Hooks
+    - AIPrefab (ID, Behaviours (up to 3), Priority)
+    - Weapon Types (ID, Name, Magic, Advantage, Disadvantage, Icon)
+    - Weapon Ranks (Rank, Requirement, (Type, Accuracy, Damage, Crit, AttackSpeed))
+    - Teams ["player", "enemy", "enemy2", "other"] # Order determines phase order
+    - Translations (Word, Translation)
+
+    - LevelPrefab (ID, Name, Tilemap, Default Party, Music, Objective, Starting Units)
+    - LevelObject
+
+    - Events (Have a Trigger(s), Condition(s), set of Commands)
+    - Supports
+    - Overworld
+
+Weird Stuff
+ItemComponents
+StatusComponents
+Abilities
+
+Engine
+    Main Loop
+        - through each of the systems
+    Systems
+        # A System is a singleton, only one ever exists at a time
+        # And they are global, not attached to anything
+        - InputSystem
+        - StateSystem
+            - ChildStates
+        - GridSystem
+            - Handles positioning units, boundaries, fog of war, line of sight, distances, pathfinding
+        - MusicSystem
+        - SoundSystem
+        - EquationSystem
+        - ItemSystem
+        - StatusSystem
+        - EventSystem
+        - ActionLog
+        - SaveSystem
+        - AISystem
+        - FontSystem
+        - CursorSystem
+        - CameraSystem
+        - InteractionSystem + View
+            - SolverSystem
+        - TargetingSystem
+    Game (global)
+        - Has current game state
+        - Saves and Loads game state
+        - Central repository for memory between states
+    Views
+        - MapView
+        - UIView
+        - InfoView
+        - TitleView
+    Menus (InfoMenu, SettingsMenu, OptionsMenu, BasicMenus)
+    Need to make sure Death, Movement, and other animations are split from the actual game state
+    Utilities
+        - GUI Objects
+        - Static Random
+
+Launcher?
+
+Editor
+    - Main Editor
+        - Selection through Levels
+    - Each of the Databases
+    - Each of the Resources
+    - Events
+

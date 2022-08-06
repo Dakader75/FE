@@ -1,0 +1,46 @@
+With mag's implementation of the overworld about to be merged in (probably this weekend), and the important stuff in the Gitlab wiki finishing up on my end, we near the commencement of BEEG's takeover of this discord server.
+
+So, I plan to reorganize the channels in preparation for BEEG's ascension.
+
+Here's my current plan. I welcome comments and criticism (but be nice).
+
+**Updates/Announcements**
+
+#update-announcements: Removed. #beeg-updates replaces it as the log of updates. I will probably renamed #beeg-updates accordingly
+
+#resources: Updated to point to lt-maker links where appropriate
+
+#game-releases: No change
+
+#offtopic-general: No change
+
+**Lex Talionis**
+#lex-t-general: No change (maybe renamed to #general-chat)?
+
+#bugs: Specifically for lt-maker bugs (move BEEG #bugs here)
+
+#help: Specifically for lt-maker help (new channel)
+
+#dev: Renamed to #dev-chat and placed here. This will be for people who want to modify the lt-maker engine or editor, and will replace #engine-hacking
+
+#suggestions: Specifically for lt-maker suggestions and qol-improvements (merge the two if possible)
+
+#showcase: New channel for showing off things you've done. Can be non-LT related. Show off maps, sprites, mechanics, etc.
+
+#game-design: removed (#lex-t-general probably handles this fine)
+
+**Legacy**
+#help: Specifically for legacy help (move #help here)
+
+#bugs: Specifically for legacy bugs (move #bugs here)
+
+**Voice** (stays the same)
+
+Did I forget anything?
+
+Also, I'm not particularly interested in handling much of legacy help and bugs anymore. If anyone (or a group of people) want @LegacyGuru roles to answer the occasional Legacy question, I could set that up.
+
+
+
+
+

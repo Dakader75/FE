@@ -1,0 +1,8 @@
+Lex Talionis Engine and LT-Maker Editor created by rainlash
+
+With additional programming and help from the Lex Talionis Discord server, including mag, TheeBill, Lord Tweed, ZessDynamite, Nemid, Kyogokudo, KD, beccarte, Meinerevre, and Greentwip.
+
+Narrow fonts originally created by Scraiza.
+
+Lex Talionis is a non-profit engine, released for free, and developed using Python, Pygame, and PyQt5. Some default assets are copyrighted or trademarked by their respective owners.
+

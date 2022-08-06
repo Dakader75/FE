@@ -1,0 +1,47 @@
+So I pushed the big update to the BEEG update. All the changes I've worked on over the last several weeks.
+
+The first 6 levels of Sacred Stones have been playtested, to some extent, and 95% of the content is available.
+This was a big effort in terms of content!
+
+*What has changed?*
+- Many Many Bug fixes, especially with AI, Combat calculations, the Prep Screen, Events, and Saving/Loading games
+- Many minor internal optimazations to the engine, which you won't notice but should make adding additional code later on much smoother
+- Promotion
+- Echoes-style promotion bonuses
+- Lateral Class Change
+- Stat Boosting Items
+- Fog of War
+- Lion Throne style Line of Sight
+- Combination of Fog of War and Line of Sight
+- AI Fog of War
+- Steal AI
+- Invertable Unit Spec AI (Attack all EXCEPT unit)
+- Records System (keeps track of many different statistics)
+- Lore System
+- Can copy and paste data objects in the GUI
+- Portrait Editor now auto-matches correct offsets
+- Panoramas now distinguish between loading a movie vs a static image
+- Extras menu in Title Screen (All Saves and Options/Settings available for now)
+- Can now save the game from within an event! (this was a nightmare to code)
+- Units in the players party will automatically appear on formation tiles when the prep screen is called
+- The GUI will automatically save your game when you begin a playtest
+- Change text color in dialogs between black, white, and red (for now)
+- {eval:2+2} and {var:tactician} now work in dialogs
+
+New Event Commands
+ - Reset (refreshes a unit)
+ - MultiAddPortrait (qol addition to add multiple portraits to the screen at once)
+ - MultiRemovePortrait (qol addition to remove multiple portraits from the screen at once)
+ - RemoveAllUnits
+ - RemoveItem
+ - CenterCursor
+ - ChangeStats (allows on-the-fly changing of unit's stats)
+ - SetStats (same thing, but hard set instead of offset)
+ - AutoLevelTo (auto level a unit to a certain level)
+ - MapAnim (show an animation on the map)
+ - TriggerScript (call another event from within this event)
+ - ChangeTilemap
+ - LoadUnit (loads a unit to the level even if not normally loaded in)
+ - MakeGeneric (makes a generic unit and adds it to the level)
+
+I was still finding bugs/isses even today while playtesting, so there are assuredly more out there.

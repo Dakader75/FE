@@ -1,0 +1,59 @@
+Level 3: LTC
+Ophie Lv 4 Exp 74 Sword: 20, Steel Sword, Iron Sword, Potion, Angelic Robe
+Prim Lv 2 Exp 87 Light: 19, Heal, Glimmer, Ruby
+Joel Lv 5 exp 20 Axe: 29, Iron Axe, Hand Axe, Vulnerary, Vulnerary
+Nia Lv 4 Exp 59 Bow: 26, Willow Bow
+Althea Lv 3 Exp 36 Anima: 12, Fire, Vulnerary
+Drake Lv 5 Exp 37 Sword: 14, Lance: 18, Iron Lance, Iron Sword, Spiritbane
+
+Level 4: LTC
+12000 gold
+Ophie Lv 5 Exp 23 Sword: 24, Steel Sword, Iron Sword, Vulnerary, Rapier
+Prim Lv 3 Exp 59 Light: 26, Heal, Glimmer
+Joel Lv 5 exp 97 Axe: 33, Iron Axe, Hand Axe, Potion, Steel Axe
+Nia Lv 5 Exp 70 Bow: 32, Willow Bow, Vulnerary, Willow Bow
+Althea Lv 4 Exp 78 Anima: 17, Fire, Wind, Vulnerary
+Drake Lv 6 Exp 72 Sword: 20, Lance: 25, Iron Lance, Iron Sword, Spiritbane, Potion, Steel Sword
+Renae Lv 5 Exp 2 Sword: 17, Iron Sword, Vulnerary
+Theo Lv 4 Exp 45 Lance: 18, Iron Lance, Vulnerary
+
+Level 5: LTC
+19000 gold
+Ophie Lv 6 Exp 28 Sword: 29, Steel Sword, Iron Sword, Vulnerary, Rapier
+Prim Lv 4 Exp 47 Light: 31, Heal, Glimmer, Shine
+Joel Lv 7 exp 5 Axe: 41, Iron Axe, Hand Axe, Potion, Steel Axe, Hatchet
+Nia Lv 7 Exp 18 Bow: 38, Willow Bow, Oak Bow
+Althea Lv 6 Exp 67 Anima: 22, Fire, Wind, Thunder, Fly, Wyrmsfire
+Drake Lv 7 Exp 67 Sword: 22, Lance: 29, Iron Lance, Iron Sword, Spiritbane, Vulnerary, Steel Sword
+Renae Lv 6 Exp 20 Sword: 22, Iron Sword, Vulnerary, Rapier, Flareblade
+Theo Lv 6 Exp 16 Lance: 28, Iron Lance, Vulnerary
+Eliza Lv 3 Exp 63 Lance: 26, Iron Lance, Steel Lance, Javelin, Prim's Charm, Vulnerary
+
+Level 6: LTC
+13000 gold
+Ophie Lv 7 Exp 53 Sword: 34, Steel Sword, Iron Sword, Vulnerary, Rapier
+Prim Lv 5 Exp 50 Light: 40, Heal, Shine, Mend, Rescue
+Joel Lv 9 exp 62 Axe: 54, Iron Axe, Hand Axe, Potion, Steel Axe, Hatchet
+Nia Lv 7 Exp 79 Bow: 43, Willow Bow, Oak Bow, Longbow
+Althea Lv 8 Exp 64 Anima: 34, Fire, Wind, Thunder, Fly, Wyrmsfire
+Drake Lv 9 Exp 3 Sword: 26, Lance: 29, Steel Lance, Iron Sword, Rapier, Vulnerary, Javelin
+Renae Lv 7 Exp 51 Sword: 28, Steel Sword, Gustblade, Flareblade
+Theo Lv 7 Exp 93 Lance: 36, Iron Lance, Javelin, Potion
+Eliza Lv 5 Exp 93 Lance: 33, Iron Lance, Javelin, Prim's Charm, Short Spear
+Sam Lv 8 Exp 11 Light: 36, Glimmer, Shine, Heal, Mend, Fortune
+Kayla Lv 9 Exp 8 Dark: 43, Flux, Nyx, Scathe
+
+Level 7: LTC
+12000 gold
+Ophie Lv 9 Exp 91 Sword: 43, Steel Sword, Gustblade, Iron Sword, Vulnerary
+Prim Lv 8 Exp 5 Light: 53, Shine, Heal, Mend, Rescue, Physic
+Joel Lv 1 exp 50 Axe: 65, Bow: 16, Willow Bow, Steel Axe, Longbow, Hatchet, Potion
+Nia Lv 10 Exp 79 Bow: 54, Oak Bow, Longbow
+Althea Lv 1 Exp 0 Anima: 60, Fire, Wind, Thunder, Fly, Wyrmsfire
+Drake Lv 10 Exp 38 Sword: 29, Lance: 35, Steel Lance, Iron Sword, Short Spear, Vulnerary, Javelin
+Renae Lv 8 Exp 10 Sword: 30, Steel Sword, Rapier
+Theo Lv 9 Exp 58 Lance: 46, Mithril Lance, Short Spear, Javelin, Potion
+Eliza Lv 8 Exp 66 Lance: 41, Iron Lance, Javelin, Prim's Charm, Adamant Lance
+Sam Lv 10 Exp 70 Light: 50, Glimmer, Shine, Heal, Mend, Fortune
+Kayla Lv 10 Exp 43 Dark: 55, Flux, Nyx, Scathe, Vulnerary
+Coyote Lv 9 Exp 89 Sword: 46, Magebane Swd, Iron Sword, Rusted Sword, Rapier, Potion

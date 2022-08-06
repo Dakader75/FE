@@ -1,0 +1,32 @@
+# Resource Notes
+
+Icons
+ - 16x16 Icons (Items, Skills, Weapons, Affinities)
+ - 32x32 Icons (Factions)
+ - 80x72 Icons (Generic Class Icons)
+Portraits
+ - Unit Portraits (128x112)
+Map Sprites
+ - Standing Map Sprites (192x144 (3x3))
+ - Moving Map Sprites (192x160 (4x4))
+Combat Animations
+    For each class
+        For each weapon
+            For each gender
+                A script
+                An index
+                An Image
+                    - With several palettes
+Combat Effects
+    - Script
+    - Index
+    - Image (with optional palettes)
+Map Effects
+    - Movies
+Panoramas
+- 240x160 Static
+- 240x160 Movies
+Music
+- .ogg files
+Sound Effects (locked)
+- .wav files

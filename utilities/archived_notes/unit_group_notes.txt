@@ -1,0 +1,31 @@
+Things groups should be able to do
+
+add group to position
+add_group;Group1
+
+add group to single position
+add_group;Group1;0,9
+
+add group to it's position from a direction off the map
+spawn_group;Group1;East;Group1
+
+add group to it's starting position
+add_group;Group1;Starting
+
+add group to it's starting position from a direction off the map
+spawn_group;Group1;East;Starting
+
+move group to a single position
+move_group;Group1;0,9
+
+move group to it's starting position
+move_group;Group1;Starting
+
+move group to it's position
+move_group;Group1;Group1
+
+move group to another group's positions
+move_group;Group1;Group2
+
+remove group
+remove_group;Group1

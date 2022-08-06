@@ -1,0 +1,619 @@
+# Questions to Answer
+# How do item mods work -- Critical, Brave Strike, Longshot, Cleave
+# Maybe item mods on init add a new item component to the items they care about
+# so on activation of Cleave combat art, new Cleave item component is applied to items that fit rules 
+# How do proc effects work
+# How do combat arts work
+# How do activated items work -- create new ability with one item that can be used
+# Auras (range, target, child_status)
+# Properties
+negative, stack, feat, class_skill
+
+can_select bool True
+can_be_moved bool True
+
+check_ally bool extra input unit
+check_enemy bool extra input unit
+can_trade bool extra input unit
+
+can_steal bool extra input unit item
+
+sight_range int 0
+
+has_canto bool False
+pass_through bool False
+vantage bool False
+
+can_use_weapon bool True item
+
+stat_bonuses StatList [0, 0,...]
+
+dynamic_damage input target mode int 0
+dynamic_resist input target mode int 0
+damage_multiplier input target mode float 1
+resist_multiplier input target mode float 1
+dynamic_accuracy input target mode int 0
+dynamic_avoid input target mode int 0
+dynamic_crit_accuracy input target mode int 0
+dynamic_crit_avoid input target mode int 0
+dynamic_attack_speed input target mode int 0
+dynamic_defense_speed input target mode int 0
+dynamic_heal input target mode int 0
+modify_damage
+modify_resist
+modfiy_accuracy
+modify_avoid
+modify_crit_accuracy
+modify_crit_avoid
+modify_attack_speed
+modify_defense_speed
+dynamic_multiattacks input target mode int 1  # Used for things like brave
+
+# EVENT HOOKS
+init  # Called when skill is applied
+on_end_chapter  # Called on ending the chapter
+on_upkeep  # Called on owner's upkeep
+on_endstep  # Called on owner's endstep
+on_end_combat  # Called whenever unit finishes a combat -- needs to check for hit, kill, and whose turn it is, combat art charge, etc.
+check_proc -- called at the beginning of the combat phase
+on_hit  has_playback  # Called whenever user hits
+on_crit  has_playback  # Called whenever user crits
+on_miss  has_playback  # Called whenever user misses
+on_take_damage  has_playback  # Called whenever the user takes damage
+on_equip  # called whenever an item becomes equipped
+on_unequip  # called whenever an item becomes unequipped
+on_receive_skill  # called whenever the unit receives an additional skill
+on_remove  # Called whenever this skill is removed from the unit
+on_use_ability  # Called whenever this skill is used
+
+# Animation
+unit_sprite_mod None extra sprite
+
+fStrength +2
+    Feat
+    Stat Change
+        stat_bonus
+            STR +2
+
+Forest
+    Hidden
+    Avoid
+        modify_avoid
+            +20
+    Stat Change
+        stat_bonus
+            DEF +2
+
+Canto
+    Class Skill
+    Canto
+        has_canto
+            unit has not attacked
+
+Regeneration
+    Regeneration
+        on_upkeep
+            action.ChangeHP(unit.hp / 5)
+            also upkeep animation
+
+Poisoned
+    Negative
+    Stat Change
+        stat_bonus
+            STR -2, SKL -2, SPD -2, MAG -2, etc.
+    Unit Anim
+        unit_sprite_mod
+            extra poison sprite
+    Time -- turns to have
+        on_upkeep
+            if done
+            remove self 
+
+Stoneskin
+    Stat Change
+        stat_bonus
+            SPD - 4
+    Time -- turns to have
+        on_upkeep
+            if done
+            remove self 
+    Resist Multiplier
+        resist_multiplier 
+            0.5
+
+Stunned
+    Negative
+    Time -- turns to have
+        on_upkeep
+            if done
+            remove self 
+    Stat Change
+        stat_bonus
+            MOV -99
+    Cannot Use Items
+        can_use_items
+            False
+    Cannot Select
+        can_select
+            False
+    Unit Anim
+        unit_sprite_mod
+            extra poison sprite
+
+Silenced
+    Negative
+    Time -- turns to have
+        on_upkeep
+            if done
+            remove self 
+    Cannot Use Magic Items
+        can_use_items
+            if item is magic 
+            False
+    Unit Anim
+        unit_sprite_mod
+            extra silence sprite
+
+Ephemeral
+    Negative
+    Time -- turns to have
+        on_upkeep
+            if done
+            remove self
+        on_end_chapter
+            remove self 
+    Event on Remove
+        on_remove
+            run event (Kill unit)
+
+Fortune
+    Time -- turns to have
+        on_upkeep
+            if done
+            remove self 
+    Hit +50
+        modify_hit
+            return +50
+
+Bloodcrazed
+    Gain Skill After Kill
+        on_end_combat
+            Give Skill
+    Gain Skill After Attacking
+        on_end_combat
+            Give Skill
+    Gain Skill After Active Kill
+        on_end_combat
+            Give Skill
+
+Merchant
+    Change Buy Price -- Float
+        modify_buy_value
+            return 0.5 * value
+
+Paragon
+    Exp Multiplier -- Float
+        exp_multiplier
+            return value
+
+Void Curse
+    Enemy Exp Multiplier -- Float
+        enemy_exp_multiplier
+            return value
+
+Fleet of Foot
+    Change Movement
+        on_init
+            Change unit's movement type
+        on_remove
+            Change unit's movement type back
+
+Evasion
+    Avoid +1000
+        modify_avoid
+            return + 1000
+    Combat Condition -- mode == 'splash'
+        start combat
+            if condition: set condition to True
+        end_combat:
+            set condition to False
+        condition
+            False
+        test_on
+        test_off
+
+Miracle
+    Drain Charge -- value == 1
+        init
+            num_charges = value
+            total_charge = value
+        condition
+            num_charges > 0
+        on_end_chapter
+            num_charges = total_charge
+        trigger_charge
+            num_charges -= 1
+    Miracle
+        end_combat
+            set HP to 1
+            skill_system trigger charge
+
+Barrier
+    Drain Charge -- value == 1
+        init
+            num_charges = value
+            total_charge = value
+        condition
+            num_charges > 0
+        on_end_chapter
+            num_charges = total_charge
+        trigger_charge
+            num_charges -= 1
+    Ignore Damage
+        on_take_damage
+            don't
+            skill_system trigger charge
+
+Healtouch
+    Class Skill
+    Stat Bonus 5 MAG
+        stat_bonus
+            MAG + 5
+    Combat Condition -- unit != target
+        start combat
+            if condition: set condition to True
+        end_combat:
+            set condition to False
+        condition
+            False
+        test_on
+        test_off
+
+Live to Serve
+    Class Skill
+    Live To Serve
+        after_hit
+            looks for 'heal_hit' playback
+            and applies it to self
+
+Steal
+    Class Skill
+    Ability -- Item (Steal Item)
+        extra_ability
+            self.name
+        end_combat
+            trigger_charge
+
+Critical
+    Charge -- value (starts empty)
+        init
+            num_charges = 0
+            total_charges = value
+        condition
+            num_charges >= total_charges
+        trigger_charge
+            num_charges = 0
+        on_end_chapter
+            num_charges = 0
+    Combat Art -- Skill (Always Crit)
+        extra_ability
+            self.name
+        on_activation
+            Give Skill
+        end_combat
+            trigger_charge
+    Combat Art Allowed Weapons -- Condition
+        retquires Combat Art
+        combat_art_weapon_filter
+            [w for w in weapons if not item_system.is_magic(unit, w)]
+    Increase Charge in Combat -- Stat
+        end_combat (wexp)
+            charge += Stat
+
+Always Crits
+    Crit
+        modify_crit
+            return + 10000
+
+Luna
+    Charge -- value (starts empty)
+        init
+            num_charges = 0
+            total_charges = value
+        condition
+            num_charges >= total_charges
+        trigger_charge
+            num_charges = 0
+        on_end_chapter
+            num_charges = 0
+    Combat Art -- Skill (Ignore Defense)
+        extra_ability
+            self.name
+        on_activation
+            Give Skill
+        end_combat
+            trigger_charge
+    Increase Charge in Combat -- Stat
+        end_combat (wexp)
+            charge += Stat
+
+Ignore Defense
+    Dynamic Damage -- target's defense
+        dynamic_damage
+            target's defense
+    Display Skill Icon In Combat
+        display_skill_icon_in_combat
+            True
+
+Sol
+    Lifelink 1.0
+        after_damage
+            Look for damage marker in playback and apply it fully as health to self
+
+Cleave 
+    Class Skill
+    Charge -- value (starts empty)
+        init
+            num_charges = 0
+            total_charges = value
+        condition
+            num_charges >= total_charges
+        trigger_charge
+            num_charges = 0
+        on_end_chapter
+            num_charges = 0
+    Combat Art -- Skill (Cleave Mod)
+        extra_ability
+            self.name
+        on_activation
+            Give Skill
+        end_combat
+            trigger_charge
+    Combat Art Allowed Weapons -- Condition
+        requires Combat Art
+        combat_art_weapon_filter
+            [w for w in weapons if item_system.weapon_type(unit, w) in ('Axe', 'Sword') and 1 in item_system.get_range(unit, w)]
+    Combat Art Max Range -- Condition
+        requires Combat Art
+        combat_art_range_filter
+            modifies range somehow...
+    Increase Charge in Combat -- Stat
+        end_combat (wexp)
+            charge += Stat
+
+Cleave Mod
+    Cannot Double
+        no_double
+            True
+    Cleave AOE
+        aoe_mod
+            ...
+
+Vantage
+    Can Double On Defense
+        can_double_on_defense
+            True
+    Combat Condition -- combat_calcs (unit.outspeed(target))
+        start combat
+            if condition: set condition to True
+        end_combat:
+            set condition to False
+        condition
+            False
+        test_on
+        test_off
+
+Riposte
+    Damage + 3
+        modify_damage
+            return 3
+    Combat Condition -- mode == 'defense'
+        start combat
+            if condition: set condition to True
+        end_combat:
+            set condition to False
+        condition
+            False
+        test_on
+        test_off
+
+Longshot
+    Modify Maximum Range -- value (1)
+        modify_maximum_range
+            return value
+
+Futuresight
+    Avoid
+        modify_avoid
+            30
+    Hit
+        modify_hit
+            30
+    Condition -- unit.get_hp() < half
+        condition
+            return eval condition
+
+Shove
+    Class Skill
+    Ability -- Item
+        extra_ability
+            self.name
+        end_combat
+            trigger_charge
+
+Rally
+    Class Skill
+    Charge -- value (starts empty)
+        init
+            num_charges = 0
+            total_charges = value
+        condition
+            num_charges >= total_charges
+        trigger_charge
+            num_charges = 0
+        on_end_chapter
+            num_charges = 0
+    Ability -- Item
+        extra_ability
+            self.name
+        end_combat
+            trigger_charge
+    Increase Charge in Combat -- Stat
+        end_combat (wexp)
+            charge += Stat
+
+Metamagic
+    Class Skill
+    Charge -- value (starts empty)
+        init
+            num_charges = 0
+            total_charges = value
+        condition
+            num_charges >= total_charges
+        trigger_charge
+            num_charges = 0
+        on_end_chapter
+            num_charges = 0
+    Automatic Combat Art -- Skill (Overcharged)
+        on_upkeep
+            Give Skill
+            trigger_charge
+    Increase Charge in Combat -- Stat
+        end_combat (wexp)
+            charge += Stat
+
+Overcharged
+    Magic Blast AOE -- Value
+        aoe_mod
+            return increased magic blast
+    Lost on End Turn
+        on_endstep
+            remove self
+
+Luna
+    Attack Proc -- Skill (Ignore Defense)
+        start_sub_combat
+            if proc rate > random.randint(0, 99)
+                Give Skill
+        end_sub_combat
+            Remove Skill
+    Proc Rate -- Condition (by default it's 100)
+
+Pavise
+    Defense Proc -- Skill (Great Shield)
+        start_sub_combat
+            if proc rate > random.randint(0, 99)
+                Give Skill
+        end_sub_combat
+            Remove Skill
+    Proc Rate -- Condition (by default it's 100)
+
+Great Shield
+    Resist
+        modify_resist
+            + 100
+    PreCombat Effect
+        pre_combat_efect
+            Pavise
+    Display Skill Icon In Combat
+        display_skill_icon_in_combat
+            True
+
+Adept
+    Attack Proc -- Skill (Brave)
+    Proc Rate -- Condition
+
+Trophy
+    Hidden
+    Stack
+    Lost on Endchapter
+        on_end_chapter
+            remove self
+    Stat Bonus
+        stat_bonus
+            STR + 1
+
+Swordbreaker
+    Avoid
+        modify_avoid
+            30
+    Hit
+        modify_hit
+            30
+    Combat Condition -- item_system.weapon_type(target, target.get_weapon()) == 'Sword'
+        start combat
+            if condition: set condition to True
+        end_combat:
+            set condition to False
+        condition
+            False
+        test_on
+        test_off
+
+Rescue
+    Stat Multiplier -- StatList
+        stat_multiplier
+
+Locktouch
+    Doesn't actually do anything.. Only used in events
+
+Savior
+    Ignore Rescue Penalty
+        ignore_rescue_penalty
+            True
+
+Ghost
+    Pass
+        pass_through
+            True
+
+ShrugOff
+    Resist Status
+        init
+            loop through all statuses and set their times to 1
+        on_other_skill
+            set time to 1
+
+Rex Divinus
+    Immune Status
+        init
+            loop through all statuse and remove negative ones
+        on_other_skill
+            ignore application
+    Grounded
+        ignore forced movement
+            True
+
+Status Reflect
+    Reflect Status
+        on_other_skill
+            apply status to initiator as well
+
+Distant Counter
+    Modify Maximum Range
+        modify_maximum_range
+            1000
+    Combat Condition -- mode == 'Defense'
+        start combat
+            if condition: set condition to True
+        end_combat:
+            set condition to False
+        condition
+            False
+        test_on
+        test_off
+
+Ranger's Guile
+    Hit
+        hit
+            30
+    Condition -- self.unit.position and self.unit.position in Plains, Forest
+        condition
+            return eval
+
+Heavy Hitter
+    Conditional Damage -- condition
+        damage
+            return condition
+
+Auras

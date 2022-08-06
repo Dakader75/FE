@@ -1,0 +1,38 @@
+Important Concepts
+
+Frames
+Commands
+Palettes
+Weapons
+Poses
+
+A Combat Pose is a series of commands which operate on a set of frames
+Example poses: Stand, Dodge, Attack, Miss, Critical, (Custom Pose)
+
+A WeaponSet is a collection of poses, generally for the same weapon
+    A WeaponSet always has the same set of defined poses, but additional ones can be added
+ - CombatAnimation defines when it should be used
+ - Sword WeaponSet should be used when wielding a non-Magic Sword
+ - MagicSword WeaponSet should be used when wielding a Magic Sword
+ - Axe WeaponSet should be used when wielding a non-Ranged Axe
+ - RangedAxe WeaponSet should be used when wielding a Ranged Sword
+ - So dropdown with collection of weapon types
+ - Plus dropdown for ('Normal', 'Ranged', 'Magic')
+
+A CombatAnimation is a collection of WeaponSets. A CombatAnimation also has a set of available Palettes. If a Palette matches the name of a unit, they will use that Palette. Otherwise, they will use a generic palette appropriate for their team
+
+Classes have an assigned CombatAnimation
+
+Editor:
+Combat Animation Editor
+Collection of CombatAnimations with nid, list of WeaponSets (which shouldn't overlap) and when each should be used, and set of available palettes. Can click pose and palette to view preview.
+
+PoseEditor
+Collection of Poses with nid
+Pose has a list of commands
+
+PaletteEditor
+Collection of Palettes with nid
+Palette is a list of color3s
+
+How do Palettes and Poses interact...

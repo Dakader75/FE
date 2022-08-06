@@ -1,0 +1,23 @@
+sequence items need a paradigm shift
+
+Game needs to be able to tell whether it can use the item and its targeting before even the first targeting (for things like rescue having a legal traversable spot in adjacent spaces) X
+
+Basic Weapon X
+Basic Spell X
+Wyrmsblast
+Searing Daggers X
+Searing Daggers that does not allow the same target X
+MultiAttack Searing Daggers that can hit the same enemy multiple times X
+Warp X
+Rescue X
+AOE attack that also refreshes the user X
+
+For warp and rescue, could switch sequence item to multi-target item
+Takes in list of items and runs the targeting on each of them
+Applies all targeting
+
+One combat, list of main targets, list of splash
+Runs solver in parallel on each of the items
+
+So for Rescue, solver takes in the list of items and a list of main targets and a list of splash
+Then does each on_hit immediately and in order

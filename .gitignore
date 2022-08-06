@@ -1,0 +1,80 @@
+# Binary-compiled files
+*.py[co]
+
+# test project
+test.ltproj
+test_output/
+
+# Save States
+saves/*.p
+saves/*.pmeta
+saves/*.ini
+saves/progress_log.txt
+saves/debug_commands.txt
+debug.log.*
+autosave*
+
+screenshots/
+
+# Builds
+build/
+dist/
+*.exe
+venv/
+venv_editor/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# testing for uif
+test_output/
+expected_output/
+
+# =========================
+# Operating System Files
+# =========================
+
+# OSX
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# vscode config
+.vscode

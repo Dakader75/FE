@@ -1,0 +1,55 @@
+# General Commands
+wait;Time
+if;Condition
+elif;Condition
+else
+
+game_variable
+level_variable
+
+# Sound Commands
+m;music;Music
+sound;Sound
+
+# Dialogue Commands
+u;add_portrait;Portrait;ScreenPosition;Transition
+    - Mirror, LowPriority, Expressions, Immediate, NoBlock
+r;remove_portrait;Portrait
+    - Immediate, NoBlock
+mov;move_portrait;Portrait;ScreenPosition
+    - Immediate, NoBlock
+bop;bop_portrait;Portrait
+    - NoBlock
+e;expression;Portrait;ExpressionList
+s;speak;Speaker;Text
+    - ScreenPosition, Width
+t;Transition;In/Out;Color
+b;change_background;Panorama
+    - With Transition
+remove_background
+    - With Transition
+    - Don't remove unit sprites
+
+# Event Commands
+add_event;Event;Position
+remove_event;Event;Position
+win_game
+lose_game
+    - Allow Turnwheel
+
+# Cursor commands
+move_cursor;Position  # Works like center cursor
+    - Immediate
+disp_cursor;Bool
+
+# Unit commands
+add_unit;Unit;Position;EntryType;Placement
+    - NoBlock
+move_unit;Unit;Position;MovementType;Placement
+    - NoBlock
+remove_unit;Unit;RemoveType
+    - NoBlock
+interact_unit;Unit;Unit;Script
+    # For instance, Unit1Hit, Unit2Crit, End
+
+give_item;Unit;Item;no_banner

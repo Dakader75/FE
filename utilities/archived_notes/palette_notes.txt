@@ -1,0 +1,15 @@
+To add for palettes
+
+Should Autoselect a decent frame when switching between palettes
+
+AnimView 
+ - Out of bounds is first color
+ - On Right Click, color below cursor is now painting color
+ - On Left Click, overwrite color below cursor with painting color (needs to be undoable). If painting color exists elsewhere in image, swaps colors
+
+PaletteEasel
+ - On Left Click, color is now painting color
+ - On Left Click and Drag, can move or swap positions of color1 and color2 (needs to be undoable)
+ - On Ctrl Left Click, select palette slot
+ - On Ctrl Left Click and Drag, can rearrange palette slots
+ - On Delete, deletes current painting color from palette (needs to be undoable)

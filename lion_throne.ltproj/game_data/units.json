@@ -1,0 +1,2334 @@
+[
+    {
+        "nid": "Ophie",
+        "name": "Ophie",
+        "desc": "A strong-hearted renegade who often acts before he thinks.",
+        "variant": "",
+        "level": 1,
+        "klass": "Myrmidon",
+        "tags": [
+            "Lord"
+        ],
+        "bases": {
+            "HP": 12,
+            "STR": 3,
+            "MAG": 1,
+            "SKL": 5,
+            "SPD": 7,
+            "LCK": 2,
+            "DEF": 1,
+            "RES": 1,
+            "CON": 5,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 105,
+            "STR": 55,
+            "MAG": 35,
+            "SKL": 75,
+            "SPD": 80,
+            "LCK": 80,
+            "DEF": 40,
+            "RES": 40,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Iron Sword",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                8
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Ophie",
+        "affinity": null
+    },
+    {
+        "nid": "Prim",
+        "name": "Prim",
+        "desc": "Shy but kind-hearted. Has an affinity for the spiritual.",
+        "variant": "Female",
+        "level": 1,
+        "klass": "Cleric",
+        "tags": [],
+        "bases": {
+            "HP": 11,
+            "STR": 0,
+            "MAG": 2,
+            "SKL": 4,
+            "SPD": 5,
+            "LCK": 4,
+            "DEF": 1,
+            "RES": 4,
+            "CON": 4,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 65,
+            "STR": 15,
+            "MAG": 65,
+            "SKL": 60,
+            "SPD": 55,
+            "LCK": 80,
+            "DEF": 30,
+            "RES": 80,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Glimmer",
+                false
+            ],
+            [
+                "Heal",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                true,
+                8
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Prim",
+        "affinity": null
+    },
+    {
+        "nid": "Joel",
+        "name": "Joel",
+        "desc": "A jovial former sailor. Always ready for a new adventure.",
+        "variant": "",
+        "level": 3,
+        "klass": "Fighter",
+        "tags": [],
+        "bases": {
+            "HP": 21,
+            "STR": 5,
+            "MAG": 0,
+            "SKL": 3,
+            "SPD": 4,
+            "LCK": 3,
+            "DEF": 3,
+            "RES": 0,
+            "CON": 8,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 105,
+            "STR": 80,
+            "MAG": 5,
+            "SKL": 60,
+            "SPD": 55,
+            "LCK": 45,
+            "DEF": 35,
+            "RES": 20,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Iron Axe",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                16
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Joel",
+        "affinity": null
+    },
+    {
+        "nid": "Nia",
+        "name": "Nia",
+        "desc": "A quiet archer most at home in the wilderness.",
+        "variant": "Female",
+        "level": 3,
+        "klass": "Archer",
+        "tags": [],
+        "bases": {
+            "HP": 13,
+            "STR": 4,
+            "MAG": 2,
+            "SKL": 5,
+            "SPD": 5,
+            "LCK": 3,
+            "DEF": 2,
+            "RES": 1,
+            "CON": 5,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 80,
+            "STR": 55,
+            "MAG": 35,
+            "SKL": 80,
+            "SPD": 80,
+            "LCK": 25,
+            "DEF": 20,
+            "RES": 40,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Willow Bow",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                true,
+                16
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Nia",
+        "affinity": null
+    },
+    {
+        "nid": "Althea",
+        "name": "Althea",
+        "desc": "A forthright but elegant and refined sorceress.",
+        "variant": "Female",
+        "level": 2,
+        "klass": "Mage",
+        "tags": [],
+        "bases": {
+            "HP": 11,
+            "STR": 1,
+            "MAG": 5,
+            "SKL": 4,
+            "SPD": 5,
+            "LCK": 5,
+            "DEF": 2,
+            "RES": 3,
+            "CON": 4,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 60,
+            "STR": 15,
+            "MAG": 85,
+            "SKL": 40,
+            "SPD": 60,
+            "LCK": 60,
+            "DEF": 20,
+            "RES": 55,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Fire",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                true,
+                6
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Althea",
+        "affinity": null
+    },
+    {
+        "nid": "Drake",
+        "name": "Drake",
+        "desc": "A disgraced Imperial knight now in Althea's service.",
+        "variant": "",
+        "level": 5,
+        "klass": "Cavalier",
+        "tags": [],
+        "bases": {
+            "HP": 17,
+            "STR": 6,
+            "MAG": 1,
+            "SKL": 6,
+            "SPD": 5,
+            "LCK": 7,
+            "DEF": 5,
+            "RES": 3,
+            "CON": 7,
+            "MOV": 7
+        },
+        "growths": {
+            "HP": 95,
+            "STR": 65,
+            "MAG": 5,
+            "SKL": 60,
+            "SPD": 40,
+            "LCK": 40,
+            "DEF": 55,
+            "RES": 40,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Iron Sword",
+                false
+            ],
+            [
+                "Iron Lance",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                11
+            ],
+            "Lance": [
+                true,
+                16
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Drake",
+        "affinity": null
+    },
+    {
+        "nid": "Renae",
+        "name": "Renae",
+        "desc": "An energetic thief with a kleptomanic streak.",
+        "variant": "Female",
+        "level": 5,
+        "klass": "Thief",
+        "tags": [],
+        "bases": {
+            "HP": 14,
+            "STR": 3,
+            "MAG": 4,
+            "SKL": 6,
+            "SPD": 10,
+            "LCK": 4,
+            "DEF": 2,
+            "RES": 4,
+            "CON": 4,
+            "MOV": 6
+        },
+        "growths": {
+            "HP": 95,
+            "STR": 45,
+            "MAG": 60,
+            "SKL": 50,
+            "SPD": 95,
+            "LCK": 60,
+            "DEF": 35,
+            "RES": 50,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Iron Sword",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                16
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Renae",
+        "affinity": null
+    },
+    {
+        "nid": "Theo",
+        "name": "Theo",
+        "desc": "An avid scholar. Interested in esoteric philosophy.",
+        "variant": "",
+        "level": 4,
+        "klass": "Knight",
+        "tags": [],
+        "bases": {
+            "HP": 18,
+            "STR": 9,
+            "MAG": 0,
+            "SKL": 7,
+            "SPD": 3,
+            "LCK": 3,
+            "DEF": 8,
+            "RES": 2,
+            "CON": 9,
+            "MOV": 4
+        },
+        "growths": {
+            "HP": 120,
+            "STR": 55,
+            "MAG": 25,
+            "SKL": 40,
+            "SPD": 40,
+            "LCK": 45,
+            "DEF": 75,
+            "RES": 40,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Iron Lance",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                16
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Theo",
+        "affinity": null
+    },
+    {
+        "nid": "Eliza",
+        "name": "Eliza",
+        "desc": "A moody, sarcastic soldier.",
+        "variant": "Female",
+        "level": 1,
+        "klass": "Soldier",
+        "tags": [],
+        "bases": {
+            "HP": 13,
+            "STR": 3,
+            "MAG": 0,
+            "SKL": 4,
+            "SPD": 6,
+            "LCK": 3,
+            "DEF": 3,
+            "RES": 1,
+            "CON": 7,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 80,
+            "STR": 70,
+            "MAG": 70,
+            "SKL": 85,
+            "SPD": 70,
+            "LCK": 40,
+            "DEF": 70,
+            "RES": 40,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Iron Lance",
+                false
+            ],
+            [
+                "Javelin",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                21
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Eliza",
+        "affinity": null
+    },
+    {
+        "nid": "Sam",
+        "name": "Sam",
+        "desc": "The resistance's leader. Ambitious and inquisitive.",
+        "variant": "",
+        "level": 7,
+        "klass": "Tactician",
+        "tags": [],
+        "bases": {
+            "HP": 18,
+            "STR": 3,
+            "MAG": 7,
+            "SKL": 8,
+            "SPD": 9,
+            "LCK": 7,
+            "DEF": 3,
+            "RES": 7,
+            "CON": 5,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 65,
+            "STR": 15,
+            "MAG": 35,
+            "SKL": 45,
+            "SPD": 55,
+            "LCK": 55,
+            "DEF": 40,
+            "RES": 65,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Shine",
+                false
+            ],
+            [
+                "Mend",
+                false
+            ],
+            [
+                "Fortune",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                true,
+                31
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Sam",
+        "affinity": null
+    },
+    {
+        "nid": "Kayla",
+        "name": "Kayla",
+        "desc": "A scheming diplomat from the Confederacy.",
+        "variant": "Female",
+        "level": 8,
+        "klass": "Shaman",
+        "tags": [],
+        "bases": {
+            "HP": 19,
+            "STR": 1,
+            "MAG": 9,
+            "SKL": 8,
+            "SPD": 5,
+            "LCK": 6,
+            "DEF": 5,
+            "RES": 7,
+            "CON": 5,
+            "MOV": 4
+        },
+        "growths": {
+            "HP": 55,
+            "STR": 5,
+            "MAG": 65,
+            "SKL": 55,
+            "SPD": 45,
+            "LCK": 35,
+            "DEF": 40,
+            "RES": 55,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Flux",
+                false
+            ],
+            [
+                "Scathe",
+                false
+            ],
+            [
+                "Spiritbane",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                true,
+                36
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Kayla",
+        "affinity": null
+    },
+    {
+        "nid": "Coyote",
+        "name": "Coyote",
+        "desc": "A troubled wandererer with a mysterious past.",
+        "variant": "",
+        "level": 9,
+        "klass": "Mercenary",
+        "tags": [],
+        "bases": {
+            "HP": 20,
+            "STR": 9,
+            "MAG": 0,
+            "SKL": 11,
+            "SPD": 9,
+            "LCK": 4,
+            "DEF": 5,
+            "RES": 2,
+            "CON": 7,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 120,
+            "STR": 65,
+            "MAG": 5,
+            "SKL": 55,
+            "SPD": 50,
+            "LCK": 20,
+            "DEF": 35,
+            "RES": 20,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Rusted Sword",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                39
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Coyote",
+        "affinity": null
+    },
+    {
+        "nid": "Yohn",
+        "name": "Yohn",
+        "desc": "A devoted monk. Ophie's mentor in the way of the blade.",
+        "variant": "",
+        "level": 4,
+        "klass": "Swordmaster",
+        "tags": [],
+        "bases": {
+            "HP": 25,
+            "STR": 9,
+            "MAG": 5,
+            "SKL": 12,
+            "SPD": 13,
+            "LCK": 5,
+            "DEF": 6,
+            "RES": 6,
+            "CON": 6,
+            "MOV": 6
+        },
+        "growths": {
+            "HP": 0,
+            "STR": 0,
+            "MAG": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Mithril Sword",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                71
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Yohn",
+        "affinity": null
+    },
+    {
+        "nid": "Kiley",
+        "name": "Kiley",
+        "desc": "Jovial leader by acclamation of the Tyrana prisoners.",
+        "variant": null,
+        "level": 2,
+        "klass": "Berserker",
+        "tags": [],
+        "bases": {
+            "HP": 27,
+            "STR": 12,
+            "MAG": 1,
+            "SKL": 9,
+            "SPD": 8,
+            "LCK": 6,
+            "DEF": 5,
+            "RES": 3,
+            "CON": 10,
+            "MOV": 6
+        },
+        "growths": {
+            "HP": 0,
+            "STR": 0,
+            "MAG": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Rusted Axe",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                71
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Kiley",
+        "affinity": null
+    },
+    {
+        "nid": "Sidney",
+        "name": "Sidney",
+        "desc": "A cruel Imperial lieutenant.",
+        "variant": null,
+        "level": 4,
+        "klass": "Fighter",
+        "tags": [],
+        "bases": {
+            "HP": 17,
+            "STR": 5,
+            "MAG": 0,
+            "SKL": 3,
+            "SPD": 3,
+            "LCK": 0,
+            "DEF": 3,
+            "RES": 0,
+            "CON": 8,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 50,
+            "MAG": 0,
+            "SKL": 50,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Hand Axe",
+                false
+            ],
+            [
+                "Iron Axe",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                1
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Sidney",
+        "affinity": null
+    },
+    {
+        "nid": "Brigham",
+        "name": "Brigham",
+        "desc": "Tasked with hunting down the Empire's fugitives.",
+        "variant": null,
+        "level": 6,
+        "klass": "Shaman",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 19,
+            "STR": 1,
+            "MAG": 7,
+            "SKL": 5,
+            "SPD": 4,
+            "LCK": 5,
+            "DEF": 3,
+            "RES": 6,
+            "CON": 5,
+            "MOV": 4
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 0,
+            "MAG": 100,
+            "SKL": 50,
+            "SPD": 50,
+            "LCK": 50,
+            "DEF": 0,
+            "RES": 50,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Flux",
+                false
+            ],
+            [
+                "Angelic Robe",
+                true
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                true,
+                16
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Brigham",
+        "affinity": null
+    },
+    {
+        "nid": "Harold",
+        "name": "Harold",
+        "desc": "Captain in the Imperial Army. Ulver's sworn man.",
+        "variant": null,
+        "level": 8,
+        "klass": "Knight",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 31,
+            "STR": 7,
+            "MAG": 1,
+            "SKL": 6,
+            "SPD": 2,
+            "LCK": 4,
+            "DEF": 7,
+            "RES": 3,
+            "CON": 9,
+            "MOV": 4
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 50,
+            "MAG": 0,
+            "SKL": 50,
+            "SPD": 0,
+            "LCK": 50,
+            "DEF": 50,
+            "RES": 50,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Steel Lance",
+                false
+            ],
+            [
+                "Javelin",
+                true
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                16
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Harold",
+        "affinity": null
+    },
+    {
+        "nid": "Anders",
+        "name": "Anders",
+        "desc": "First lieutenant at the Tyrana Mines.",
+        "variant": null,
+        "level": 8,
+        "klass": "Brigand",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 23,
+            "STR": 8,
+            "MAG": 0,
+            "SKL": 6,
+            "SPD": 5,
+            "LCK": 2,
+            "DEF": 5,
+            "RES": 1,
+            "CON": 9,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 50,
+            "MAG": 0,
+            "SKL": 0,
+            "SPD": 50,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Steel Axe",
+                false
+            ],
+            [
+                "Hand Axe",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                39
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Anders",
+        "affinity": null
+    },
+    {
+        "nid": "Midas",
+        "name": "Midas",
+        "desc": "A greedy Imperial merchant.",
+        "variant": null,
+        "level": 5,
+        "klass": "Wagon",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 17,
+            "STR": 0,
+            "MAG": 0,
+            "SKL": 3,
+            "SPD": 5,
+            "LCK": 0,
+            "DEF": 3,
+            "RES": 2,
+            "CON": 5,
+            "MOV": 6
+        },
+        "growths": {
+            "HP": 0,
+            "STR": 0,
+            "MAG": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Sapphire",
+                true
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Midas",
+        "affinity": null
+    },
+    {
+        "nid": "Jules",
+        "name": "Jules",
+        "desc": "Boss of the Ghat mountain bandits.",
+        "variant": null,
+        "level": 10,
+        "klass": "Brigand",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 28,
+            "STR": 7,
+            "MAG": 5,
+            "SKL": 11,
+            "SPD": 8,
+            "LCK": 6,
+            "DEF": 5,
+            "RES": 7,
+            "CON": 9,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 65,
+            "STR": 35,
+            "MAG": 0,
+            "SKL": 15,
+            "SPD": 15,
+            "LCK": 15,
+            "DEF": 15,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Steel Axe",
+                false
+            ],
+            [
+                "Elixir",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                39
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Jules",
+        "affinity": null
+    },
+    {
+        "nid": "Vincent",
+        "name": "Vincent",
+        "desc": "Boss of the Ghat mountain bandits",
+        "variant": null,
+        "level": 10,
+        "klass": "Brigand",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 29,
+            "STR": 11,
+            "MAG": 0,
+            "SKL": 7,
+            "SPD": 7,
+            "LCK": 1,
+            "DEF": 7,
+            "RES": 5,
+            "CON": 9,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 0,
+            "STR": 0,
+            "MAG": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Adamant Axe",
+                false
+            ],
+            [
+                "Short Axe",
+                false
+            ],
+            [
+                "Energy Ring",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                39
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Vincent",
+        "affinity": null
+    },
+    {
+        "nid": "Razia",
+        "name": "Razia",
+        "desc": "Harsh warden of the Tyrana Prison.",
+        "variant": "Female",
+        "level": 4,
+        "klass": "Swordmaster",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 27,
+            "STR": 8,
+            "MAG": 6,
+            "SKL": 11,
+            "SPD": 12,
+            "LCK": 5,
+            "DEF": 6,
+            "RES": 7,
+            "CON": 6,
+            "MOV": 6
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 50,
+            "MAG": 50,
+            "SKL": 50,
+            "SPD": 50,
+            "LCK": 50,
+            "DEF": 0,
+            "RES": 50,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Mithril Sword",
+                false
+            ],
+            [
+                "Boltblade",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                71
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Razia",
+        "affinity": null
+    },
+    {
+        "nid": "Marduk",
+        "name": "Marduk",
+        "desc": "A member of the Empire's elite cadre of tacticians.",
+        "variant": "",
+        "level": 5,
+        "klass": "Strategist",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 23,
+            "STR": 5,
+            "MAG": 13,
+            "SKL": 11,
+            "SPD": 9,
+            "LCK": 3,
+            "DEF": 7,
+            "RES": 15,
+            "CON": 5,
+            "MOV": 7
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 50,
+            "MAG": 100,
+            "SKL": 50,
+            "SPD": 50,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 100,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Blind",
+                false
+            ],
+            [
+                "Refresh",
+                true
+            ],
+            [
+                "Physic",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                true,
+                71
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Marduk",
+        "affinity": null
+    },
+    {
+        "nid": "Vagnius",
+        "name": "Vagnius",
+        "desc": "Ruthless and cunning Imperial warlock.",
+        "variant": null,
+        "level": 8,
+        "klass": "Warlock",
+        "tags": [],
+        "bases": {
+            "HP": 34,
+            "STR": 3,
+            "MAG": 17,
+            "SKL": 14,
+            "SPD": 13,
+            "LCK": 7,
+            "DEF": 11,
+            "RES": 13,
+            "CON": 6,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 0,
+            "MAG": 50,
+            "SKL": 50,
+            "SPD": 50,
+            "LCK": 100,
+            "DEF": 0,
+            "RES": 100,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Ruin",
+                false
+            ],
+            [
+                "Mana Ring",
+                true
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                true,
+                71
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Vagnius",
+        "affinity": null
+    },
+    {
+        "nid": "Boaz",
+        "name": "Boaz",
+        "desc": "An acclaimed hunter of rare beasts.",
+        "variant": null,
+        "level": 10,
+        "klass": "Berserker",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 39,
+            "STR": 18,
+            "MAG": 1,
+            "SKL": 13,
+            "SPD": 12,
+            "LCK": 11,
+            "DEF": 7,
+            "RES": 6,
+            "CON": 10,
+            "MOV": 6
+        },
+        "growths": {
+            "HP": 200,
+            "STR": 50,
+            "MAG": 0,
+            "SKL": 100,
+            "SPD": 100,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Adamant Axe",
+                true
+            ],
+            [
+                "Tomahawk",
+                false
+            ],
+            [
+                "Elixir",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                71
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Boaz",
+        "affinity": null
+    },
+    {
+        "nid": "Jakin",
+        "name": "Jakin",
+        "desc": "An enigmatic masked man.",
+        "variant": null,
+        "level": 10,
+        "klass": "Assassin",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 26,
+            "STR": 9,
+            "MAG": 7,
+            "SKL": 17,
+            "SPD": 20,
+            "LCK": 9,
+            "DEF": 4,
+            "RES": 9,
+            "CON": 5,
+            "MOV": 7
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 50,
+            "MAG": 50,
+            "SKL": 50,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 50,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Longbow",
+                false
+            ],
+            [
+                "Adamant Sword",
+                true
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                71
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                true,
+                71
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Jakin",
+        "affinity": null
+    },
+    {
+        "nid": "Adjutant",
+        "name": "Adjutant",
+        "desc": "Duke Ulver's loyal assistant.",
+        "variant": null,
+        "level": 10,
+        "klass": "Strategist",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 34,
+            "STR": 3,
+            "MAG": 15,
+            "SKL": 12,
+            "SPD": 13,
+            "LCK": 13,
+            "DEF": 12,
+            "RES": 14,
+            "CON": 5,
+            "MOV": 7
+        },
+        "growths": {
+            "HP": 0,
+            "STR": 0,
+            "MAG": 100,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Blind",
+                false
+            ],
+            [
+                "Physic",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "TLT_Imperial Wards"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                true,
+                71
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Adjutant",
+        "affinity": null
+    },
+    {
+        "nid": "Ulver",
+        "name": "Ulver",
+        "desc": "Hard-nosed Imperial Duke occupying Kerala.",
+        "variant": "",
+        "level": 5,
+        "klass": "Duke",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 80,
+            "STR": 19,
+            "MAG": 12,
+            "SKL": 20,
+            "SPD": 12,
+            "LCK": 8,
+            "DEF": 18,
+            "RES": 16,
+            "CON": 11,
+            "MOV": 6
+        },
+        "growths": {
+            "HP": 0,
+            "STR": 0,
+            "MAG": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Makara",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "TLT_Imperial Wards"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                71
+            ],
+            "Lance": [
+                true,
+                71
+            ],
+            "Axe": [
+                true,
+                71
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Ulver",
+        "affinity": null
+    }
+]

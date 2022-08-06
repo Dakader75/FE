@@ -1,0 +1,14 @@
+# Overworld changes
+# How slow is tick show() every frame?
+# Is Level Prefab go to overworld the best way of doing it?
+*Change from pygame import Surface, Color
+to from engine import Surface
+*In narration dialogue, split into subsurfaces, then convert
+Perhaps make Talk Boop in narration dialogue behave better
+*Mistab on line 60 of overworld_map_sprites.py
+It looks like overworld map sprite implements a lot of the same functionality as regular unit sprite. See if we can get rid of code duplication
+*Why do you pass in the game state "game" to the camera now?
+*Move app.engine.movement import MovementManager out of target_system sub functions and into main import
+*lt_graph clear cache should actually just call .clear()
+*Any way to combine overworld_road_sprite in engine and editor?
+Set Status on what left and right click do in node editor
