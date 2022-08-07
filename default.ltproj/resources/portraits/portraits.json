@@ -603,5 +603,16 @@
             16,
             40
         ]
+    },
+    {
+        "nid": "SmushyCowsLogo",
+        "blinking_offset": [
+            0,
+            0
+        ],
+        "smiling_offset": [
+            0,
+            0
+        ]
     }
 ]
