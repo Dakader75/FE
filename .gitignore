@@ -78,3 +78,6 @@ Temporary Items
 
 # vscode config
 .vscode
+
+# metadata
+project.ltproj/metadata.json
