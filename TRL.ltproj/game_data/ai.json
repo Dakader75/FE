@@ -34,6 +34,34 @@
                 "action": "Attack",
                 "target": "Enemy",
                 "target_spec": null,
+                "view_range": -2,
+                "invert_targeting": false
+            },
+            {
+                "action": "None",
+                "target": "None",
+                "target_spec": null,
+                "view_range": 0,
+                "invert_targeting": false
+            },
+            {
+                "action": "None",
+                "target": "None",
+                "target_spec": null,
+                "view_range": 0,
+                "invert_targeting": false
+            }
+        ],
+        "priority": 20,
+        "offense_bias": 2
+    },
+    {
+        "nid": "Attack_2",
+        "behaviours": [
+            {
+                "action": "Attack",
+                "target": "Enemy",
+                "target_spec": null,
                 "view_range": -3,
                 "invert_targeting": false
             },
@@ -357,7 +385,7 @@
             {
                 "action": "Attack",
                 "target": "Enemy",
-                "target_spec": "Door",
+                "target_spec": null,
                 "view_range": -2,
                 "invert_targeting": false
             },

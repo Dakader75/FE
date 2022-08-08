@@ -301,10 +301,10 @@
             "HP": 34,
             "STR": 9,
             "MAG": 5,
-            "SKL": 7,
+            "SKL": 12,
             "SPD": 6,
             "LCK": 5,
-            "DEF": 10,
+            "DEF": 12,
             "CON": 14,
             "MOV": 4,
             "RES": 2,
@@ -502,11 +502,11 @@
             "SKL": 5,
             "SPD": 6,
             "LCK": 4,
-            "DEF": 10,
+            "DEF": 9,
             "RES": 2,
             "CON": 9,
             "MOV": 5,
-            "Atk": 11
+            "Atk": 10
         },
         "growths": {
             "HP": 70,
@@ -519,7 +519,7 @@
             "RES": 1,
             "CON": 0,
             "MOV": 0,
-            "Atk": 55
+            "Atk": 60
         },
         "starting_items": [
             [
@@ -2064,40 +2064,40 @@
         "name": "O'Neill",
         "desc": "A troop leader in Grado's army.",
         "variant": null,
-        "level": 10,
-        "klass": "Soldier",
+        "level": 1,
+        "klass": "Knight",
         "tags": [
             "Boss"
         ],
         "bases": {
-            "HP": 30,
+            "HP": 37,
             "STR": 7,
             "MAG": 0,
-            "SKL": 2,
-            "SPD": 4,
-            "LCK": 3,
-            "DEF": 6,
+            "SKL": 8,
+            "SPD": 7,
+            "LCK": 5,
+            "DEF": 11,
             "CON": 11,
-            "MOV": 5,
-            "RES": 2,
-            "Atk": 8
+            "MOV": 4,
+            "RES": 3,
+            "Atk": 14
         },
         "growths": {
-            "HP": 0,
+            "HP": 110,
             "STR": 0,
             "MAG": 0,
-            "SKL": 0,
-            "SPD": 0,
-            "LCK": 0,
-            "DEF": 0,
+            "SKL": 50,
+            "SPD": 40,
+            "LCK": 50,
+            "DEF": 50,
             "CON": 0,
             "MOV": 0,
             "RES": 0,
-            "Atk": 0
+            "Atk": 60
         },
         "starting_items": [
             [
-                "Steel Lance",
+                "Silver Lance",
                 false
             ]
         ],
@@ -2110,7 +2110,7 @@
             ],
             "Lance": [
                 false,
-                31
+                121
             ],
             "Axe": [
                 true,
@@ -2155,23 +2155,23 @@
         "name": "Breguet",
         "desc": "Commander of a Grado military force.",
         "variant": null,
-        "level": 4,
-        "klass": "Knight",
+        "level": 8,
+        "klass": "Cavalier",
         "tags": [
             "Boss"
         ],
         "bases": {
-            "HP": 21,
+            "HP": 31,
             "STR": 8,
             "MAG": 0,
-            "SKL": 2,
-            "SPD": 1,
-            "LCK": 2,
+            "SKL": 7,
+            "SPD": 9,
+            "LCK": 4,
             "DEF": 9,
             "CON": 13,
-            "MOV": 4,
-            "RES": 0,
-            "Atk": 8
+            "MOV": 7,
+            "RES": 2,
+            "Atk": 11
         },
         "growths": {
             "HP": 80,
@@ -2188,7 +2188,7 @@
         },
         "starting_items": [
             [
-                "Iron Lance",
+                "Steel Lance",
                 false
             ]
         ],
@@ -2238,7 +2238,7 @@
         },
         "alternate_classes": null,
         "portrait_nid": "Breguet",
-        "affinity": null,
+        "affinity": "None",
         "fields": []
     },
     {
@@ -3077,6 +3077,595 @@
         },
         "alternate_classes": null,
         "portrait_nid": "Lyon",
+        "affinity": null,
+        "fields": []
+    },
+    {
+        "nid": "Cerberus",
+        "name": "Cerberus",
+        "desc": "",
+        "variant": null,
+        "level": 10,
+        "klass": "Dreadfighter",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "Atk": 22,
+            "SKL": 23,
+            "SPD": 25,
+            "LCK": 20,
+            "DEF": 15,
+            "RES": 11,
+            "MOV": 7
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Silver Sword",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                181
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Riev",
+        "affinity": "None",
+        "fields": []
+    },
+    {
+        "nid": "Naberius",
+        "name": "Naberius",
+        "desc": "",
+        "variant": null,
+        "level": 10,
+        "klass": "Dreadfighter",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "Atk": 22,
+            "SKL": 23,
+            "SPD": 25,
+            "LCK": 20,
+            "DEF": 15,
+            "RES": 11,
+            "MOV": 7
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Brave Sword",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                181
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Riev",
+        "affinity": null,
+        "fields": []
+    },
+    {
+        "nid": "Hades",
+        "name": "Hades",
+        "desc": "",
+        "variant": null,
+        "level": 10,
+        "klass": "Gold_Knight",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "Atk": 25,
+            "SKL": 14,
+            "SPD": 19,
+            "LCK": 20,
+            "DEF": 20,
+            "RES": 7,
+            "MOV": 9
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Silver Lance",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                181
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Riev",
+        "affinity": null,
+        "fields": []
+    },
+    {
+        "nid": "Marla",
+        "name": "Marla",
+        "desc": "",
+        "variant": null,
+        "level": 15,
+        "klass": "Witch",
+        "tags": [
+            "Female"
+        ],
+        "bases": {
+            "HP": 37,
+            "Atk": 20,
+            "SKL": 17,
+            "SPD": 14,
+            "LCK": 15,
+            "DEF": 10,
+            "RES": 14,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                181
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Selena",
+        "affinity": "None",
+        "fields": []
+    },
+    {
+        "nid": "Hestia",
+        "name": "Hestia",
+        "desc": "",
+        "variant": null,
+        "level": 15,
+        "klass": "Witch",
+        "tags": [
+            "Female"
+        ],
+        "bases": {
+            "HP": 37,
+            "Atk": 20,
+            "SKL": 17,
+            "SPD": 14,
+            "LCK": 15,
+            "DEF": 10,
+            "RES": 14,
+            "MOV": 5
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                181
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Selena",
+        "affinity": null,
+        "fields": []
+    },
+    {
+        "nid": "Aurum",
+        "name": "Aurum",
+        "desc": "",
+        "variant": null,
+        "level": 10,
+        "klass": "Bow_Knight",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "Atk": 23,
+            "SKL": 15,
+            "SPD": 12,
+            "LCK": 20,
+            "DEF": 14,
+            "RES": 6,
+            "MOV": 8
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Silver Bow",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                181
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Riev",
+        "affinity": null,
+        "fields": []
+    },
+    {
+        "nid": "Argentum",
+        "name": "Argentum",
+        "desc": "",
+        "variant": null,
+        "level": 10,
+        "klass": "Bow_Knight",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "Atk": 23,
+            "SKL": 15,
+            "SPD": 12,
+            "LCK": 20,
+            "DEF": 14,
+            "RES": 6,
+            "MOV": 8
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Killer Bow",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                181
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Riev",
+        "affinity": null,
+        "fields": []
+    },
+    {
+        "nid": "Gharn",
+        "name": "Gharn",
+        "desc": "",
+        "variant": null,
+        "level": 15,
+        "klass": "Cantor",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "Atk": 19,
+            "SKL": 15,
+            "SPD": 15,
+            "LCK": 20,
+            "DEF": 16,
+            "RES": 8,
+            "MOV": 0
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                181
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                181
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": null,
+        "portrait_nid": "Riev",
         "affinity": null,
         "fields": []
     }

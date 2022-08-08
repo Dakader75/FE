@@ -125,5 +125,10 @@
             "31,15": 12,
             "31,16": 13
         }
+    },
+    {
+        "nid": "Village1",
+        "terrain_grid": {},
+        "autotiles": {}
     }
 ]
