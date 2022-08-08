@@ -2711,5 +2711,69 @@
                 0.5
             ]
         ]
+    },
+    {
+        "nid": "Sure_Strike",
+        "name": "Sure Strike",
+        "desc": "Unit gains +40 Hit and deals 1.5x damage. Charge 1.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            5,
+            9
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "automatic_combat_art",
+                "Sure_strike_proc"
+            ],
+            [
+                "build_charge",
+                1
+            ],
+            [
+                "combat_charge_increase",
+                1
+            ]
+        ]
+    },
+    {
+        "nid": "Sure_strike_proc",
+        "name": "Sure Strike",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            5,
+            9
+        ],
+        "components": [
+            [
+                "hit",
+                40
+            ],
+            [
+                "damage_multiplier",
+                1.5
+            ],
+            [
+                "unit_flickering_tint",
+                [
+                    170,
+                    0,
+                    0
+                ]
+            ],
+            [
+                "lost_on_endstep",
+                null
+            ],
+            [
+                "lost_on_end_combat",
+                null
+            ]
+        ]
     }
 ]
