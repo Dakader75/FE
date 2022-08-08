@@ -2775,5 +2775,77 @@
                 null
             ]
         ]
-    }
+    },
+    {
+    "nid": "Full Heal",
+    "name": "Full Heal",
+    "desc": "Heals literally everyone",
+    "icon_nid": "Full+Heal",
+    "icon_index": [
+        0,
+        0
+    ],
+    "components": [
+        [
+            "class_skill",
+            null
+        ],
+        [
+            "combat_art",
+            "Full Heal_proc"
+        ],
+        [
+            "drain_charge",
+            1
+        ]
+    ]
+},
+{
+    "nid": "Full Heal_proc",
+    "name": "Full Heal_proc",
+    "desc": "",
+    "icon_nid": "Full+Heal",
+    "icon_index": [
+        0,
+        0
+    ],
+    "components": [
+        [
+            "hidden",
+            null
+        ],
+        [
+            "lost_on_endstep",
+            null
+        ],
+        [
+            "lost_on_end_combat",
+            null
+        ],
+        [
+            "dynamic_multiattacks",
+            "50"
+        ],
+        [
+            "damage_multiplier",
+            0.5
+        ],
+        [
+            "cannot_double",
+            null
+        ],
+        [
+            "crit",
+            -1000
+        ],
+        [
+            "unit_flickering_tint",
+            [
+                95,
+                226,
+                211
+            ]
+        ]
+    ]
+}
 ]

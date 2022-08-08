@@ -388,12 +388,12 @@
         "fields": []
     },
     {
-        "nid": "Vanessa",
-        "name": "Vanessa",
-        "desc": "A sincere, honest, and honourable pegasus knight of Frelia.",
+        "nid": "Ben",
+        "name": "Ben",
+        "desc": "BRO BEN IS SO COOL, HIS BEST FRIEND IS NAMED DENNY",
         "variant": "",
         "level": 1,
-        "klass": "Pegasus_Knight",
+        "klass": "Hero",
         "tags": [],
         "bases": {
             "HP": 17,
@@ -433,7 +433,12 @@
                 false
             ]
         ],
-        "learned_skills": [],
+        "learned_skills": [
+            [
+                1,
+                "Canto"
+            ]
+        ],
         "unit_notes": [],
         "wexp_gain": {
             "Sword": [
@@ -442,7 +447,7 @@
             ],
             "Lance": [
                 true,
-                31
+                0
             ],
             "Axe": [
                 false,
@@ -450,11 +455,11 @@
             ],
             "Bow": [
                 false,
-                0
+                1
             ],
             "Staff": [
                 false,
-                0
+                1
             ],
             "Light": [
                 false,
@@ -1447,7 +1452,7 @@
         "nid": "Kyle",
         "name": "Kyle",
         "desc": "A steadfast and honourable cavalier in sworn service to Renais.",
-        "variant": null,
+        "variant": "",
         "level": 5,
         "klass": "Cavalier",
         "tags": [],
@@ -2966,7 +2971,7 @@
         "nid": "Bone",
         "name": "Bone",
         "desc": "One of Bazba's henchmen.",
-        "variant": null,
+        "variant": "",
         "level": 4,
         "klass": "Brigand",
         "tags": [
@@ -3744,7 +3749,7 @@
         },
         "alternate_classes": null,
         "portrait_nid": "Lyon",
-        "affinity": null,
+        "affinity": "None",
         "fields": []
     }
 ]
