@@ -393,7 +393,7 @@
         "desc": "BRO BEN IS SO COOL, HIS BEST FRIEND IS NAMED DENNY",
         "variant": "",
         "level": 1,
-        "klass": "Hero",
+        "klass": "Cleric",
         "tags": [],
         "bases": {
             "HP": 17,
@@ -421,11 +421,11 @@
         },
         "starting_items": [
             [
-                "Slim Lance",
+                "Heal",
                 false
             ],
             [
-                "Javelin",
+                "Iron Bow",
                 false
             ],
             [
@@ -437,6 +437,10 @@
             [
                 1,
                 "Canto"
+            ],
+            [
+                1,
+                "Full Heal"
             ]
         ],
         "unit_notes": [],

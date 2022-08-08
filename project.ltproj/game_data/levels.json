@@ -635,6 +635,18 @@
                 "name": null,
                 "desc": null,
                 "generic": true
+            },
+            {
+                "nid": "Ben",
+                "team": "player",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    8,
+                    8
+                ],
+                "starting_traveler": null,
+                "generic": false
             }
         ],
         "regions": [],
