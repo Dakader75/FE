@@ -678,7 +678,7 @@
             "loss": "Eirika dies"
         },
         "roam": false,
-        "roam_unit": null,
+        "roam_unit": "Duck",
         "go_to_overworld": true,
         "units": [
             {
