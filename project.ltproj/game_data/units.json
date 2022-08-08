@@ -393,12 +393,12 @@
         "desc": "BRO BEN IS SO COOL, HIS BEST FRIEND IS NAMED DENNY",
         "variant": "",
         "level": 1,
-        "klass": "Cleric",
+        "klass": "Support_Main",
         "tags": [],
         "bases": {
             "HP": 17,
             "STR": 5,
-            "MAG": 2,
+            "MAG": 10,
             "SKL": 7,
             "SPD": 11,
             "LCK": 4,
@@ -409,15 +409,15 @@
         },
         "growths": {
             "HP": 50,
-            "STR": 35,
-            "MAG": 20,
+            "STR": 60,
+            "MAG": 75,
             "SKL": 55,
             "SPD": 60,
             "LCK": 50,
-            "DEF": 20,
-            "RES": 30,
+            "DEF": 40,
+            "RES": 40,
             "CON": 0,
-            "MOV": 0
+            "MOV": 10
         },
         "starting_items": [
             [
