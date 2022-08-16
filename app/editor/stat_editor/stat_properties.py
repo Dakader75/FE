@@ -23,7 +23,7 @@ class StatTypeProperties(QWidget):
         name_section.addWidget(self.nid_box)
 
         self.name_box = PropertyBox("Display Name", QLineEdit, self)
-        self.name_box.edit.setMaxLength(13)
+
         self.name_box.edit.textChanged.connect(self.name_changed)
         name_section.addWidget(self.name_box)
 
@@ -45,6 +45,30 @@ class StatTypeProperties(QWidget):
 
         self.setLayout(name_section)
         name_section.setAlignment(Qt.AlignTop)
+
+        self.clean_all_stats()
+
+    def clean_all_stats(self):
+        # makes sure all units have all stats set and nothing else
+        all_stats = set([stat.nid for stat in DB.stats])
+        for unit in DB.units:
+            for row in unit.get_stat_lists():
+                unit_stats = set(row.keys())
+                missing_stats = all_stats.difference(unit_stats)
+                extraneous_stats = unit_stats.difference(all_stats)
+                for stat in missing_stats:
+                    row[stat] = 0
+                for stat in extraneous_stats:
+                    row.pop(stat)
+        for klass in DB.classes:
+            for row in klass.get_stat_lists():
+                klass_stats = set(row.keys())
+                missing_stats = all_stats.difference(klass_stats)
+                extraneous_stats = klass_stats.difference(all_stats)
+                for stat in missing_stats:
+                    row[stat] = 0
+                for stat in extraneous_stats:
+                    row.pop(stat)
 
     def nid_changed(self, text):
         if self.current.name == self.current.nid:
@@ -71,6 +95,7 @@ class StatTypeProperties(QWidget):
         self.on_nid_changed(self._data.find_key(self.current), self.current.nid)
         self._data.update_nid(self.current, self.current.nid)
         self.window.update_list()
+        self.clean_all_stats()
 
     def name_changed(self, text):
         self.current.name = text

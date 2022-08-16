@@ -4,7 +4,7 @@ from app.resources.base_catalog import ManifestCatalog
 from app.resources import combat_commands
 from app.utilities.data import Data
 
-required_poses = ('Stand', 'Hit', 'Miss', 'Dodge')
+required_poses = ('Stand', 'Attack', 'Miss', 'Dodge')
 other_poses = ('RangedStand', 'RangedDodge', 'Critical')
 
 class Pose():

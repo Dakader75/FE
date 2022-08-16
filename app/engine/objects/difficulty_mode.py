@@ -10,6 +10,8 @@ class DifficultyModeObject(Prefab):
         self.growths: GrowthOption = growths
         self.enemy_autolevels: int = 0
         self.enemy_truelevels: int = 0
+        self.boss_autolevels: int = 0
+        self.boss_truelevels: int = 0
 
     def save(self):
         return {'nid': self.nid,
@@ -17,6 +19,8 @@ class DifficultyModeObject(Prefab):
                 'growths': self.growths,
                 'enemy_autolevels': self.enemy_autolevels,
                 'enemy_truelevels': self.enemy_truelevels,
+                'boss_autolevels': self.boss_autolevels,
+                'boss_truelevels': self.boss_truelevels,
                 }
 
     @classmethod
@@ -24,6 +28,8 @@ class DifficultyModeObject(Prefab):
         difficulty_mode = cls(s_dict['nid'], s_dict['permadeath'], s_dict['growths'])
         difficulty_mode.enemy_autolevels = s_dict.get('enemy_autolevels', 0)
         difficulty_mode.enemy_truelevels = s_dict.get('enemy_truelevels', 0)
+        difficulty_mode.boss_autolevels = s_dict.get('boss_autolevels', 0)
+        difficulty_mode.boss_truelevels = s_dict.get('boss_truelevels', 0)
         return difficulty_mode
 
     @classmethod

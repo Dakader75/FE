@@ -1,0 +1,96 @@
+[
+    {
+        "nid": "Jedah",
+        "name": "Jedah",
+        "desc": "A courageous general in Grado\u2019s army. He\u2019s better known as Obsidian.",
+        "variant": "",
+        "level": 15,
+        "klass": "Cantor",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "STR": 17,
+            "MAG": 2,
+            "SKL": 19,
+            "SPD": 19,
+            "LCK": 30,
+            "DEF": 18,
+            "RES": 12,
+            "CON": 15,
+            "MOV": 5,
+            "Atk": 26
+        },
+        "growths": {
+            "HP": 0,
+            "STR": 55,
+            "MAG": 5,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0,
+            "Atk": 0
+        },
+        "starting_items": [
+            [
+                "Death",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Duma's Scourge"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                181
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Riev",
+        "affinity": "Anima",
+        "fields": []
+    }
+]

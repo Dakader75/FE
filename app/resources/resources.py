@@ -1,3 +1,4 @@
+import shutil
 import os
 
 from app import sprites
@@ -20,6 +21,7 @@ class Resources():
     save_data_types = ("icons16", "icons32", "icons80", "portraits", "animations", "panoramas",
                        "map_icons", "map_sprites", "combat_palettes", "combat_anims", "combat_effects", "music", "sfx",
                        "tilesets", "tilemaps")
+    loose_file_types = ["custom_components", "custom_sprites"]
 
     def __init__(self):
         self.main_folder = None
@@ -84,6 +86,7 @@ class Resources():
         else:
             save_data_types = self.save_data_types
         for data_type in save_data_types:
+            print("Loading %s from %s..." % (data_type, self.main_folder))
             logging.info("Loading %s from %s..." % (data_type, self.main_folder))
             getattr(self, data_type).clear()  # Now always clears first
             getattr(self, data_type).load(os.path.join(self.main_folder, data_type))
@@ -99,6 +102,7 @@ class Resources():
         if not os.path.exists(resource_dir):
             os.mkdir(resource_dir)
 
+        should_save_loose_files = False
         if specific == 'autosave':
             save_data_types = list(self.save_data_types)
             save_data_types.remove('music')
@@ -108,6 +112,7 @@ class Resources():
             save_data_types = specific
         else:
             save_data_types = self.save_data_types
+            should_save_loose_files = True
         for idx, data_type in enumerate(save_data_types):
             data_dir = os.path.join(resource_dir, data_type)
             if not os.path.exists(data_dir):
@@ -119,6 +124,18 @@ class Resources():
             logging.warning("Time Taken: %s ms" % time2)
             if progress:
                 progress.setValue(int(idx / len(save_data_types) * 75))
+        if should_save_loose_files and self.main_folder:
+            for loose_file_type in self.loose_file_types:
+                logging.warning("Saving %s..." % loose_file_type)
+                time1 = time.time_ns()/1e6
+                target_dir = os.path.join(resource_dir, loose_file_type)
+                if not os.path.exists(target_dir) and os.path.exists(os.path.join(self.main_folder, loose_file_type)):
+                    shutil.copytree(os.path.join(self.main_folder, loose_file_type), target_dir)
+                time2 = time.time_ns()/1e6 - time1
+                logging.warning("Time Taken: %s ms" % time2)
+                if progress:
+                    progress.setValue(80)
+
 
         end = time.time_ns()/1e6
         logging.warning("Total Time Taken for Resources: %s ms" % (end - start))
@@ -152,6 +169,12 @@ class Resources():
         logging.warning("Total Time Taken for cleaning resource directory: %s ms" % (end - start))
         logging.warning("Done Resource Cleaning!")
         return True
+
+    def get_custom_components_path(self):
+        if self.main_folder:
+            return os.path.join(self.main_folder, 'custom_components')
+        return None
+
 
 RESOURCES = Resources()
 

@@ -50,6 +50,15 @@ class FrameSelector(Dialog):
             self.current = self.frames[0]
         else:
             self.current = None
+        # animations aren't loaded yet
+        if not self.current or not self.current.pixmap:
+            try:
+                from app.editor.combat_animation_editor.combat_animation_display import populate_anim_pixmaps
+                populate_anim_pixmaps(combat_anim)
+            except:
+                from app.editor.combat_animation_editor.combat_effect_display import populate_effect_pixmaps
+                populate_effect_pixmaps(combat_anim)
+
 
         self.display = IconView(self)
         self.display.static_size = True
@@ -135,8 +144,9 @@ class FrameSelector(Dialog):
     def delete_frame(self):
         idx = self.frames.index(self.current.nid)
         new_idx = self.model.delete(idx)
-        new_frame = self.frames[new_idx.row()]
-        self.set_current(new_frame)
+        if new_idx:
+            new_frame = self.frames[new_idx.row()]
+            self.set_current(new_frame)
 
     def draw(self):
         base_image = QImage(WINWIDTH, WINHEIGHT, QImage.Format_ARGB32)

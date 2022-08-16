@@ -9,7 +9,9 @@ from app.engine import driver
 from app.engine import game_state
 from app.engine.component_system_compiler import source_generator
 
-def main(name: str):
+def main(name: str = 'testing_proj'):
+    if not os.path.exists(name + '.ltproj'):
+        raise ValueError("Could not locate LT project %s" % (name + '.ltproj'))
     RESOURCES.load(name + '.ltproj')
     DB.load(name + '.ltproj')
     title = DB.constants.value('title')
@@ -17,12 +19,18 @@ def main(name: str):
     game = game_state.start_game()
     driver.run(game)
 
-def test_play(name: str):
+def test_play(name: str = 'testing_proj'):
+    if not os.path.exists(name + '.ltproj'):
+        raise ValueError("Could not locate LT project %s" % (name + '.ltproj'))
     RESOURCES.load(name + '.ltproj')
     DB.load(name + '.ltproj')
     title = DB.constants.value('title')
     driver.start(title, from_editor=True)
-    game = game_state.start_level('DEBUG')
+    if 'DEBUG' in DB.levels:
+        game = game_state.start_level('DEBUG')
+    else:
+        first_level_nid = DB.levels[0].nid
+        game = game_state.start_level(first_level_nid)
     driver.run(game)
 
 def inform_error():

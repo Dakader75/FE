@@ -1,14 +1,20 @@
 import os
 import xml.etree.ElementTree as ET
+from app.editor.lib.csv.csv_exporter import update_db_with_unit_csv
 
 from app.utilities import str_utils
 from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.database import DB, Database
 from app.data import units
 
 from app.data import stats, weapons
 
 import logging
+
+def update_db_from_csv(db: Database, csv_fn: str):
+    with open(csv_fn) as f:
+        csv_text = f.read()
+        update_db_with_unit_csv(db, csv_text)
 
 def get_from_xml(parent_dir: str, xml_fn: str) -> list:
     unit_xml = ET.parse(xml_fn)
@@ -75,7 +81,7 @@ def get_from_xml(parent_dir: str, xml_fn: str) -> list:
         portrait = nid if nid in RESOURCES.portraits.keys() else None
         # no notes from legacy
         new_unit = units.UnitPrefab(
-            nid, name, desc, None, level, klass, tags, 
+            nid, name, desc, None, level, klass, tags,
             bases, growths, items, personal_skills, [],
             wexp_gain, None, portrait, None, [])
         unit_list.append(new_unit)

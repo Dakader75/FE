@@ -1,18 +1,21 @@
 import heapq
+from typing import Tuple
 
 from app.utilities import utils
 
 class Djikstra():
-    __slots__ = ['open', 'closed', 'cells', 'width', 'height', 'start_pos',
-                 'start_cell', 'unit_team', 'pass_through', 'ai_fog_of_war']
+    __slots__ = ['open', 'closed', 'cells', 'bounds', 'height', 'start_pos',
+                 'start_cell', 'unit_team', 'pass_through', 'ai_fog_of_war', 'diagonal']
 
-    def __init__(self, start_pos: tuple, grid: list, width: int, height: int,
-                 unit_team: str, pass_through: bool, ai_fog_of_war: bool):
+    def __init__(self, start_pos: tuple, grid: list, bounds: Tuple[int, int, int, int],
+                 height: int, unit_team: str, pass_through: bool, ai_fog_of_war: bool, diagonal: bool = False):
         self.open = []
         heapq.heapify(self.open)
         self.closed = set()
         self.cells = grid # Must keep order
-        self.width, self.height = width, height
+        self.bounds: Tuple[int, int, int, int] = bounds
+        self.diagonal = diagonal
+        self.height = height
         self.reset_grid()
         self.start_pos = start_pos
         self.start_cell = self.get_cell(start_pos[0], start_pos[1])
@@ -27,19 +30,32 @@ class Djikstra():
     def get_cell(self, x, y):
         return self.cells[x * self.height + y]
 
-    def get_adjacent_cells(self, cell):
-        """
-        Returns adjacent cells to a cell.
-        """
+    def get_adjacent_cells(self, cell) -> list:
+        if self.diagonal:
+            return self.get_surrounding_cells(cell)
+        return self.get_manhattan_adjacent(cell)
+
+    def get_manhattan_adjacent(self, cell):
         cells = []
-        if cell.y < self.height - 1:
+        if cell.y < self.bounds[3]:
             cells.append(self.get_cell(cell.x, cell.y + 1))
-        if cell.x < self.width - 1:
+        if cell.x < self.bounds[2]:
             cells.append(self.get_cell(cell.x + 1, cell.y))
-        if cell.x > 0:
+        if cell.x > self.bounds[0]:
             cells.append(self.get_cell(cell.x - 1, cell.y))
-        if cell.y > 0:
+        if cell.y > self.bounds[1]:
             cells.append(self.get_cell(cell.x, cell.y - 1))
+        return cells
+
+    def get_surrounding_cells(self, cell):
+        x = cell.x
+        y = cell.y
+        cells = []
+        for i in range(-1, 2):
+          for j in range(-1, 2):
+            nx, ny = (x + i, y + j)
+            if self.bounds[0] <= nx <= self.bounds[1] and self.bounds[2] <= ny <= self.bounds[3] and not (nx, ny) == (x, y):
+                cells.append((nx, ny))
         return cells
 
     def update_cell(self, adj, cell):
@@ -91,13 +107,14 @@ class Djikstra():
 
 class AStar():
     def __init__(self, start_pos: tuple, goal_pos: tuple, grid: list,
-                 width: int, height: int, unit_team: str,
-                 pass_through: bool = False, ai_fog_of_war: bool = False):
+                 bounds: Tuple[int, int, int, int], height: int, unit_team: str,
+                 pass_through: bool = False, ai_fog_of_war: bool = False, diagonal: bool = False):
         self.cells = grid
-        self.width = width
+        self.bounds = bounds
         self.height = height
         self.start_pos = start_pos
         self.goal_pos = goal_pos
+        self.diagonal = diagonal
 
         self.start_cell = self.get_cell(start_pos[0], start_pos[1])
         self.end_cell = self.get_cell(goal_pos[0], goal_pos[1]) if goal_pos else None
@@ -154,16 +171,60 @@ class AStar():
         return self.cells[x * self.height + y]
 
     def get_adjacent_cells(self, cell) -> list:
+        if self.diagonal:
+            return self.get_surrounding_cells(cell)
+        return self.get_manhattan_adjacent(cell)
+
+    def get_manhattan_adjacent(self, cell):
         cells = []
-        if cell.y < self.height - 1:
+        if cell.y < self.bounds[3]:
             cells.append(self.get_cell(cell.x, cell.y + 1))
-        if cell.x < self.width - 1:
+        if cell.x < self.bounds[2]:
             cells.append(self.get_cell(cell.x + 1, cell.y))
-        if cell.x > 0:
+        if cell.x > self.bounds[0]:
             cells.append(self.get_cell(cell.x - 1, cell.y))
-        if cell.y > 0:
+        if cell.y > self.bounds[1]:
             cells.append(self.get_cell(cell.x, cell.y - 1))
         return cells
+
+    def get_surrounding_cells(self, cell):
+        cells = []
+        top_left = cell.x - 1, cell.y - 1
+        top_right = cell.x + 1, cell.y - 1
+        bottom_left = cell.x - 1, cell.y + 1
+        bottom_right = cell.x + 1, cell.y + 1
+        right = cell.x + 1, cell.y
+        left = cell.x - 1, cell.y
+        top = cell.x, cell.y - 1
+        bottom = cell.x, cell.y + 1
+
+        if cell.x > self.bounds[0]:
+            cells.append(self.get_cell(left[0], left[1]))
+
+            if cell.y > self.bounds[1]:
+                cells.append(self.get_cell(top[0], top[1]))
+                self.get_single_diagonal(top, left, top_left, cells)
+
+            if cell.y < self.bounds[3]:
+                cells.append(self.get_cell(bottom[0], bottom[1]))
+                self.get_single_diagonal(bottom, left, bottom_left, cells)
+
+        if cell.x < self.bounds[2]:
+            cells.append(self.get_cell(right[0], right[1]))
+
+            if cell.y > self.bounds[1]:
+                cells.append(self.get_cell(top[0], top[1]))
+                self.get_single_diagonal(top, right, top_right, cells)
+
+            if cell.y < self.bounds[3]:
+                cells.append(self.get_cell(bottom[0], bottom[1]))
+                self.get_single_diagonal(bottom, right, bottom_right, cells)
+
+        return cells
+
+    def get_single_diagonal(self, vadj: tuple, hadj: tuple, diagonal: tuple, cells):
+        if self.get_cell(vadj[0], vadj[1]).reachable and self.get_cell(hadj[0], hadj[1]).reachable:
+            cells.append(self.get_cell(diagonal[0], diagonal[1]))
 
     def update_cell(self, adj, cell):
         # h is approximate distance between this cell and the goal

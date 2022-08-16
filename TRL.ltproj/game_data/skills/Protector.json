@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Protector",
+        "name": "Protector",
+        "desc": "Grants Pavise to all adjacent units if the don't already have it.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            10,
+            3
+        ],
+        "components": [
+            [
+                "aura",
+                "Pavise"
+            ],
+            [
+                "aura_range",
+                1
+            ],
+            [
+                "aura_target",
+                "ally"
+            ]
+        ]
+    }
+]

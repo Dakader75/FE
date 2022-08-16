@@ -1,65 +1,99 @@
-from app.constants import WINWIDTH, WINHEIGHT
-from app.engine.sound import SOUNDTHREAD
-from app.engine.fonts import FONT
-from app.engine.state import MapState
+import logging
 
-from app.engine import menus, action, base_surf
+from app.data.database import DB
+from app.engine import action
+from app.engine.game_menus.menu_components.generic_menu.choice_table_wrapper import ChoiceMenuUI
 from app.engine.game_state import game
+from app.engine.sound import get_sound_thread
+from app.engine.state import MapState
+from app.utilities.enums import Orientation
 
 class PlayerChoiceState(MapState):
     name = 'player_choice'
     transparent = True
 
     def start(self):
-        self.nid, self.header, options_list, self.orientation = \
+        self.nid, self.header, options_list, self.row_width, self.orientation, \
+            self.data_type, self.should_persist, self.alignment, self.bg, self.event_on_choose, \
+            self.size, self.no_cursor, self.arrows, self.scroll_bar, self.text_align, self.backable, self.event_context = \
             game.memory['player_choice']
-        self.menu = menus.Choice(None, options_list, 'center', None)
-        self.bg_surf, self.topleft = self.create_bg_surf()
-        self.menu.topleft = (self.topleft[0], self.topleft[1] + FONT['text-white'].height)
-        if self.orientation == 'horizontal':
-            self.menu.set_horizontal(True)
-            width = sum(option.width() + 8 for option in self.menu.options)
-            self.menu.topleft = (self.topleft[0] + self.bg_surf.get_width()//2 - width//2 - 4,
-                                 self.topleft[1] + FONT['text-white'].height)
+        self.tsize = [0, 0]
+        if self.size:
+            rows, ncols = self.size
+        else:
+            if callable(options_list):
+                data = options_list()
+            else:
+                data = options_list
+            if self.orientation == 'horizontal':
+                ncols = len(data)
+                self.size = (1, ncols)
+                rows, ncols = self.size
+            else:
+                nrows = len(data)
+                self.size = (nrows, 1)
+                rows, ncols = self.size
+        self.menu = ChoiceMenuUI(options_list, data_type=self.data_type, rows=rows, row_width=self.row_width,
+                                 title=self.header, cols=ncols, alignment=self.alignment, bg=self.bg,
+                                 orientation=Orientation(self.orientation), text_align=self.text_align)
+        self.menu.set_scrollbar(self.scroll_bar)
+        self.menu.set_arrows(self.arrows)
 
-    def create_bg_surf(self):
-        width_of_header = FONT['text-white'].width(self.header) + 16
-        menu_width = self.menu.get_menu_width()
-        width = max(width_of_header, menu_width)
-        menu_height = self.menu.get_menu_height() if self.orientation == 'vertical' else FONT['text-white'].height + 8
-        height = menu_height + FONT['text-white'].height
-        bg_surf = base_surf.create_base_surf(width, height, 'menu_bg_base')
-        topleft = (WINWIDTH//2 - width//2, WINHEIGHT//2 - height//2)
-        return bg_surf, topleft
+        self.made_choice = False
+
+    def choose(self, selection):
+        action.do(action.SetGameVar(self.nid, selection))
+        action.do(action.SetGameVar('_last_choice', selection))
+        self.made_choice = True
+
+    def unchoose(self):
+        self.made_choice = False
 
     def take_input(self, event):
-        self.menu.handle_mouse()
-        if (event == 'RIGHT' and self.orientation == 'horizontal') or \
-                (event == 'DOWN' and self.orientation == 'vertical'):
-            SOUNDTHREAD.play_sfx('Select 6')
+        if (event == 'RIGHT' and (self.orientation == 'horizontal' or self.size[0] > 1)):
+            get_sound_thread().play_sfx('Select 6')
+            self.menu.move_right()
+        elif (event == 'DOWN' and (self.orientation == 'vertical' or self.size[1] > 1)):
+            get_sound_thread().play_sfx('Select 6')
             self.menu.move_down()
-        elif (event == 'LEFT' and self.orientation == 'horizontal') or \
-                (event == 'UP' and self.orientation == 'vertical'):
-            SOUNDTHREAD.play_sfx('Select 6')
+        elif (event == 'LEFT' and (self.orientation == 'horizontal' or self.size[0] > 1)):
+            get_sound_thread().play_sfx('Select 6')
+            self.menu.move_left()
+        elif(event == 'UP' and (self.orientation == 'vertical' or self.size[1] > 1)):
+            get_sound_thread().play_sfx('Select 6')
             self.menu.move_up()
-
         elif event == 'BACK':
-            SOUNDTHREAD.play_sfx('Error')
-
+            if self.should_persist or self.backable:
+                if self.backable:
+                    action.do(action.SetGameVar(self.nid, "BACK"))
+                # this is the only way to exit a persistent state
+                game.state.back()
+            else:
+                get_sound_thread().play_sfx('Error')
         elif event == 'SELECT':
-            SOUNDTHREAD.play_sfx('Select 1')
-            selection = self.menu.get_current()
-            action.do(action.SetGameVar(self.nid, selection))
-            action.do(action.SetGameVar('_last_choice', selection))
-            game.state.back()
+            get_sound_thread().play_sfx('Select 1')
+            selection = self.menu.get_selected()
+            self.choose(selection)
+            if self.event_on_choose:
+                valid_events = DB.events.get_by_nid_or_name(self.event_on_choose, game.level.nid)
+                for event_prefab in valid_events:
+                    game.events.trigger_specific_event(event_prefab.nid, **self.event_context)
+                    game.memory[self.nid + '_unchoice'] = self.unchoose
+                if not valid_events:
+                    logging.error("Couldn't find any valid events matching name %s" % self.event_on_choose)
+            return 'repeat'
+        selection = self.menu.get_selected()
+        game.game_vars[self.nid + '_choice_hover'] = selection
 
     def update(self):
-        self.menu.update()
+        if self.made_choice and not self.should_persist:
+            game.state.back()
+            return 'repeat'
 
     def draw(self, surf):
-        surf.blit(self.bg_surf, self.topleft)
-        FONT['text-white'].blit(self.header, surf, (self.topleft[0] + 4, self.topleft[1] + 4))
-
-        # Place Menu on background
-        self.menu.draw(surf)
+        self.menu.update()
+        focus = 0
+        if not self.no_cursor:
+            focus = 1 if game.state.current_state() == self else 2
+        self.menu.draw(surf, focus)
         return surf

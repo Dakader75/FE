@@ -1,0 +1,42 @@
+[
+    {
+        "name": "Door2",
+        "trigger": "Door",
+        "level_nid": "2",
+        "condition": "region.nid == 'Door2'",
+        "commands": [
+            [
+                "unlock",
+                [
+                    "{unit}"
+                ]
+            ],
+            [
+                "show_layer",
+                [
+                    "door2"
+                ]
+            ],
+            [
+                "hide_layer",
+                [
+                    "doorClosed"
+                ]
+            ],
+            [
+                "add_group",
+                [
+                    "Boss Room"
+                ]
+            ],
+            [
+                "has_traded",
+                [
+                    "{unit}"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

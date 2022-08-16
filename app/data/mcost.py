@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 class McostGrid():
     default_value = 1
 
@@ -22,6 +24,7 @@ class McostGrid():
         x, y = coord
         return self.grid[y][x]
 
+    @lru_cache(256)
     def get_mcost(self, unit_type, terrain_type):
         cidx = self.unit_types.index(unit_type)
         ridx = self.terrain_types.index(terrain_type)

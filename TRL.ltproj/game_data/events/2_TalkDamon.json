@@ -1,0 +1,73 @@
+[
+    {
+        "name": "TalkDamon",
+        "trigger": "on_talk",
+        "level_nid": "2",
+        "condition": "unit2.nid == \"Damon\" and unit.nid == \"Berkut\"",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Glen",
+                    "Left"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Seth",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "Where is Bone? We know he is hiding here!"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Glen",
+                    "You are Berkut, Prince of Rigel, yes?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "I am. Now comply or face action from the emperor himself!"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Glen",
+                    "My lord Jerowm would like to have a word with you.|He will tell you where Bone is."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "Will he now?|Very well, I will see what he has to say."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Glen"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Seth"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

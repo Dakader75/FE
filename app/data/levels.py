@@ -1,18 +1,23 @@
+from __future__ import annotations
 from collections import OrderedDict
+from typing import Union
 
 from app.data.level_units import GenericUnit, UniqueUnit, UnitGroup
 from app.events.regions import Region
 from app.utilities.data import Data, Prefab
+
+music_keys = ['player_phase', 'enemy_phase', 'other_phase', 'enemy2_phase',
+              'player_battle', 'enemy_battle', 'other_battle', 'enemy2_battle']
 
 class LevelPrefab(Prefab):
     def __init__(self, nid, name):
         self.nid = nid
         self.name = name
         self.tilemap = None  # Tilemap Nid
+        self.bg_tilemap = None # bg tilemap nid
         self.party = None  # Party Prefab Nid
         self.music = OrderedDict()
-        music_keys = ['player_phase', 'enemy_phase', 'other_phase', 'enemy2_phase',
-                      'player_battle', 'enemy_battle', 'other_battle', 'enemy2_battle']
+        
         for key in music_keys:
             self.music[key] = None
         self.objective = {'simple': '',
@@ -23,7 +28,7 @@ class LevelPrefab(Prefab):
 
         self.go_to_overworld: bool = False
 
-        self.units = Data()
+        self.units = Data[Union[UniqueUnit, GenericUnit]]()
         self.regions = Data()
         self.unit_groups = Data()
 
@@ -34,6 +39,8 @@ class LevelPrefab(Prefab):
             value = [unit_group.save() for unit_group in value]
         elif name == 'regions':
             value = [region.save() for region in value]
+        elif name == 'objective':
+            value = value.copy()  # Must make a copy so we don't keep a reference to the same one
         else:
             value = super().save_attr(name, value)
         return value
@@ -46,6 +53,8 @@ class LevelPrefab(Prefab):
             value = Data([UnitGroup.restore(val) for val in value])
         elif name == 'regions':
             value = Data([Region.restore(val) for val in value])
+        elif name == 'music':
+            value = {k: value.get(k) for k in self.music.keys()}
         else:
             value = super().restore_attr(name, value)
         return value

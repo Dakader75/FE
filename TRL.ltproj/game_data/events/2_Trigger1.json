@@ -1,0 +1,38 @@
+[
+    {
+        "name": "Trigger1",
+        "trigger": "turn_change",
+        "level_nid": "2",
+        "condition": "any(game.level.regions.get('Trigger1').contains(unit.position) for unit in game.get_units_in_party())",
+        "commands": [
+            [
+                "add_group",
+                [
+                    "Rein1",
+                    "Rein1"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "132"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "level_var",
+                [
+                    "ReinActiveTurn1",
+                    "game.turncount"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

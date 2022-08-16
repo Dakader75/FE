@@ -1,10 +1,11 @@
 import re
+from app.engine.graphics.text.text_renderer import render_text, rendered_text_width
 
 from app.utilities import utils
 from app.constants import WINWIDTH, WINHEIGHT
 from app.engine.fonts import FONT
 from app.engine.sprites import SPRITES
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.base_surf import create_base_surf
 from app.engine import text_funcs, engine, image_mods
 from app.engine import config as cf
@@ -12,34 +13,32 @@ from app.engine import config as cf
 from app.engine.game_state import game
 
 class Dialog():
-    num_lines = 2
-    solo_flag = True
+    solo_flag = False
     cursor = SPRITES.get('waiting_cursor')
     cursor_offset = [0]*20 + [1]*2 + [2]*8 + [1]*2
-    draw_cursor_flag = True
     transition_speed = 166  # 10 frames
     pause_time = 150  # 9 frames
+    attempt_split: bool = True # Whether we attempt to split big chunks across multiple lines
 
     aesthetic_commands = ('{red}', '{/red}', '{black}', '{/black}', '{white}', '{/white}', '{green}', '{/green}')
 
-    def __init__(self, text, portrait=None, background=None, position=None, width=None, speaker=None, variant=None):
+    def __init__(self, text, portrait=None, background=None, position=None, width=None,
+                 speaker=None, style_nid=None, autosize=False, speed=1, font_color='black',
+                 font_type='convo', num_lines=2, draw_cursor=True, message_tail='message_bg_tail'):
         self.plain_text = text
         self.portrait = portrait
         self.speaker = speaker
-        self.variant = variant
-        self.font_type = 'convo'
-        if self.variant in ('noir', 'narration', 'narration_top'):
-            self.font_color = 'white'
-        else:
-            self.font_color = 'black'
-        if self.variant == 'hint':
-            self.num_lines = 4
-        elif self.variant == 'cinematic':
-            self.font_type = 'chapter'
-            self.font_color = 'grey'
-            self.num_lines = 5
-            self.draw_cursor_flag = False
-        self.font = FONT[self.font_type + '-' + self.font_color]
+        self.style_nid = style_nid
+        self.font_type = font_type
+        self.font_color = font_color
+        self.autosize = autosize
+        self.speed = speed
+        self.num_lines = num_lines
+        self.draw_cursor_flag = draw_cursor
+        self.font = FONT[self.font_type]
+
+        if '{sub_break}' in self.plain_text:
+            self.attempt_split = False
 
         # States: process, transition, pause, wait, done, new_line
         self.state = 'transition'
@@ -54,7 +53,7 @@ class Dialog():
             self.width -= self.width%8
             self.text_width = max(8, self.width - 24)
             self.determine_height()
-        elif self.portrait:
+        elif self.portrait or self.autosize:
             self.determine_size()
         else:
             self.text_width, self.text_height = (WINWIDTH - 24, self.num_lines * 16)
@@ -75,23 +74,19 @@ class Dialog():
                 pos_x += 4
             if pos_x == 0:
                 pos_x = 4
-            pos_y = 24
+            pos_y = WINHEIGHT - self.height - 80
         else:
             pos_x = 4
-            pos_y = 110
+            pos_y = WINHEIGHT - self.height - 4
         self.position = pos_x, pos_y
 
-        if background:
-            self.background = self.make_background(background)
-            self.tail = SPRITES.get('message_bg_tail')
-        else:
-            self.background = None
-            self.tail = None
+        self.background = None
+        self.tail = None
 
-        if self.variant in ('noir', 'hint', 'cinematic'):
-            self.tail = None
-        elif self.variant == 'thought_bubble':
-            self.tail = SPRITES.get('message_bg_thought_tail')
+        if background and background not in ('None', 'clear'):
+            self.background = self.make_background(background)
+            if message_tail and message_tail != 'None':
+                self.tail = SPRITES.get(message_tail)
 
         self.name_tag_surf = create_base_surf(64, 16, 'name_tag')
 
@@ -104,6 +99,8 @@ class Dialog():
         # For state transitions
         self.transition_progress = 0
         self.last_update = engine.get_time()
+
+        self.hold = False
 
         # For sound
         self.last_sound_update = 0
@@ -153,16 +150,17 @@ class Dialog():
         width = 0
         current_line = ''
         preceded_by_wait: bool = False
+        waiting_cursor = False
         for command in self.text_commands:
-            if command in ('{br}', '{break}', '{clear}'):
-                if not preceded_by_wait:
+            if command in ('{br}', '{break}', '{clear}', '{sub_break}'):
+                if not preceded_by_wait or not self.attempt_split:
                     # Force it to be only one line
                     split_lines = self.get_lines_from_block(current_line, 1)
                 else:
                     split_lines = self.get_lines_from_block(current_line)
-                width = max(width, max(self.font.width(s) for s in split_lines))
+                width = max(width, max(rendered_text_width([self.font_type], [s]) for s in split_lines))
                 if len(split_lines) == 1:
-                    width += 16
+                    waiting_cursor = True
                 current_line = ''
                 preceded_by_wait = False
             elif command in ('{w}', '{wait}'):
@@ -172,9 +170,14 @@ class Dialog():
             else:
                 current_line += command
         if current_line:
-            split_lines = self.get_lines_from_block(current_line)
-            width = max(width, max(self.font.width(s) for s in split_lines))
-            # Account for "waiting cursor"
+            if self.attempt_split:
+                split_lines = self.get_lines_from_block(current_line)
+            else:
+                split_lines = self.get_lines_from_block(current_line, 1)
+            width = max(width, max(rendered_text_width([self.font_type], [s]) for s in split_lines))
+            if len(split_lines) == 1:
+                waiting_cursor = True
+        if waiting_cursor:
             if len(split_lines) == 1:
                 width += 16
         return width
@@ -203,7 +206,7 @@ class Dialog():
             num_lines = self.num_lines
             if len(block) <= 24:
                 num_lines = 1
-        lines = text_funcs.split(self.font, block, num_lines, WINWIDTH - 16)
+        lines = text_funcs.split(self.font_type, block, num_lines, WINWIDTH - 16)
         return lines
 
     def _next_line(self):
@@ -225,7 +228,7 @@ class Dialog():
             self.pause()
             return
         command = self.text_commands[self.text_index]
-        if command == '{br}' or command == '{break}':
+        if command in ('{br}', '{break}', '{sub_break}'):
             self._next_line()
         elif command == '{w}' or command == '{wait}':
             self.pause()
@@ -269,7 +272,7 @@ class Dialog():
         """
         Should no longer be drawn
         """
-        return self.state == 'done'
+        return self.state == 'done' and not self.hold
 
     def is_done(self):
         """
@@ -301,7 +304,7 @@ class Dialog():
     def play_talk_boop(self):
         if cf.SETTINGS['talk_boop'] and engine.get_true_time() - self.last_sound_update > 32:
             self.last_sound_update = engine.get_true_time()
-            SOUNDTHREAD.play_sfx('Talk_Boop')
+            get_sound_thread().play_sfx('Talk_Boop')
 
     def update(self):
         current_time = engine.get_time()
@@ -313,7 +316,7 @@ class Dialog():
                 self._next_line()
         elif self.state == 'process':
             if cf.SETTINGS['text_speed'] > 0:
-                num_updates = engine.get_delta() / float(cf.SETTINGS['text_speed'])
+                num_updates = engine.get_delta() / (float(cf.SETTINGS['text_speed']) * self.speed)
                 self.total_num_updates += num_updates
                 while self.total_num_updates >= 1 and self.state == 'process':
                     self.total_num_updates -= 1
@@ -378,9 +381,8 @@ class Dialog():
             line_chunks, current_color = self.chunkify(line, current_color)
             for chunk in line_chunks:
                 text, color = chunk
-                font = FONT[self.font_type + '-' + color]
-                width = font.width(text)
-                font.blit(text, text_surf, (x_pos, y_pos))
+                width = rendered_text_width([self.font_type], [text])
+                render_text(text_surf, [self.font_type], [text], [color], (x_pos, y_pos))
                 x_pos += width
 
         display_lines = self.text_lines[-self.num_lines:]
@@ -395,9 +397,8 @@ class Dialog():
             line_chunks, current_color = self.chunkify(line, current_color)
             for chunk in line_chunks:
                 text, color = chunk
-                font = FONT[self.font_type + '-' + color]
-                width = font.width(text)
-                font.blit(text, text_surf, (x_pos, y_set))
+                width = rendered_text_width([self.font_type], [text])
+                render_text(text_surf, [self.font_type], [text], [color], (x_pos, y_set))
                 x_pos += width
 
             end_x_pos = self.position[0] + 8 + x_pos
@@ -431,7 +432,7 @@ class Dialog():
         if x_pos < 0:
             x_pos = self.position[0] + 16
         name_tag_surf = self.name_tag_surf.copy()
-        self.font.blit_center(name, name_tag_surf, (name_tag_surf.get_width()//2, name_tag_surf.get_height()//2 - self.font.height//2))
+        self.font.blit_center(name, name_tag_surf, (name_tag_surf.get_width()//2, name_tag_surf.get_height()//2 - self.font.height//2), self.font_color)
         surf.blit(name_tag_surf, (x_pos, y_pos))
         return surf
 
@@ -471,7 +472,7 @@ class LocationCard():
 
     def __init__(self, text, background='menu_bg_brown'):
         self.plain_text = text
-        self.font = FONT['text-white']
+        self.font = FONT['text']
 
         self.text_lines = self.format_text(text)
         self.determine_size()
@@ -542,7 +543,9 @@ class Credits():
         self.title = title
         self.text = text
         self.title_font = FONT['credit_title-white']
+        self.title_font_name = 'credit_title-white'
         self.font = FONT['credit-white']
+        self.font_name = 'credit-white'
 
         self.center_flag = center_flag
         self.wait_flag = wait_flag
@@ -561,7 +564,7 @@ class Credits():
         self.parsed_text = []
         for line in self.text:
             x_bound = WINWIDTH - 12 if self.center_flag else WINWIDTH - 88
-            lines = text_funcs.line_wrap(self.font, line, x_bound)
+            lines = text_funcs.line_wrap(self.font_name, line, x_bound)
             for li in lines:
                 if self.center_flag:
                     x_pos = WINWIDTH//2 - self.font.width(li)//2
@@ -624,19 +627,16 @@ class Ending():
         self.portrait = portrait
         self.title = title
         self.plain_text = text
+        self.speaker = None  # Unused attribute to match Dialog
         self.unit = unit
-        self.font = FONT['text-white']
+        self.font = FONT['text']
 
         # Build dialog
-        class EndingDialog(Dialog):
-            num_lines = 6
-            draw_cursor_flag = False
-
-        self.dialog = EndingDialog(text)
+        self.dialog = Dialog(text, num_lines=6, draw_cursor=False)
         self.dialog.position = (8, 40)
         self.dialog.text_width = WINWIDTH - 32
         self.dialog.width = self.dialog.text_width + 16
-        self.dialog.font = FONT['text-white']
+        self.dialog.font = FONT['text']
         self.dialog.font_type = 'text'
         self.dialog.font_color = 'white'
 

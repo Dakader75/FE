@@ -8,8 +8,8 @@ class Counters():
 
     def reset(self):
         self._passive_sprite_counter = generic3counter(frames2ms(32), frames2ms(4))
-        self._active_sprite_counter = generic3counter(frames2ms(13), frames2ms(6))
-        self._move_sprite_counter = simplecounter((frames2ms(10), frames2ms(5), frames2ms(10), frames2ms(5)))
+        self._active_sprite_counter = generic3counter(frames2ms(20), frames2ms(4))
+        self._move_sprite_counter = simplecounter((frames2ms(13), frames2ms(6), frames2ms(13), frames2ms(6)))
         self._fast_move_sprite_counter = simplecounter((frames2ms(6), frames2ms(3), frames2ms(6), frames2ms(3)))
         self._attack_movement_counter = movement_counter()
         self._arrow_counter = simplecounter((frames2ms(16), frames2ms(16), frames2ms(16)))

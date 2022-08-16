@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, \
     QDialog, QAbstractItemView, QHBoxLayout
+from PyQt5.QtCore import Qt
 
 from app.resources.resources import RESOURCES
 from app.extensions.custom_gui import ResourceTableView, MultiselectTableView
@@ -32,6 +33,7 @@ class SoundTab(QWidget):
         self.view.setSortingEnabled(True)
         # Remove edit on double click
         self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.view.sortByColumn(0, Qt.AscendingOrder)
         self.display = self.view
 
         self.layout.addWidget(self.view)

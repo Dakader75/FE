@@ -10,6 +10,8 @@ from app.engine import engine, image_mods
 
 class EventPortrait():
     width, height = 128, 112
+    main_portrait_coords = (0, 0, 96, 80)
+    chibi_coords = (96, 16, 32, 32)
 
     halfblink = (96, 48, 32, 16)
     fullblink = (96, 64, 32, 16)
@@ -30,6 +32,8 @@ class EventPortrait():
         self.portrait = portrait
         if not self.portrait.image:
             self.portrait.image = engine.image_load(self.portrait.full_path)
+        self.width = self.portrait.image.get_width()
+        self.height = self.portrait.image.get_height()
         self.portrait.image = self.portrait.image.convert()
         engine.set_colorkey(self.portrait.image, COLORKEY, rleaccel=True)
         self.position = position
@@ -40,8 +44,9 @@ class EventPortrait():
         self.mirror = mirror
         self.expressions = expressions or set()
 
-        self.main_portrait = engine.subsurface(self.portrait.image, (0, 0, 96, 80))
-        self.chibi = engine.subsurface(self.portrait.image, (96, 16, 32, 32))
+        self.transition_progress = 0
+        self.main_portrait = engine.subsurface(self.portrait.image, self.main_portrait_coords)
+        self.chibi = engine.subsurface(self.portrait.image, self.chibi_coords)
 
         self.talk_on = False
         self.remove = False
@@ -251,10 +256,11 @@ class EventPortrait():
 
         position = self.position
 
+        slide_length = 24
         if self.slide == 'right':
-            position = position[0] - int(24 * self.transition_progress), self.position[1]
+            position = position[0] + slide_length - int(slide_length * self.transition_progress), self.position[1]
         elif self.slide == 'left':
-            position = position[0] + int(24 * self.transition_progress), self.position[1]
+            position = position[0] - slide_length + int(slide_length * self.transition_progress), self.position[1]
 
         if self.bop_state:
             position = position[0], position[1] + self.bop_height

@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QApplication, QDoubleSpinBox, QCheckBox
+from PyQt5 import QtGui
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QApplication, QDoubleSpinBox, QCheckBox
 from PyQt5.QtCore import Qt
 
 from app import dark_theme
@@ -6,7 +7,7 @@ from app.extensions.custom_gui import ComboBox, PropertyBox, PropertyCheckBox, D
 
 from app.editor.settings import MainSettingsController
 
-from app.editor import timer
+from app.editor import timer, utilities
 
 name_to_button = {'L-click': Qt.LeftButton,
                   'R-click': Qt.RightButton}
@@ -25,6 +26,8 @@ class PreferencesDialog(Dialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
+        self.awaiting_button_bind = False
+
         self.settings = MainSettingsController()
 
         self.saved_preferences = {}
@@ -37,6 +40,7 @@ class PreferencesDialog(Dialog):
         self.saved_preferences['autosave_time'] = self.settings.get_autosave_time()
         self.saved_preferences['crash_logs'] = self.settings.get_should_display_crash_logs()
         self.saved_preferences['save_backup'] = self.settings.get_should_make_backup_save()
+        self.saved_preferences['editor_close_button'] = self.settings.get_editor_close_button(Qt.Key_Escape)
 
         self.available_options = name_to_button.keys()
         self.autocomplete_options = key_to_button.keys()
@@ -76,6 +80,23 @@ class PreferencesDialog(Dialog):
         self.autocomplete_button.edit.setValue(button_to_key[self.saved_preferences['autocomplete_button']])
         self.autocomplete_button.edit.currentIndexChanged.connect(self.autocomplete_button_changed)
 
+        self.editor_close_button = PropertyBox('Editor Close Button', QPushButton, self)
+        self.editor_close_button.edit.setText(utilities.qtkey_to_string(self.saved_preferences['editor_close_button']))
+        self.editor_close_button.edit.clicked.connect(self.await_button_bind)
+        sp = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sp.setHorizontalStretch(4)
+        self.editor_close_button.setSizePolicy(sp)
+        self.editor_close_button_unbind = PropertyBox(' ', QPushButton, self)
+        self.editor_close_button_unbind.edit.setText("Unbind")
+        self.editor_close_button_unbind.edit.clicked.connect(self.unbind_editor_close_button)
+        sp1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sp1.setHorizontalStretch(1)
+        self.editor_close_button_unbind.setSizePolicy(sp1)
+
+        self.editor_close_button_layout = QHBoxLayout()
+        self.editor_close_button_layout.addWidget(self.editor_close_button)
+        self.editor_close_button_layout.addWidget(self.editor_close_button_unbind)
+
         self.autosave = PropertyBox('Autosave Time (minutes)', QDoubleSpinBox, self)
         self.autosave.edit.setRange(0.5, 99)
         self.autosave.edit.setValue(self.saved_preferences['autosave_time'])
@@ -86,6 +107,7 @@ class PreferencesDialog(Dialog):
         self.layout.addWidget(self.place)
         self.layout.addWidget(self.theme)
         self.layout.addWidget(self.autocomplete_button)
+        self.layout.addLayout(self.editor_close_button_layout)
         self.layout.addWidget(self.autocomplete)
         self.layout.addWidget(self.autocomplete_desc)
         self.layout.addWidget(self.crashlog)
@@ -113,6 +135,25 @@ class PreferencesDialog(Dialog):
             self.autocomplete_button.edit.setValue('Tab')
         else:
             self.autocomplete_button.edit.setValue('Return')
+
+    def await_button_bind(self):
+        self.editor_close_button.edit.setText('press any key')
+        self.awaiting_button_bind = True
+
+    def keyPressEvent(self, keypress: QtGui.QKeyEvent) -> None:
+        if self.awaiting_button_bind:
+            self.bind_editor_close_button(keypress.key())
+            self.awaiting_button_bind = False
+            return
+        return super().keyPressEvent(keypress)
+
+    def bind_editor_close_button(self, key: Qt.Key):
+        self.saved_preferences['editor_close_button'] = key
+        self.editor_close_button.edit.setText(utilities.qtkey_to_string(key))
+
+    def unbind_editor_close_button(self):
+        self.saved_preferences['editor_close_button'] = None
+        self.editor_close_button.edit.setText(None)
 
     def theme_changed(self, idx):
         choice = self.theme.edit.currentText()
@@ -143,6 +184,7 @@ class PreferencesDialog(Dialog):
         self.settings.set_should_make_backup_save(save_backup_setting)
         autosave = float(self.autosave.edit.value())
         self.settings.set_autosave_time(autosave)
+        self.settings.set_editor_close_button(self.saved_preferences['editor_close_button'])
         super().accept()
 
     def reject(self):

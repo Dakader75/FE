@@ -67,10 +67,18 @@ class SkillBox(ObjBox):
 class AIBox(ObjBox):
     def __init__(self, parent=None, button=False, exclude=None):
         from app.editor.ai_editor.ai_model import AIModel
-        database = DB.ai
+        database = Data([d for d in DB.ai if not d.roam_ai])
         if exclude:
-            database = Data([d for d in DB.ai if d is not exclude])
-        super().__init__("AI", AIModel, database, parent, button)
+            database = Data([d for d in database if d is not exclude])
+        super().__init__("Normal AI", AIModel, database, parent, button)
+
+class RoamAIBox(ObjBox):
+    def __init__(self, parent=None, button=False, exclude=None):
+        from app.editor.ai_editor.ai_model import AIModel
+        database = Data([d for d in DB.ai if d.roam_ai or d.nid == 'None'])
+        if exclude:
+            database = Data([d for d in database if d is not exclude])
+        super().__init__("Roam AI", AIModel, database, parent, button)
 
 class WeaponTypeBox(ObjBox):
     def __init__(self, parent=None, button=False, exclude=None):
@@ -105,3 +113,12 @@ class MovementClassBox(ObjBox):
     def __init__(self, parent=None, button=False):
         from app.editor.mcost_dialog import MovementClassModel
         super().__init__("Movement Class", MovementClassModel, DB.mcost, parent, button)
+
+class EventBox(ObjBox):
+    def __init__(self, parent=None, button=False, exclude=None):
+        from app.editor.event_editor.event_model import EventModel
+        database = DB.events
+        if exclude:
+            database = Data([d for d in DB.events if d is not exclude])
+        super().__init__("Event", EventModel, database, parent, button)
+

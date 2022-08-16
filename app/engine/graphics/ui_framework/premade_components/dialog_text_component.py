@@ -11,7 +11,7 @@ from .plain_text_component import PlainTextComponent, PlainTextLine
 
 
 class DialogTextComponent(PlainTextComponent):
-    def __init__(self, name: str, parent: UIComponent = None, text: str = "", font_name: str = "text-white"):
+    def __init__(self, name: str, parent: UIComponent = None, text: str = "", font_name: str = "text"):
         super().__init__(name=name, parent=parent, text="", font_name=font_name)
         self.text = text
         self.processed_text = self.text.replace('{w}', '').replace('|', '').replace('{br}', '')
@@ -37,7 +37,7 @@ class DialogTextComponent(PlainTextComponent):
         paragraphs = text.split('{br}')
         line_broken_text = []
         for paragraph in paragraphs:
-            line_broken_text += text_funcs.line_wrap(self.props.font, paragraph, self.iwidth, True)
+            line_broken_text += text_funcs.line_wrap(self.props.font_name, paragraph, self.iwidth, True)
         return line_broken_text
 
     def generate_indexes_of_wait_points(self, unprocessed_text: str) -> List[int]:

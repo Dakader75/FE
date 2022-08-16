@@ -4,6 +4,8 @@ from app.engine import action, skill_system, target_system, line_of_sight
 
 import logging
 
+from app.engine import item_funcs
+
 def pull_auras(unit, game, test=False):
     for aura_data in game.board.get_auras(unit.position):
         child_aura_uid, target = aura_data
@@ -34,7 +36,8 @@ def apply_aura(owner, unit, child_skill, target, test=False):
         logging.debug("Applying Aura %s to %s", child_skill, unit)
         if test:
             # Doesn't need to use action system
-            if child_skill.stack or child_skill.nid not in [skill.nid for skill in unit.skills]:
+            if((child_skill.stack and item_funcs.num_stacks(unit, child_skill.nid) < child_skill.stack.value) or
+                child_skill.nid not in [skill.nid for skill in unit.skills]):
                 unit.skills.append(child_skill)
         else:
             act = action.AddSkill(unit, child_skill)
@@ -53,13 +56,25 @@ def propagate_aura(unit, skill, game):
     game.board.reset_aura(skill.subskill)
     aura_range = skill.aura_range.value
     aura_range = set(range(1, aura_range + 1))
-    positions = target_system.get_shell({unit.position}, aura_range, game.tilemap.width, game.tilemap.height)
+    positions = target_system.get_shell({unit.position}, aura_range, game.board.bounds)
     for pos in positions:
         game.board.add_aura(pos, unit, skill.subskill, skill.aura_target.value)
         # Propagate my aura to others
         other = game.board.get_unit(pos)
         if other:
             apply_aura(unit, other, skill.subskill, skill.aura_target.value)
+
+def repopulate_aura(unit, skill, game):
+    """
+    Called only on loading a level in order to
+    re-populate the game.board with the aura connections
+    """
+    game.board.reset_aura(skill.subskill)
+    aura_range = skill.aura_range.value
+    aura_range = set(range(1, aura_range + 1))
+    positions = target_system.get_shell({unit.position}, aura_range, game.board.bounds)
+    for pos in positions:
+        game.board.add_aura(pos, unit, skill.subskill, skill.aura_target.value)
 
 def release_aura(unit, skill, game):
     for pos in list(game.board.get_aura_positions(skill.subskill)):

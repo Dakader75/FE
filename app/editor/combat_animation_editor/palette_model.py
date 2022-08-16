@@ -1,3 +1,4 @@
+from functools import lru_cache
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QIcon, QPainter, QColor
 
@@ -11,33 +12,39 @@ from app.extensions.custom_gui import DeletionDialog
 from app.editor.base_database_gui import DragDropCollectionModel
 from app.utilities import str_utils
 
-def get_palette_pixmap(palette) -> QPixmap:
+@lru_cache(None)
+def generate_palette_pixmap(palette_colors: tuple):
     painter = QPainter()
     main_pixmap = QPixmap(32, 32)
     main_pixmap.fill(QColor(0, 0, 0, 0))
     painter.begin(main_pixmap)
-    colors = palette.colors.values()
-    colors = sorted(colors, key=lambda color: utils.rgb2hsv(*color[:3])[0])
-    for idx, color in enumerate(colors[:16]):
+    palette_colors = sorted(palette_colors, key=lambda color: utils.rgb2hsv(*color[:3])[0])
+    for idx, color in enumerate(palette_colors[:16]):
         left = idx % 4
         top = idx // 4
         painter.fillRect(left * 8, top * 8, 8, 8, QColor(*color[:3]))
     painter.end()
     return main_pixmap
 
+def get_palette_pixmap(palette) -> QPixmap:
+    colors = palette.colors.values()
+    return generate_palette_pixmap(tuple(colors))
+
 class PaletteModel(DragDropCollectionModel):
     def data(self, index, role):
         if not index.isValid():
             return None
         if role == Qt.DisplayRole:
-            palette = self._data[index.row()]
-            text = palette.nid
-            return text
+            if len(self._data) > index.row():
+                palette = self._data[index.row()]
+                text = palette.nid
+                return text
         elif role == Qt.DecorationRole:
-            palette = self._data[index.row()]
-            pixmap = get_palette_pixmap(palette)
-            if pixmap:
-                return QIcon(pixmap)
+            if len(self._data) > index.row():
+                palette = self._data[index.row()]
+                pixmap = get_palette_pixmap(palette)
+                if pixmap:
+                    return QIcon(pixmap)
         return None
 
     def create_new(self):

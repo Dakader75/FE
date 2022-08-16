@@ -5,9 +5,12 @@
             {
                 "action": "None",
                 "target": "None",
-                "target_spec": null,
+                "target_spec": [
+                    "Team",
+                    "other"
+                ],
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": true
             },
             {
                 "action": "None",

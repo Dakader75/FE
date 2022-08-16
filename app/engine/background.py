@@ -43,7 +43,10 @@ class PanoramaBackground():
         self.panorama = panorama
         if not self.panorama.images:
             for path in self.panorama.get_all_paths():
-                self.panorama.images.append(engine.image_load(path))
+                image = engine.image_load(path)
+                if image.get_size() != (WINWIDTH, WINHEIGHT):
+                    image = engine.transform_scale(image, (WINWIDTH, WINHEIGHT))
+                self.panorama.images.append(image)
 
         self.speed = speed
         self.loop = loop

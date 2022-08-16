@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, \
-    QLabel, QSizePolicy, QSpinBox
+    QLabel, QSizePolicy, QSpinBox, QLineEdit
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QColor
 
@@ -7,6 +7,8 @@ from app.utilities import utils
 from app.extensions.custom_gui import PropertyBox
 from app.extensions.color_icon import ColorIcon
 from app.extensions.color_slider import RGBSlider, HSVSlider
+
+from typing import Tuple
 
 class ChannelBox(QWidget):
     colorChanged = pyqtSignal(QColor)
@@ -280,13 +282,15 @@ class ColorEditorWidget(QWidget):
         self.channel_box = ChannelBox(self)
         self.channel_box.colorChanged.connect(self.on_color_change)
 
-        self.hex_label = PropertyBox('Hex Code', QLabel, self)
-        self.hex_label.edit.setText(utils.color_to_hex(self.current_color.getRgb()))
+        self.hex_box = PropertyBox('Hex Code', QLineEdit, self)
+        hex_code = utils.color_to_hex(self.current_color.getRgb())
+        self.hex_box.edit.setText(hex_code)
+        self.hex_box.edit.textEdited.connect(self.on_hex_edited)
 
         main_layout = QHBoxLayout()
         left_layout = QVBoxLayout()
         left_layout.addWidget(self.color_icon)
-        left_layout.addWidget(self.hex_label)
+        left_layout.addWidget(self.hex_box)
         main_layout.addLayout(left_layout)
         main_layout.addWidget(self.channel_box)
         self.setLayout(main_layout)
@@ -294,13 +298,21 @@ class ColorEditorWidget(QWidget):
     def on_color_change(self, color: QColor):
         self.set_current(color)
 
+    def on_hex_edited(self, text: str):
+        try:
+            color: Tuple[int, int, int] = utils.hex_to_color(text)
+        except Exception as e:
+            return
+        qcolor = QColor(*color)
+        self.set_current(qcolor)
+
     def set_current(self, color: QColor):
         if color != self.current_color:
             self.current_color: QColor = color
 
             self.color_icon.change_color(color)
             tuple_color = color.getRgb()
-            self.hex_label.edit.setText(utils.color_to_hex(tuple_color))
+            self.hex_box.edit.setText(utils.color_to_hex(tuple_color))
             self.channel_box.change_color(color)
 
             self.colorChanged.emit(color)

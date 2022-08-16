@@ -5,14 +5,15 @@ from app.counters import generic3counter
 from app.engine import engine, target_system
 from app.engine.cursor import BaseCursor
 from app.engine.game_state import GameState
-from app.engine.input_manager import INPUT
+from app.engine.input_manager import get_input_manager
 from app.engine.sprites import SPRITES
-from app.utilities.utils import frames2ms
+from app.utilities.utils import frames2ms, tclamp
 from app.engine.engine import Surface
 
 class LevelCursor(BaseCursor):
     def __init__(self, game: GameState):
-        super().__init__(camera=game.camera, tilemap=game.tilemap)
+        super().__init__(camera=game.camera, game_board=game.board)
+        # this is frame-accurate to GBA
         self.cursor_counter = generic3counter(frames2ms(20), frames2ms(2), frames2ms(8))
         self.game = game
         self.cur_unit = None
@@ -38,7 +39,7 @@ class LevelCursor(BaseCursor):
         return None
 
     def get_bounds(self) -> Tuple[int, int, int, int]:
-        self.tilemap = self.game.tilemap
+        self.game_board = self.game.board
         return super().get_bounds()
 
     def hide(self):
@@ -188,13 +189,13 @@ class LevelCursor(BaseCursor):
         if self.game.highlight.check_in_move(self.position):
             if directions:
                 # If we would move off the current move
-                if ('LEFT' in directions and not INPUT.just_pressed('LEFT') and
+                if ('LEFT' in directions and not get_input_manager().just_pressed('LEFT') and
                         not self.game.highlight.check_in_move((self.position[0] - 1, self.position[1]))) or \
-                        ('RIGHT' in directions and not INPUT.just_pressed('RIGHT') and
+                        ('RIGHT' in directions and not get_input_manager().just_pressed('RIGHT') and
                          not self.game.highlight.check_in_move((self.position[0] + 1, self.position[1]))) or \
-                        ('UP' in directions and not INPUT.just_pressed('UP') and
+                        ('UP' in directions and not get_input_manager().just_pressed('UP') and
                          not self.game.highlight.check_in_move((self.position[0], self.position[1] - 1))) or \
-                        ('DOWN' in directions and not INPUT.just_pressed('DOWN') and
+                        ('DOWN' in directions and not get_input_manager().just_pressed('DOWN') and
                          not self.game.highlight.check_in_move((self.position[0], self.position[1] + 1))):
                     # Then we can just keep going
                     if self.stopped_at_move_border:
@@ -208,47 +209,7 @@ class LevelCursor(BaseCursor):
         else:
             self.stopped_at_move_border = False
 
-        # handle the move
-        dx, dy = 0, 0
-        from_mouse = False
-
-        # Handle keyboard first
-        if directions:
-            if 'LEFT' in directions and self.position[0] > self.get_bounds()[0]:
-                dx = -1
-            elif 'RIGHT' in directions and self.position[0] < self.get_bounds()[2]:
-                dx = 1
-            if 'UP' in directions and self.position[1] > self.get_bounds()[1]:
-                dy = -1
-            elif 'DOWN' in directions and self.position[1] < self.get_bounds()[3]:
-                dy = 1
-            self.mouse_mode = False
-
-        # Handle mouse
-        mouse_position = INPUT.get_mouse_position()
-        if mouse_position:
-            self.mouse_mode = True
-        if self.mouse_mode:
-            # Get the actual mouse position, irrespective if actually used recently
-            mouse_pos = INPUT.get_real_mouse_position()
-            if mouse_pos:
-                from_mouse = True
-                new_pos = mouse_pos[0] // TILEWIDTH, mouse_pos[1] // TILEHEIGHT
-                new_pos = int(new_pos[0] + self.game.camera.get_x()), int(new_pos[1] + self.game.camera.get_y())
-                dpos = new_pos[0] - self.position[0], new_pos[1] - self.position[1]
-                dx = dpos[0]
-                dy = dpos[1]
-
-        if dx != 0 or dy != 0:
-            # adjust camera accordingly
-            self.move(dx, dy, mouse=from_mouse)
-            if self.camera:
-                if from_mouse:
-                    self.camera.mouse_x(self.position[0])
-                    self.camera.mouse_y(self.position[1])
-                else:
-                    self.camera.cursor_x(self.position[0])
-                    self.camera.cursor_y(self.position[1])
+        self._handle_move(directions)
 
     def get_image(self) -> Surface:
         self.cursor_counter.update(engine.get_time())

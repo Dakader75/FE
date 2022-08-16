@@ -1,0 +1,83 @@
+[
+    {
+        "nid": "Death",
+        "name": "Death",
+        "desc": "-8 Spd penalty. HP Cost: 5.",
+        "icon_nid": "Dark",
+        "icon_index": [
+            0,
+            4
+        ],
+        "components": [
+            [
+                "weapon",
+                null
+            ],
+            [
+                "target_enemy",
+                null
+            ],
+            [
+                "min_range",
+                1
+            ],
+            [
+                "max_range",
+                3
+            ],
+            [
+                "damage",
+                16
+            ],
+            [
+                "hit",
+                60
+            ],
+            [
+                "crit",
+                5
+            ],
+            [
+                "level_exp",
+                null
+            ],
+            [
+                "weapon_type",
+                "Dark"
+            ],
+            [
+                "weapon_rank",
+                "E"
+            ],
+            [
+                "magic",
+                null
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        -8
+                    ]
+                ]
+            ],
+            [
+                "hp_cost",
+                5
+            ],
+            [
+                "map_hit_sub_blend",
+                [
+                    255,
+                    255,
+                    255
+                ]
+            ],
+            [
+                "alternate_accuracy_formula",
+                "MAGIC_HIT"
+            ]
+        ]
+    }
+]

@@ -34,7 +34,9 @@ class TileSetModel(ResourceCollectionModel):
         elif role == Qt.DecorationRole:
             tileset = self._data[index.row()]
             pixmap = tileset.pixmap
-            return QIcon(pixmap)
+            pix = pixmap.scaled(96, 96)
+            # pix = pixmap
+            return QIcon(pix)
         return None
 
     def create_new(self):
@@ -144,7 +146,8 @@ class TileMapModel(ResourceCollectionModel):
             tilemap = self._data[index.row()]
             pixmap = tilemap.pixmap
             if pixmap:
-                return QIcon(pixmap)
+                pix = pixmap.scaled(96, 96)
+                return QIcon(pix)
         return None
 
     def create_new(self):

@@ -1,10 +1,13 @@
 # HOOK CATALOG
-# All false hooks are exclusive
-false_hooks = ('is_weapon', 'is_spell', 'is_accessory', 'equippable',
-               'can_counter', 'can_be_countered', 'can_double',
-               'can_use', 'can_use_in_base', 'locked', 'allow_same_target',
-               'ignore_weapon_advantage', 'unrepairable', 'targets_items',
-               'menu_after_combat')
+# false priority hooks default to false
+# and will be false if any single component returns false
+false_priority_hooks = \
+    ('is_weapon', 'is_spell', 'is_accessory', 'equippable',
+     'can_counter', 'can_be_countered', 'can_double',
+     'can_use', 'can_use_in_base', 'locked', 'unstealable', 'allow_same_target',
+     'ignore_weapon_advantage', 'unrepairable', 'unsplashable', 'targets_items',
+     'menu_after_combat', 'transforms', 'no_attack_after_move', 'no_map_hp_display',
+     'cannot_dual_strike', 'can_attack_after_combat', 'simple_target_restrict')
 # All default hooks are exclusive
 formula = ('damage_formula', 'resist_formula', 'accuracy_formula', 'avoid_formula',
            'crit_accuracy_formula', 'crit_avoid_formula', 'attack_speed_formula', 'defense_speed_formula')
@@ -13,7 +16,7 @@ default_hooks = ('full_price', 'buy_price', 'sell_price', 'special_sort', 'num_t
 default_hooks += formula
 
 target_hooks = ('wexp', 'exp')
-simple_target_hooks = ('warning', 'danger')
+simple_target_hooks = ('target_icon', )
 
 dynamic_hooks = ('dynamic_damage', 'dynamic_accuracy', 'dynamic_crit_accuracy',
                  'dynamic_attack_speed', 'dynamic_multiattacks')
@@ -30,14 +33,14 @@ aesthetic_combat_hooks = ('battle_music', 'combat_effect')
 
 status_event_hooks = ('on_upkeep', 'on_endstep')
 
-exclusive_hooks = false_hooks + default_hooks
+exclusive_hooks = false_priority_hooks + default_hooks
 
 def compile_item_system():
     import os
     dir_path = os.path.dirname(os.path.realpath(__file__))
     compiled_item_system = open(os.path.join(dir_path, '..', 'item_system.py'), 'w')
     item_system_base = open(os.path.join(dir_path, 'item_system_base.py'), 'r')
-    warning_msg = open(os.path.join(dir_path, 'warning_msg'), 'r')
+    warning_msg = open(os.path.join(dir_path, 'warning_msg.txt'), 'r')
 
     # write warning msg
     for line in warning_msg.readlines():
@@ -48,13 +51,18 @@ def compile_item_system():
         compiled_item_system.write(line)
 
     # compile item system
-    for hook in false_hooks:
+    for hook in false_priority_hooks:
         func = """
 def %s(unit, item):
-    for component in item.components:
+    all_components = get_all_components(unit, item)
+    all_true = False
+    for component in all_components:
         if component.defines('%s'):
-            return component.%s(unit, item)
-    return False""" \
+            if not component.%s(unit, item):
+                return False
+            else:
+                all_true = True
+    return all_true""" \
             % (hook, hook, hook)
         compiled_item_system.write(func)
         compiled_item_system.write('\n')
@@ -62,7 +70,8 @@ def %s(unit, item):
     for hook in default_hooks:
         func = """
 def %s(unit, item):
-    for component in item.components:
+    all_components = get_all_components(unit, item)
+    for component in all_components:
         if component.defines('%s'):
             return component.%s(unit, item)
     return Defaults.%s(unit, item)""" \
@@ -72,12 +81,15 @@ def %s(unit, item):
 
     for hook in simple_target_hooks:
         func = """
-def %s(unit, item, target):
-    val = 0
-    for component in item.components:
+def %s(cur_unit, item, displaying_unit):
+    all_components = get_all_components(displaying_unit, item)
+    markers = []
+    for component in all_components:
         if component.defines('%s'):
-            val += component.%s(unit, item, target)
-    return val""" \
+            marker = component.%s(cur_unit, item, displaying_unit)
+            if marker:
+                markers.append(marker)
+    return markers""" \
             % (hook, hook, hook)
         compiled_item_system.write(func)
         compiled_item_system.write('\n')
@@ -85,8 +97,9 @@ def %s(unit, item, target):
     for hook in target_hooks:
         func = """
 def %s(playback, unit, item, target):
+    all_components = get_all_components(unit, item)
     val = 0
-    for component in item.components:
+    for component in all_components:
         if component.defines('%s'):
             val += component.%s(playback, unit, item, target)
     return val""" \
@@ -97,8 +110,9 @@ def %s(playback, unit, item, target):
     for hook in modify_hooks:
         func = """
 def %s(unit, item):
+    all_components = get_all_components(unit, item)
     val = 0
-    for component in item.components:
+    for component in all_components:
         if component.defines('%s'):
             val += component.%s(unit, item)
     return val""" \
@@ -109,8 +123,9 @@ def %s(unit, item):
     for hook in dynamic_hooks:
         func = """
 def %s(unit, item, target, mode, attack_info, base_value):
+    all_components = get_all_components(unit, item)
     val = 0
-    for component in item.components:
+    for component in all_components:
         if component.defines('%s'):
             val += component.%s(unit, item, target, mode, attack_info, base_value)
     return val""" \
@@ -121,7 +136,8 @@ def %s(unit, item, target, mode, attack_info, base_value):
     for hook in event_hooks:
         func = """
 def %s(unit, item):
-    for component in item.components:
+    all_components = get_all_components(unit, item)
+    for component in all_components:
         if component.defines('%s'):
             component.%s(unit, item)
     if item.parent_item:
@@ -135,7 +151,8 @@ def %s(unit, item):
     for hook in combat_event_hooks:
         func = """
 def %s(playback, unit, item, target, mode):
-    for component in item.components:
+    all_components = get_all_components(unit, item)
+    for component in all_components:
         if component.defines('%s'):
             component.%s(playback, unit, item, target, mode)
     if item.parent_item:
@@ -149,7 +166,8 @@ def %s(playback, unit, item, target, mode):
     for hook in status_event_hooks:
         func = """
 def %s(actions, playback, unit, item):
-    for component in item.components:
+    all_components = get_all_components(unit, item)
+    for component in all_components:
         if component.defines('%s'):
             component.%s(actions, playback, unit, item)
     if item.parent_item:
@@ -163,7 +181,8 @@ def %s(actions, playback, unit, item):
     for hook in aesthetic_combat_hooks:
         func = """
 def %s(unit, item, target, mode):
-    for component in item.components:
+    all_components = get_all_components(unit, item)
+    for component in all_components:
         if component.defines('%s'):
             return component.%s(unit, item, target, mode)
     return None""" \

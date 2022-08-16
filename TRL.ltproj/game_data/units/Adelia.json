@@ -1,0 +1,83 @@
+[
+    {
+        "nid": "Adelia",
+        "name": "Adelia",
+        "desc": "",
+        "variant": null,
+        "level": 1,
+        "klass": "Paladin",
+        "tags": [
+            "Female"
+        ],
+        "bases": {
+            "HP": 28,
+            "Atk": 12,
+            "SKL": 8,
+            "SPD": 10,
+            "LCK": 10,
+            "DEF": 10,
+            "RES": 3,
+            "MOV": 8
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Blessed Lance",
+                true
+            ],
+            [
+                "Door Key",
+                true
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                71
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Selena",
+        "affinity": "None",
+        "fields": []
+    }
+]

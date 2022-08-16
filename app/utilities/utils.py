@@ -1,8 +1,10 @@
+import colorsys
+import hashlib
 import math
 from collections import Counter
-import colorsys, hashlib
 from operator import add, sub
-from typing import List
+from typing import Tuple
+
 
 def frames_to_ms(num_frames: int) -> int:
     """at 60 fps, each frame would happen in 16.67 ms"""
@@ -98,7 +100,9 @@ def magnitude(a: tuple) -> float:
 
 def normalize(a: tuple) -> tuple:
     mag = magnitude(a)
-    return (a[0] / mag, a[1] / mag)
+    if mag != 0:
+        return (a[0] / mag, a[1] / mag)
+    return a
 
 def tmult(a: tuple, b: float) -> tuple:
     return tuple([a_i * b for a_i in a])
@@ -128,6 +132,14 @@ def hash_to_color(h: int) -> tuple:
 
 def color_to_hex(c: tuple) -> str:
     return '#%02x%02x%02x' % (c[0], c[1], c[2])
+
+def hex_to_color(s: str) -> tuple:
+    s = s.lstrip('#').lstrip('0x')
+    assert(len(s) == 6)
+    r = int(s[:2], 16)
+    g = int(s[2:4], 16)
+    b = int(s[4:], 16)
+    return (r, g, b)
 
 def hsv2rgb(h: float, s: float, v: float) -> tuple:
     return tuple(round(i * 255) for i in colorsys.hsv_to_rgb(h, s, v))
@@ -200,6 +212,18 @@ def raytrace(pos1: tuple, pos2: tuple) -> list:
             error += dx
         n -= 1
     return tiles
+
+def flatten_list(initial_list) -> list:
+    final_list = []
+    for item in initial_list:
+        if isinstance(item, list):
+            final_list += flatten_list(item)
+        else:
+            final_list.append(item)
+    return final_list
+
+def rationalize(p: Tuple[float, float]) -> Tuple[int, int]:
+    return (int(round(p[0])), int(round(p[1])))
 
 # Testing
 if __name__ == '__main__':

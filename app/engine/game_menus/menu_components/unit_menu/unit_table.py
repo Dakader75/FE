@@ -13,13 +13,13 @@ from app.engine.base_surf import create_base_surf, create_highlight_surf
 from app.engine.game_counters import ANIMATION_COUNTERS
 from app.engine.graphics.ui_framework.premade_animations.animation_templates import \
     component_scroll_anim
-from app.engine.graphics.ui_framework.ui_framework_layout import HAlignment
 from app.engine.graphics.ui_framework.ui_framework_styling import UIMetric
 from app.engine.gui import ScrollArrow, ScrollBar
 from app.engine.objects.unit import UnitObject
 from app.sprites import SPRITES
 from app.utilities.enums import Direction
 from app.utilities.utils import tclamp, tuple_add
+from app.engine import skill_system
 
 CURSOR_PERTURBATION = [0, 1, 2, 3, 4, 3, 2, 1]
 ICON_SIZE = (16, 16)
@@ -56,7 +56,7 @@ def get_all_character_stats() -> List[StatPrefab]:
 def get_formatted_stat_pages() -> List[Tuple[str, List[Column]]]:
     all_pages = []
     first_page = [
-        Column('30%', 'Class', uif.HAlignment.LEFT, None, lambda unit: DB.classes.get(unit.klass).name, None, font='text-white'),
+        Column('30%', 'Class', uif.HAlignment.LEFT, None, lambda unit: DB.classes.get(unit.klass).name, None, font='text'),
         Column('16%', 'Lv', uif.HAlignment.RIGHT, None, lambda unit: unit.level, None, sort_by=lambda unit: unit.get_internal_level()),
         Column('16%', 'Exp', uif.HAlignment.RIGHT, None, lambda unit: unit.exp, None),
         Column('16%', 'HP', uif.HAlignment.RIGHT, None, lambda unit: unit.get_hp(), None),
@@ -81,7 +81,7 @@ def get_formatted_stat_pages() -> List[Tuple[str, List[Column]]]:
                 lambda unit: (icons.get_icon(unit.get_weapon()) if unit.get_weapon() else None),
                 lambda unit: (item_system.weapon_type(unit, unit.get_weapon()) if unit.get_weapon() else "",
                               unit.get_weapon().name if unit.get_weapon() else "",),
-                font='text-white'
+                font='text'
                ),
         Column('16%', 'Atk', uif.HAlignment.RIGHT, None,
                lambda unit: str(unit.get_damage_with_current_weapon()) if unit.get_damage_with_current_weapon() > 0 else '--',
@@ -100,7 +100,7 @@ def get_formatted_stat_pages() -> List[Tuple[str, List[Column]]]:
         new_weapon_rank_page.append(
             Column('12%', "", uif.HAlignment.LEFT, icons.get_icon(wtype),
                    lambda unit, wtype=wtype: (DB.weapon_ranks.get_rank_from_wexp(unit.wexp[wtype.nid]).rank
-                                              if DB.weapon_ranks.get_rank_from_wexp(unit.wexp[wtype.nid])
+                                              if (DB.weapon_ranks.get_rank_from_wexp(unit.wexp[wtype.nid]) and (DB.classes.get(unit.klass).wexp_gain.get(wtype.nid).usable or skill_system.wexp_usable_skill(unit, wtype)))
                                               else '-'),
                    None,
                    get_font=(lambda unit, wtype=wtype:
@@ -363,6 +363,7 @@ class UnitInformationTable(uif.UIComponent):
         translucent_menu_bg = image_mods.make_translucent(menu_bg_before_processing, 0.1)
         background_header = engine.subsurface(translucent_menu_bg, (0, 0, self.width, header_thickness))
         header_shadow: engine.Surface = image_mods.make_translucent(SPRITES.get('header_shadow'), 0.7)
+        header_shadow = engine.transform_scale(header_shadow, (self.width - 8, header_shadow.get_height()))
         background_header.blit(header_shadow, (0, 10))
 
         # make body; we don't have to know the thickness of the top since we can just cut the entire top part off and replace it with our header

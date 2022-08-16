@@ -184,7 +184,10 @@ class MapSpriteProperties(QWidget):
         elif self.current_color == 2:
             frame = editor_utilities.color_convert(frame, editor_utilities.enemy2_colors)
         elif self.current_color == 3:
-            frame = editor_utilities.color_convert(frame, editor_utilities.other_colors)
+            if DB.constants.value('dark_sprites'):
+                frame = editor_utilities.color_convert(frame, editor_utilities.other_dark_colors)
+            else:
+                frame = editor_utilities.color_convert(frame, editor_utilities.other_colors)
         frame = editor_utilities.convert_colorkey(frame)
 
         # Background stuff

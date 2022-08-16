@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Void Amulet",
+        "name": "Void Amulet",
+        "desc": "An amulet given to skilled fighters in Valentia. Foe gains no Exp when unit is defeated.",
+        "icon_nid": "Boosters",
+        "icon_index": [
+            0,
+            6
+        ],
+        "components": [
+            [
+                "status_on_hold",
+                "Void Curse"
+            ]
+        ]
+    }
+]

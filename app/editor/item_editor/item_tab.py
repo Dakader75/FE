@@ -17,9 +17,11 @@ class ItemProperties(ComponentProperties):
     title = "Item"
     get_components = staticmethod(ICA.get_item_components)
     get_templates = staticmethod(ICA.get_templates)
+    get_tags = staticmethod(ICA.get_item_tags)
 
 class ItemDatabase(DatabaseTab):
     allow_import_from_lt = True
+    allow_import_from_csv = True
     allow_copy_and_paste = True
 
     @classmethod
@@ -43,6 +45,17 @@ class ItemDatabase(DatabaseTab):
             for item in new_items:
                 self._data.append(item)
             self.update_list()
+
+    def import_csv(self):
+        settings = MainSettingsController()
+        starting_path = settings.get_last_open_path()
+        fn, ok = QFileDialog.getOpenFileName(self, "Import items from csv", starting_path, "items csv (*.csv);;All Files(*)")
+        if ok and fn:
+            parent_dir = os.path.split(fn)[0]
+            settings.set_last_open_path(parent_dir)
+            item_import.update_db_from_csv(DB, fn)
+            self.update_list()
+            self.reset()
 
 # Testing
 # Run "python -m app.editor.item_editor.item_tab" from main directory

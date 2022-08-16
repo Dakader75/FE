@@ -1,0 +1,482 @@
+[
+    {
+        "nid": "1",
+        "name": "Plain",
+        "color": [
+            192,
+            224,
+            48,
+            255
+        ],
+        "minimap": "Grass",
+        "platform": "Plains",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "0",
+        "name": "--",
+        "color": [
+            0,
+            0,
+            0,
+            255
+        ],
+        "minimap": "Wall",
+        "platform": "Wall",
+        "background": null,
+        "mtype": "Fence",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "2",
+        "name": "Forest",
+        "color": [
+            64,
+            128,
+            64,
+            255
+        ],
+        "minimap": "Forest",
+        "platform": "Forest",
+        "background": null,
+        "mtype": "Forest",
+        "opaque": false,
+        "status": "Forest"
+    },
+    {
+        "nid": "3",
+        "name": "Thicket",
+        "color": [
+            0,
+            32,
+            0,
+            255
+        ],
+        "minimap": "Thicket",
+        "platform": "Thicket",
+        "background": null,
+        "mtype": "Thicket",
+        "opaque": false,
+        "status": "Peak"
+    },
+    {
+        "nid": "4",
+        "name": "Bridge",
+        "color": [
+            170,
+            170,
+            127,
+            255
+        ],
+        "minimap": "Bridge",
+        "platform": "Bridge",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "5",
+        "name": "Stairs",
+        "color": [
+            84,
+            24,
+            84,
+            255
+        ],
+        "minimap": "Floor",
+        "platform": "Floor",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "6",
+        "name": "Floor",
+        "color": [
+            84,
+            84,
+            84,
+            255
+        ],
+        "minimap": "Floor",
+        "platform": "Floor",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "7",
+        "name": "Road",
+        "color": [
+            240,
+            240,
+            128,
+            255
+        ],
+        "minimap": "Sand",
+        "platform": "Road",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "8",
+        "name": "Pillar",
+        "color": [
+            64,
+            56,
+            40,
+            255
+        ],
+        "minimap": "Pillar",
+        "platform": "Pillar",
+        "background": null,
+        "mtype": "Pillar",
+        "opaque": false,
+        "status": "Forest"
+    },
+    {
+        "nid": "9",
+        "name": "Wall",
+        "color": [
+            40,
+            40,
+            40,
+            255
+        ],
+        "minimap": "Wall",
+        "platform": "Wall",
+        "background": null,
+        "mtype": "Wall",
+        "opaque": true,
+        "status": null
+    },
+    {
+        "nid": "Fence",
+        "name": "Fence",
+        "color": [
+            64,
+            40,
+            40,
+            255
+        ],
+        "minimap": "Wall",
+        "platform": "Wall",
+        "background": null,
+        "mtype": "Fence",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "10",
+        "name": "Lake",
+        "color": [
+            0,
+            160,
+            248,
+            255
+        ],
+        "minimap": "Sea",
+        "platform": "Lake",
+        "background": null,
+        "mtype": "Sea",
+        "opaque": false,
+        "status": "Avoid10"
+    },
+    {
+        "nid": "11",
+        "name": "Sea",
+        "color": [
+            0,
+            104,
+            160,
+            255
+        ],
+        "minimap": "Sea",
+        "platform": "Sea",
+        "background": null,
+        "mtype": "Sea",
+        "opaque": false,
+        "status": "Avoid10"
+    },
+    {
+        "nid": "12",
+        "name": "River",
+        "color": [
+            0,
+            160,
+            248,
+            255
+        ],
+        "minimap": "River",
+        "platform": "River",
+        "background": null,
+        "mtype": "River",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "20",
+        "name": "Hill",
+        "color": [
+            112,
+            84,
+            56,
+            255
+        ],
+        "minimap": "Hill",
+        "platform": "Hill",
+        "background": null,
+        "mtype": "Hill",
+        "opaque": false,
+        "status": "Mountain"
+    },
+    {
+        "nid": "21",
+        "name": "Mountain",
+        "color": [
+            80,
+            48,
+            40,
+            255
+        ],
+        "minimap": "Mountain",
+        "platform": "Mountain",
+        "background": null,
+        "mtype": "Mountain",
+        "opaque": false,
+        "status": "Peak"
+    },
+    {
+        "nid": "22",
+        "name": "Cliff",
+        "color": [
+            136,
+            136,
+            104,
+            255
+        ],
+        "minimap": "Cliff",
+        "platform": "Cliff",
+        "background": null,
+        "mtype": "Cliff",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "25",
+        "name": "Barrel",
+        "color": [
+            168,
+            104,
+            56,
+            255
+        ],
+        "minimap": "Wall",
+        "platform": "Deck",
+        "background": null,
+        "mtype": "Fence",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "30",
+        "name": "House",
+        "color": [
+            168,
+            88,
+            80,
+            255
+        ],
+        "minimap": "House",
+        "platform": "House",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": "Avoid10"
+    },
+    {
+        "nid": "31",
+        "name": "Fort",
+        "color": [
+            168,
+            80,
+            168,
+            255
+        ],
+        "minimap": "Fort",
+        "platform": "Fort",
+        "background": null,
+        "mtype": "Fort",
+        "opaque": false,
+        "status": "Fort"
+    },
+    {
+        "nid": "32",
+        "name": "Gate",
+        "color": [
+            32,
+            96,
+            216,
+            255
+        ],
+        "minimap": "Throne",
+        "platform": "Gate",
+        "background": null,
+        "mtype": "Throne",
+        "opaque": false,
+        "status": "Throne"
+    },
+    {
+        "nid": "33",
+        "name": "Armory",
+        "color": [
+            168,
+            1,
+            4,
+            255
+        ],
+        "minimap": "Shop",
+        "platform": "Armory",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": "Avoid10"
+    },
+    {
+        "nid": "34",
+        "name": "Vendor",
+        "color": [
+            160,
+            1,
+            4,
+            255
+        ],
+        "minimap": "Shop",
+        "platform": "Vendor",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": "Avoid10"
+    },
+    {
+        "nid": "Arena",
+        "name": "Arena",
+        "color": [
+            152,
+            1,
+            4,
+            255
+        ],
+        "minimap": "Shop",
+        "platform": "Arena",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": "Avoid10"
+    },
+    {
+        "nid": "35",
+        "name": "Village",
+        "color": [
+            85,
+            0,
+            0,
+            255
+        ],
+        "minimap": "House",
+        "platform": "Village",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": "Avoid10"
+    },
+    {
+        "nid": "36",
+        "name": "Chest",
+        "color": [
+            255,
+            247,
+            0,
+            255
+        ],
+        "minimap": "Chest",
+        "platform": "Chest",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "37",
+        "name": "Door",
+        "color": [
+            80,
+            0,
+            0,
+            255
+        ],
+        "minimap": "Door",
+        "platform": "Floor",
+        "background": null,
+        "mtype": "Wall",
+        "opaque": false,
+        "status": null
+    },
+    {
+        "nid": "38",
+        "name": "Throne",
+        "color": [
+            150,
+            0,
+            77,
+            255
+        ],
+        "minimap": "Throne",
+        "platform": "Throne",
+        "background": null,
+        "mtype": "Throne",
+        "opaque": false,
+        "status": "Throne"
+    },
+    {
+        "nid": "Ruins",
+        "name": "Ruins",
+        "color": [
+            32,
+            32,
+            32,
+            255
+        ],
+        "minimap": "Ruins",
+        "platform": "Ruins",
+        "background": null,
+        "mtype": "Normal",
+        "opaque": false,
+        "status": "Avoid10"
+    },
+    {
+        "nid": "Village Ruins",
+        "name": "Ruins",
+        "color": [
+            72,
+            64,
+            64,
+            255
+        ],
+        "minimap": "Ruins",
+        "platform": "Ruins",
+        "background": null,
+        "mtype": "Fort",
+        "opaque": false,
+        "status": null
+    }
+]

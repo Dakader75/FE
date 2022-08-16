@@ -152,7 +152,8 @@ class ComponentProperties():
             self._parent_pointer._recalculate_cached_dimensions_from_props()
 
         try:
-            self._parent_pointer._should_redraw = _should_redraw
+            if _should_redraw:
+                self._parent_pointer._should_redraw = True
         except: # probably hasn't been initialized yet
             pass
 
@@ -246,6 +247,7 @@ class UIComponent():
         self._cached_surf: engine.Surface = None
         # for testing
         self._times_drawn: int = 0
+        self._logging: bool = False
 
         self._done_init = True
         self._recalculate_cached_dimensions_from_props()
@@ -303,7 +305,7 @@ class UIComponent():
         """
         if isinstance(bg, engine.Surface):
             self.props.bg = bg
-        elif isinstance(bg, Color4):
+        elif isinstance(bg, Tuple):
             self.props.bg_color = bg
         # set this to none; the next time we render,
         # the component will regenerate the background.
@@ -409,9 +411,7 @@ class UIComponent():
         self.manual_surfaces = [surf_tup for surf_tup in self.manual_surfaces if not surf_tup[3] == surf_name]
 
     def should_redraw(self) -> bool:
-        if not self.enabled:
-            return False
-        return self._should_redraw or any([child.should_redraw() for child in self.children])
+        return self._should_redraw or any([child.should_redraw() for child in self.children if child.enabled])
 
     def did_redraw(self):
         pass
@@ -458,6 +458,7 @@ class UIComponent():
         for child in self.children:
             child.enter()
         self.enabled = True
+        self._should_redraw = True
 
     @animated('!exit')
     def exit(self, is_top_level=True) -> bool:
@@ -479,6 +480,7 @@ class UIComponent():
         Returns:
             bool: whether or not this is disabled, or is waiting on children to finish animating.
         """
+        self._should_redraw = True
         for child in self.children:
             child.exit(False)
         if not is_top_level:
@@ -492,6 +494,7 @@ class UIComponent():
     def enable(self):
         """does the same thing as enter(), except forgoes all animations
         """
+        self._should_redraw = True
         self.enabled = True
         for child in self.children:
             child.enable()
@@ -502,6 +505,7 @@ class UIComponent():
         Args:
             force (bool): Whether or not to clear all animations as well
         """
+        self._should_redraw = True
         self.enabled = False
         if force:
             self.skip_all_animations()
@@ -660,12 +664,17 @@ class UIComponent():
 
     def to_surf(self, no_cull=False, should_not_cull_on_redraw=True) -> engine.Surface:
         if not self.enabled:
+            self._should_redraw = False
             return engine.create_surface(self.size, True)
         if self.is_root:
             self.update()
         if not self.should_redraw() and self._cached_surf:
+            if self._logging:
+                print("returning cached for", self.name)
             base_surf = self._cached_surf
         else:
+            if self._logging:
+                print("regenerating for", self.name)
             self._reset('to_surf' + self.name if self.name else "")
             # draw the background.
             base_surf = self._create_bg_surf().copy()
@@ -718,7 +727,7 @@ class UIComponent():
             ret_surf = engine.subsurface(base_surf, (scroll_x, scroll_y, scroll_width, scroll_height))
         else:
             ret_surf = base_surf
-        return ret_surf
+        return ret_surf.copy()
 
     #################################
     # hidden methods for performance#

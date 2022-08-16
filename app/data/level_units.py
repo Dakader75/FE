@@ -1,8 +1,9 @@
+from app.utilities.typing import NID
 from dataclasses import dataclass
 
 from app.utilities.data import Prefab
 
-@dataclass 
+@dataclass
 class GenericUnit(Prefab):
     nid: str = None
     variant: str = None
@@ -16,14 +17,23 @@ class GenericUnit(Prefab):
 
     team: str = None
     ai: str = None
+    roam_ai: str = None
     ai_group: str = None
 
     starting_position: list = None  # 2-tuple
-    starting_traveler: list = None  # unit nid
+    starting_traveler: NID = None  # unit nid
 
-    name: str = None
-    desc: str = None
     generic: bool = True
+
+    @property
+    def name(self):
+        from app.data.database import DB
+        return DB.factions.get(self.faction).name
+
+    @property
+    def desc(self):
+        from app.data.database import DB
+        return DB.factions.get(self.faction).desc
 
     def replace_item_nid(self, old_nid, new_nid):
         for item in self.starting_items:
@@ -50,12 +60,13 @@ class UniqueUnit(Prefab):
     nid: str = None
     team: str = None
     ai: str = None
+    roam_ai: str = None
     ai_group: str = None
 
     faction: str = None  # Always None
 
     starting_position: list = None  # 2-tuple
-    starting_traveler: list = None  # Unit nid
+    starting_traveler: NID = None  # Unit nid
 
     generic: bool = False
 
@@ -74,6 +85,7 @@ class UniqueUnit(Prefab):
         s_dict['nid'] = self.nid
         s_dict['team'] = self.team
         s_dict['ai'] = self.ai
+        s_dict['roam_ai'] = self.roam_ai
         s_dict['ai_group'] = self.ai_group
         s_dict['starting_position'] = self.starting_position
         s_dict['starting_traveler'] = self.starting_traveler

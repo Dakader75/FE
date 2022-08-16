@@ -8,7 +8,7 @@ class SimpleDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
-        
+
     @classmethod
     def edit(cls, parent):
         dialog = cls(parent)
@@ -197,7 +197,7 @@ class RightClickView():
                 duplicate_action.setEnabled(False)
             if self.can_delete and not self.can_delete(self.model(), index):
                 delete_action.setEnabled(False)
-            
+
         menu.popup(self.viewport().mapToGlobal(pos))
 
     def new(self, index):
@@ -303,7 +303,7 @@ class TableView(RightClickTableView):
         rows = []
         for i, index in enumerate(indices):
             if orig_rows[i] in rows:
-                continue  # Already deleted 
+                continue  # Already deleted
             self.model().delete(index)
             rows.append(orig_rows[i])
 

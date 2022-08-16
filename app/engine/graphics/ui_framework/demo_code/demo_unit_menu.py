@@ -327,7 +327,7 @@ class DemoUnitMenu():
         self.sort_by_text.props.h_alignment = HAlignment.LEFT
         self.sort_by_text.props.v_alignment = VAlignment.CENTER
         self.sort_by_text.props.resize_mode = ResizeMode.AUTO
-        self.sort_by_text.set_font_name('text-white')
+        self.sort_by_text.set_font_name('text')
         self.sort_by_text.margin = (3, 0, 0, 0)
         self.sort_by_text.padding = (0, 0, 0, 2)
         self.sort_by_text.set_text("Sort: ")

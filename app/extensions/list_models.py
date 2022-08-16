@@ -166,6 +166,8 @@ class ReverseDoubleListModel(DoubleListModel):
         self._data.append([1, new_row])
 
 class MultiAttrListModel(VirtualListModel):
+    locked_columns = []
+
     def __init__(self, data, headers, parent=None):
         super().__init__(parent)
         self.window = parent
@@ -203,6 +205,8 @@ class MultiAttrListModel(VirtualListModel):
 
     def setData(self, index, value, role):
         if not index.isValid():
+            return False
+        if index.column() in self.locked_columns:
             return False
         data = self._data[index.row()]
         attr = self._headers[index.column()]

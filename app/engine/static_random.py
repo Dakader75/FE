@@ -46,6 +46,9 @@ r = StaticRandom()
 def set_seed(seed):
     r.set_seed(seed)
 
+def get_seed() -> int:
+    return r.seed
+
 def get_combat():
     return r.combat_random.randint(0, 99)
 
@@ -71,14 +74,21 @@ def shuffle(lst):
     r.combat_random.shuffle(lst)
     return lst
 
-# def get_other(a, b):
-#     return r.other_random.randint(a, b)
+def get_other(a, b):
+    return r.other_random.randint(a, b)
 
-# def get_other_random_state():
-#     return r.other_random.state
+def get_other_random_state():
+    return r.other_random.state
 
-# def set_other_random_state(state):
-#     r.other_random.state = state
+def set_other_random_state(state):
+    r.other_random.state = state
+
+def get_random_float() -> float:
+    return r.other_random.random()
+
+def get_random_choice(choices):
+    idx = get_other(0, len(choices) - 1)
+    return list(choices)[idx]
 
 # === Returns the index of a weighted list
 def weighted_choice(choices, generator=None) -> int:
@@ -86,7 +96,6 @@ def weighted_choice(choices, generator=None) -> int:
         rn = generator.randint(0, sum(choices) - 1)
     else:
         rn = r.growth_random.randint(0, sum(choices) - 1)
-    print(rn, generator.state)
     upto = 0
     for index, w in enumerate(choices):
         upto += w

@@ -1,0 +1,31 @@
+[
+    {
+        "nid": "Hexlock Shield",
+        "name": "Hexlock Shield",
+        "desc": "",
+        "icon_nid": "",
+        "icon_index": [
+            0,
+            0
+        ],
+        "components": [
+            [
+                "hidden",
+                null
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "RES",
+                        7
+                    ],
+                    [
+                        "SPD",
+                        -3
+                    ]
+                ]
+            ]
+        ]
+    }
+]

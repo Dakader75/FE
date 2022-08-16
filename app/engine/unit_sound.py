@@ -1,4 +1,4 @@
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 
 class UnitSound():
     sound_catalog = {
@@ -31,10 +31,10 @@ class UnitSound():
                     self.frame = -1
                 else:
                     self.playing_sound = 'Map_Step_' + sound
-                    SOUNDTHREAD.play_sfx(self.playing_sound)
+                    get_sound_thread().play_sfx(self.playing_sound)
             self.frame += 1
 
     def stop(self):
-        SOUNDTHREAD.stop_sfx(self.playing_sound)
+        get_sound_thread().stop_sfx(self.playing_sound)
         self.current_sound, self.playing_sound = None, None
         self.frame = 0

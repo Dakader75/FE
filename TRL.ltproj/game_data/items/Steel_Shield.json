@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Steel Shield",
+        "name": "Steel Shield",
+        "desc": "A shield with great protection. Grants +6 Def when equipped. -2 Spd penalty.",
+        "icon_nid": "Boosters",
+        "icon_index": [
+            0,
+            18
+        ],
+        "components": [
+            [
+                "equippable_accessory",
+                null
+            ],
+            [
+                "status_on_equip",
+                "Steel Shield"
+            ]
+        ]
+    }
+]

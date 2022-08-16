@@ -1,6 +1,6 @@
 from app.data.database import DB
 
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.state import State
 from app.engine.dialog_log import DialogLogState
 import app.engine.config as cf
@@ -12,6 +12,7 @@ class EventState(State):
     name = 'event'
     transparent = True
     event = None
+    is_handling_end_event = False
 
     def begin(self):
         logging.debug("Begin Event State")
@@ -22,10 +23,11 @@ class EventState(State):
                 game.cursor.hide()
 
     def take_input(self, event):
-        if self.event.state == 'dialog' and event == 'INFO':
-            game.state.change('dialog_log')
-        else:
-            self.event.take_input(event)
+        if self.event:
+            if self.event.state == 'dialog' and event == 'INFO':
+                game.state.change('dialog_log')
+            else:
+                self.event.take_input(event)
 
     def update(self):
         if self.game_over:
@@ -51,11 +53,12 @@ class EventState(State):
 
     def level_end(self):
         current_level_nid = game.level.nid
+        game.memory['_prev_level_nid'] = current_level_nid
         current_level_index = DB.levels.index(game.level.nid)
-        should_go_to_overworld = DB.levels.get(game.level.nid).go_to_overworld
+        should_go_to_overworld = DB.levels.get(game.level.nid).go_to_overworld and DB.constants.value('overworld')
+        game.memory['_skip_save'] = game.level_vars.get('_skip_save', False)
         game.clean_up()
-        if current_level_index < len(DB.levels) - 1:
-
+        if current_level_index < len(DB.levels) - 1 or game.game_vars.get('_goto_level') is not None:
             game.game_vars['_should_go_to_overworld'] = should_go_to_overworld
             if should_go_to_overworld:
                 if game.game_vars['_go_to_overworld_nid']:
@@ -72,7 +75,7 @@ class EventState(State):
                         game.game_vars['_next_overworld_nid'] = DB.overworlds.values()[0].nid
 
             # select the next level
-            if game.game_vars.get('_goto_level'):
+            if game.game_vars.get('_goto_level') is not None:
                 if game.game_vars['_goto_level'] == '_force_quit':
                     game.state.clear()
                     game.state.change('title_start')
@@ -103,8 +106,10 @@ class EventState(State):
     def end_event(self):
         logging.debug("Ending Event")
         game.events.end(self.event)
-        if game.level_vars.get('_win_game'):
+        if game.level_vars.get('_win_game') or self.is_handling_end_event:
             logging.info("Player Wins!")
+            game.level_vars['_win_game'] = False
+            self.is_handling_end_event = True
             # Update statistics here, if necessary
             if game.level_vars.get('_level_end_triggered'):
                 self.level_end()
@@ -120,13 +125,20 @@ class EventState(State):
             game.memory['next_state'] = 'game_over'
             game.state.change('transition_to')
 
+        elif game.level_vars.get('_main_menu'):
+            self.game_over = True
+            game.memory['next_state'] = 'title_start'
+            game.state.change('transition_to')
+
         elif self.event.battle_save_flag:
+            game.state.back()
             game.memory['save_kind'] = 'battle'
             game.memory['next_state'] = 'in_chapter_save'
             game.state.change('transition_to')
             self.event.battle_save_flag = False
 
         elif self.event.turnwheel_flag:
+            game.state.back()
             game.state.change('turnwheel')
             if self.event.turnwheel_flag == 2:
                 game.memory['force_turnwheel'] = True

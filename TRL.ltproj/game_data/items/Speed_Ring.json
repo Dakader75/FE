@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Speed Ring",
+        "name": "Speed Ring",
+        "desc": "A ring with unique properties. Grants +5 Spd and +10 avoid.",
+        "icon_nid": "Boosters",
+        "icon_index": [
+            0,
+            8
+        ],
+        "components": [
+            [
+                "equippable_accessory",
+                null
+            ],
+            [
+                "status_on_equip",
+                "Canto"
+            ]
+        ]
+    }
+]

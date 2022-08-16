@@ -1,0 +1,99 @@
+[
+    {
+        "name": "DefeatJerowmEnemy",
+        "trigger": "unit_death",
+        "level_nid": "2",
+        "condition": "unit.nid == \"Jerowm\" and unit.team == \"enemy\"",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Innes",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "You dastard of a prince...|I was supposed to be...|so much more..."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Innes"
+                ]
+            ],
+            [
+                "move_cursor",
+                [
+                    "Damon"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Glen",
+                    "Left"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Glen",
+                    "Lord Aston!|...|Jerowm. I've failed you...|"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Glen"
+                ]
+            ],
+            [
+                "change_team",
+                [
+                    "Damon",
+                    "enemy"
+                ]
+            ],
+            [
+                "change_ai",
+                [
+                    "Damon",
+                    "Pursue"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Glen",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Glen",
+                    "Lord Berkut!|Lord Aston's blood is on your hands!"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Glen"
+                ]
+            ],
+            [
+                "remove_talk",
+                [
+                    "Berkut",
+                    "Damon"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

@@ -71,3 +71,12 @@ def test_combat(left_combat_anim, left_weapon_anim, left_palette_name, left_pale
         driver.run_combat(mock_combat)
     except Exception as e:
         handle_exception(e)
+
+def test_event(commands, starting_command_idx=0, strategy=None):
+    try:
+        driver.start("Event Test", from_editor=True)
+        from app.events.mock_event import MockEvent
+        mock_event = MockEvent('Test Event', commands, starting_command_idx, strategy)
+        driver.run_event(mock_event)
+    except Exception as e:
+        handle_exception(e)

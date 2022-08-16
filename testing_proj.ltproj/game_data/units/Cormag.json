@@ -1,0 +1,93 @@
+[
+    {
+        "nid": "Cormag",
+        "name": "Cormag",
+        "desc": "A wyvern knight of Grado. A gentle man, but a ferocious warrior.",
+        "variant": null,
+        "level": 9,
+        "klass": "Wyvern Rider",
+        "tags": [],
+        "bases": {
+            "HP": 30,
+            "STR": 14,
+            "MAG": 7,
+            "SKL": 9,
+            "SPD": 10,
+            "LCK": 4,
+            "DEF": 12,
+            "RES": 2,
+            "CON": 11,
+            "MOV": 7
+        },
+        "growths": {
+            "HP": 85,
+            "STR": 55,
+            "MAG": 25,
+            "SKL": 40,
+            "SPD": 45,
+            "LCK": 35,
+            "DEF": 25,
+            "RES": 15,
+            "CON": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Killer Lance",
+                false
+            ],
+            [
+                "Iron Lance",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                71
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Cormag",
+        "affinity": "Fire",
+        "fields": []
+    }
+]

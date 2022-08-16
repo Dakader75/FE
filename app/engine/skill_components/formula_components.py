@@ -1,10 +1,10 @@
-from app.data.skill_components import SkillComponent
+from app.data.skill_components import SkillComponent, SkillTags
 from app.data.components import Type
 
 class AlternateDamageFormula(SkillComponent):
     nid = 'alternate_damage_formula'
     desc = 'Unit uses a different damage formula'
-    tag = 'formula'
+    tag = SkillTags.FORMULA
 
     expose = Type.Equation
     value = 'DAMAGE'
@@ -15,7 +15,7 @@ class AlternateDamageFormula(SkillComponent):
 class AlternateResistFormula(SkillComponent):
     nid = 'alternate_resist_formula'
     desc = 'Unit uses a different resist formula'
-    tag = 'formula'
+    tag = SkillTags.FORMULA
 
     expose = Type.Equation
     value = 'DEFENSE'
@@ -26,7 +26,7 @@ class AlternateResistFormula(SkillComponent):
 class AlternateAccuracyFormula(SkillComponent):
     nid = 'alternate_accuracy_formula'
     desc = 'Unit uses a different accuracy formula'
-    tag = 'formula'
+    tag = SkillTags.FORMULA
 
     expose = Type.Equation
     value = 'HIT'
@@ -37,7 +37,7 @@ class AlternateAccuracyFormula(SkillComponent):
 class AlternateAvoidFormula(SkillComponent):
     nid = 'alternate_avoid_formula'
     desc = 'Unit uses a different avoid formula'
-    tag = 'formula'
+    tag = SkillTags.FORMULA
 
     expose = Type.Equation
     value = 'AVOID'
@@ -48,7 +48,7 @@ class AlternateAvoidFormula(SkillComponent):
 class AlternateCritAccuracyFormula(SkillComponent):
     nid = 'alternate_crit_accuracy_formula'
     desc = 'Unit uses a different critical accuracy formula'
-    tag = 'formula'
+    tag = SkillTags.FORMULA
 
     expose = Type.Equation
     value = 'CRIT_HIT'
@@ -59,7 +59,7 @@ class AlternateCritAccuracyFormula(SkillComponent):
 class AlternateCritAvoidFormula(SkillComponent):
     nid = 'alternate_crit_avoid_formula'
     desc = 'Unit uses a different critical avoid formula'
-    tag = 'formula'
+    tag = SkillTags.FORMULA
 
     expose = Type.Equation
     value = 'CRIT_AVOID'
@@ -70,7 +70,7 @@ class AlternateCritAvoidFormula(SkillComponent):
 class AlternateAttackSpeedFormula(SkillComponent):
     nid = 'alternate_attack_speed_formula'
     desc = 'Unit uses a different attack speed formula'
-    tag = 'formula'
+    tag = SkillTags.FORMULA
 
     expose = Type.Equation
     value = 'HIT'
@@ -81,10 +81,44 @@ class AlternateAttackSpeedFormula(SkillComponent):
 class AlternateDefenseSpeedFormula(SkillComponent):
     nid = 'alternate_defense_speed_formula'
     desc = 'Unit uses a different defense speed formula'
-    tag = 'formula'
+    tag = SkillTags.FORMULA
 
     expose = Type.Equation
     value = 'HIT'
 
     def defense_speed_formula(self, unit):
         return self.value
+
+class AlternateCriticalMultiplierFormula(SkillComponent):
+    nid = 'alternate_critical_multiplier_formula'
+    desc = 'Change how much damage a critical does in comparison to base damage'
+    tag = SkillTags.FORMULA
+
+    expose = Type.Equation
+    value = 'CRIT_MULT'
+
+    def critical_multiplier_formula(self, unit):
+        return self.value
+
+class AlternateCriticalAdditionFormula(SkillComponent):
+    nid = 'alternate_critical_addition_formula'
+    desc = 'Change how much damage a critical does in comparison to base damage'
+    tag = SkillTags.FORMULA
+
+    expose = Type.Equation
+    value = 'CRIT_ADD'
+
+    def critical_addition_formula(self, unit):
+        return self.value
+
+class AlternateThraciaCriticalMultiplierFormula(SkillComponent):
+    nid = 'alternate_thracia_critical_addition_formula'
+    desc = 'Change how much damage a critical does in comparison to base damage'
+    tag = SkillTags.FORMULA
+
+    expose = Type.Equation
+    value = 'THRACIA_CRIT'
+
+    def thracia_critical_multiplier_formula(self, unit):
+        return self.value
+

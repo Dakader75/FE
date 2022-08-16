@@ -37,8 +37,8 @@ class CombatEffectProperties(CombatAnimProperties):
         self._data = self.window._data
 
         # Populate resources
-        for effect_anim in self._data:
-            populate_effect_pixmaps(effect_anim)
+        # for effect_anim in self._data:
+        #     populate_effect_pixmaps(effect_anim)
 
         self.control_setup(current)
         self.test_combat_button.setEnabled(False)
@@ -133,7 +133,7 @@ class CombatEffectProperties(CombatAnimProperties):
         new_nid = self.make_pose()
         if not new_nid:
             return
-        
+
         new_pose = combat_anims.Pose(new_nid)
         self.current.poses.append(new_pose)
         self.pose_box.addItem(new_nid)
@@ -142,13 +142,13 @@ class CombatEffectProperties(CombatAnimProperties):
     def duplicate_pose(self):
         new_nid = self.make_pose()
         if not new_nid:
-            return 
+            return
 
         current_pose_nid = self.pose_box.currentText()
         current_pose = self.current.poses.get(current_pose_nid)
         # Make a copy
-        ser = current_pose.serialize()
-        new_pose = combat_anims.Pose.deserialize(ser)
+        ser = current_pose.save()
+        new_pose = combat_anims.Pose.restore(ser)
         new_pose.nid = new_nid
         self.current.poses.append(new_pose)
         self.pose_box.addItem(new_nid)
@@ -201,6 +201,7 @@ class CombatEffectProperties(CombatAnimProperties):
         self.stop()
 
         self.current = current
+        populate_effect_pixmaps(self.current)
         self.nid_box.setText(self.current.nid)
 
         poses = self.reset_pose_box()
@@ -322,7 +323,7 @@ class CombatEffectProperties(CombatAnimProperties):
                     json.dump(serialized_data, serialize_file, indent=4)
         # Print done export! Export to %s complete!
         QMessageBox.information(self, "Export Complete", "Export of effect to %s complete!" % path)
-        
+
     def export_all_frames(self, fn_dir: str):
         current_pose_nid = self.pose_box.currentText()
         current_pose = self.current.poses.get(current_pose_nid)
@@ -391,9 +392,9 @@ class CombatEffectProperties(CombatAnimProperties):
                 return None
 
             left_palette_name, left_palette, right_palette_name, right_palette = self.get_test_palettes(combat_anim)
-            
+
             timer.get_timer().stop()
             GAME_ACTIONS.test_combat(
-                combat_anim, weapon_anim, left_palette_name, left_palette, self.current.nid, 
+                combat_anim, weapon_anim, left_palette_name, left_palette, self.current.nid,
                 combat_anim, weapon_anim, right_palette_name, right_palette, self.current.nid, current_pose_nid)
             timer.get_timer().start()

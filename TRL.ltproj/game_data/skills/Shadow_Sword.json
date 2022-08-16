@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Shadow_Sword",
+        "name": "Shadow_Sword",
+        "desc": "",
+        "icon_nid": "",
+        "icon_index": [
+            0,
+            0
+        ],
+        "components": [
+            [
+                "hidden",
+                null
+            ],
+            [
+                "lifetaker",
+                0.5
+            ]
+        ]
+    }
+]

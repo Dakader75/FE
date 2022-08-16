@@ -1,4 +1,4 @@
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.sprites import SPRITES
 from app.engine.state import State
 from app.engine import background, image_mods, engine
@@ -19,7 +19,7 @@ class GameOverState(State):
         self.state = initial_state
         self.text_transparency = 1
         # Music
-        SOUNDTHREAD.fade_in('Game Over')
+        get_sound_thread().fade_in('Game Over')
 
         self.text_surf = SPRITES.get('game_over_text')
 

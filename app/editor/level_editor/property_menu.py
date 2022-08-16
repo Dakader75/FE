@@ -116,6 +116,10 @@ class PropertiesMenu(QWidget):
         self.map_box.clicked.connect(self.select_tilemap)
         form.addWidget(self.map_box)
 
+        self.bg_box = QPushButton("Select background tilemap...")
+        self.bg_box.clicked.connect(self.select_bg_tilemap)
+        form.addWidget(self.bg_box)
+
         # overworld stuff
         self.overworld_box = PropertyCheckBox("Go to overworld after?", QCheckBox, self)
         self.overworld_box.edit.stateChanged.connect(self.overworld_box_changed)
@@ -128,7 +132,7 @@ class PropertiesMenu(QWidget):
         form.addWidget(self.free_roam_box)
 
         self.unit_box = UnitBox(self, button=True, title="Roaming Unit")
-        self.unit_box.edit.currentIndexChanged.connect(self.unit_changed)
+        self.unit_box.edit.activated.connect(self.unit_changed)
         self.unit_box.button.clicked.connect(self.access_units)
         form.addWidget(self.unit_box)
 
@@ -239,6 +243,13 @@ class PropertiesMenu(QWidget):
                 group.positions = {k: v for k, v in group.positions.items() if v[0] < res.width and v[1] < res.height}
             self.state_manager.change_and_broadcast('ui_refresh_signal', None)
 
+    def select_bg_tilemap(self):
+        res, ok = tile_tab.get_tilemaps()
+        if ok and res:
+            nid = res.nid
+            self.current.bg_tilemap = nid
+            self.state_manager.change_and_broadcast('ui_refresh_signal', None)
+
     def access_units(self):
         unit, ok = unit_tab.get(self.current.roam_unit)
         if unit and ok:
@@ -249,12 +260,13 @@ class PropertiesMenu(QWidget):
         self.current.roam = bool(state)
         if self.current.roam:
             self.unit_box.show()
+            # self.unit_changed() - This line seems only to cause issues due to it reseting the roam_unit in line 265. Functionality appears to work correctly with it removed
         else:
             self.unit_box.hide()
 
     def overworld_box_changed(self, state):
         self.current.go_to_overworld = bool(state)
 
-    def unit_changed(self, idx):
-        self.current.roam_unit = DB.units[idx].nid
+    def unit_changed(self):
+        self.current.roam_unit = self.unit_box.edit.currentText()
         self.unit_box.edit.setValue(self.current.roam_unit)

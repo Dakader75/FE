@@ -1,7 +1,7 @@
 from app.utilities.data import Data, Prefab
 
-AI_ActionTypes = ['None', 'Attack', 'Support', 'Steal', 'Interact', 'Move_to', 'Move_away_from']
-AI_TargetTypes = ['None', 'Enemy', 'Ally', 'Unit', 'Position', 'Event']
+AI_ActionTypes = ['None', 'Attack', 'Support', 'Steal', 'Interact', 'Move_to', 'Move_away_from', 'Wait']
+AI_TargetTypes = ['None', 'Enemy', 'Ally', 'Unit', 'Position', 'Event', 'Time']
 unit_spec = ['All', 'Class', 'Tag', 'Name', 'Team', 'Faction', 'Party', 'ID']
 # View Range
 # (Don't look | Movement*2 + Maximum Item Range | Entire Map | Custom Range (Integer))
@@ -12,9 +12,16 @@ class AIPrefab(Prefab):
         self.behaviours = [AIBehaviour.DoNothing(), AIBehaviour.DoNothing(), AIBehaviour.DoNothing()]
         self.priority: int = priority
         self.offense_bias: float = offense_bias
+        self.roam_ai = False
 
     def add_behaviour(self, behaviour):
         self.behaviours.append(behaviour)
+
+    def add_default(self):
+        self.behaviours.append(AIBehaviour.DoNothing())
+
+    def pop_behaviour(self):
+        self.behaviours.pop()
 
     def set_behaviour(self, idx, behaviour):
         self.behaviours[idx] = behaviour
@@ -63,12 +70,14 @@ class AIPrefab(Prefab):
         return True
 
 class AIBehaviour(Prefab):
-    def __init__(self, action: str, target, view_range: int, target_spec=None):
+    def __init__(self, action: str, target, view_range: int, target_spec=None, speed=100, desired_proximity=0):
         self.action: str = action
         self.target = target
         self.target_spec = target_spec
         self.view_range: int = view_range
         self.invert_targeting: bool = False
+        self.roam_speed = speed
+        self.desired_proximity = desired_proximity
 
     @classmethod
     def DoNothing(cls):

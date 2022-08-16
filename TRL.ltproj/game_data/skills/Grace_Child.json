@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Grace_Child",
+        "name": "Grace",
+        "desc": "Unit deals -2 damge.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            6,
+            2
+        ],
+        "components": [
+            [
+                "hidden",
+                null
+            ],
+            [
+                "negative",
+                null
+            ],
+            [
+                "damage",
+                -2
+            ]
+        ]
+    }
+]

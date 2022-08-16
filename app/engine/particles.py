@@ -1,15 +1,16 @@
 import math, random
 
-from app.constants import WINWIDTH, WINHEIGHT, TILEWIDTH, TILEHEIGHT
+from app.constants import TILEX, WINWIDTH, WINHEIGHT, TILEWIDTH, TILEHEIGHT
 from app.engine.sprites import SPRITES
 
 from app.engine import engine, image_mods
 from app.engine.game_state import game
 
 class ParticleSystem():
-    def __init__(self, nid, particle, abundance, bounds, size, blend=None):
+    def __init__(self, nid, particle, abundance, bounds, size, blend=None, position=None):
         width, height = size
         self.nid = nid
+        self.pos = position
         self.particle = particle
         self.abundance = int(abundance * width * height)
         self.particles = []
@@ -18,9 +19,9 @@ class ParticleSystem():
 
         self.lx, self.ux, self.ly, self.uy = bounds
         self.blend = blend
-    
+
     def save(self):
-        return self.nid
+        return self.nid, self.pos
 
     def update(self):
         for particle in self.particles:
@@ -43,7 +44,9 @@ class ParticleSystem():
             self.update()
 
     def draw(self, surf, offset_x=0, offset_y=0):
-        if self.blend:
+        if self.blend == SPRITES.get('particle_bg_night'):
+            engine.blit(surf, self.blend, (0, 0), None, engine.BLEND_RGB_MULT)
+        elif self.blend:
             engine.blit(surf, self.blend, (0, 0), None, engine.BLEND_RGB_ADD)
         for particle in self.particles:
             particle.draw(surf, offset_x, offset_y)
@@ -64,7 +67,7 @@ class Particle():
 
 class Raindrop(Particle):
     sprite = SPRITES.get('particle_raindrop')
-    speed = 2
+    speed = 3
 
     def update(self):
         self.x += self.speed
@@ -91,7 +94,7 @@ class Smoke(Particle):
     def update(self):
         self.x += random.randint(self.speed//2, self.speed)
         self.y -= random.randint(self.speed//2, self.speed)
-        if game.tilemap and (self.x > game.tilemap.width * TILEWIDTH or self.y < -32):
+        if game.tilemap and (self.x > max(TILEX, game.tilemap.width) * TILEWIDTH or self.y < -32):
             self.remove_me_flag = True
         elif self.x > WINWIDTH:
             self.remove_me_flag = True
@@ -224,7 +227,43 @@ class DarkMote(LightMote):
     sprite = SPRITES.get('particle_dark_mote')
     speed = -0.16
 
-def create_system(nid, width, height):
+class Night(Particle):
+    speed = 0
+
+class EventTileParticle(Particle):
+    sprite = SPRITES.get('particle_light_mote')
+    x_speed = 0.16
+    min_y_speed = 0.33
+    y_speed = 1
+
+    def __init__(self, pos):
+        super().__init__(pos)
+        self.orig_pos = pos
+        self.x_speed = (random.random() * self.x_speed * 2) - self.x_speed
+        self.y_speed = -(random.random() * (self.y_speed - self.min_y_speed)) - self.min_y_speed
+        self.transparency = 0.6 * (random.random() * 0.3)
+        self.transition = False
+        self.change_over_time = 0.05
+
+    def update(self):
+        self.x += self.x_speed
+        self.y += self.y_speed
+        if self.y < self.orig_pos[1] - 20:
+            self.transition = True
+
+        if self.transition:
+            self.transparency += self.change_over_time
+        else:
+            self.transparency += self.change_over_time / 5
+        if self.transparency >= 1:
+            self.remove_me_flag = True
+            self.transparency = 1.
+
+    def draw(self, surf, offset_x=0, offset_y=0):
+        sprite = image_mods.make_translucent(self.sprite, self.transparency)
+        surf.blit(sprite, (self.x - offset_x, self.y - offset_y))
+
+def create_system(nid, width, height, position):
     twidth, theight = width * TILEWIDTH, height * TILEHEIGHT
     if nid == 'rain':
         creation_bounds = -theight // 4, twidth, -16, -8
@@ -248,4 +287,12 @@ def create_system(nid, width, height):
         creation_bounds = 0, WINWIDTH + 64, WINHEIGHT, WINHEIGHT + 16
         blend = SPRITES.get('particle_bg_fire')
         ps = ParticleSystem(nid, Fire, .06, creation_bounds, (width, height), blend=blend)
+    elif nid == 'night':
+        creation_bounds = 0, WINWIDTH + 64, WINHEIGHT, WINHEIGHT + 16
+        blend = SPRITES.get('particle_bg_night')
+        ps = ParticleSystem(nid, Night, 0, creation_bounds, (width, height), blend=blend)
+    elif nid == 'event_tile':
+        ypos = (position[1] + 1) * TILEHEIGHT
+        creation_bounds = position[0] * TILEWIDTH, (position[0] + 1) * TILEWIDTH, ypos - 5, ypos
+        ps = ParticleSystem(nid, EventTileParticle, 6, creation_bounds, (1, 1), position=position)
     return ps

@@ -1,9 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
+from app.editor.lib.csv.csv_exporter import update_db_with_item_csv
 
 from app.utilities import str_utils, utils
 from app.utilities.data import Data
-from app.data.database import DB
+from app.data.database import DB, Database
 from app.data import items
 
 from app.data.components import Type
@@ -11,6 +12,12 @@ from app.data.components import Type
 import app.engine.item_component_access as ICA
 
 import logging
+
+
+def update_db_from_csv(db: Database, csv_fn: str):
+    with open(csv_fn) as f:
+        csv_text = f.read()
+        update_db_with_item_csv(db, csv_text)
 
 def get_from_xml(parent_dir: str, xml_fn: str) -> list:
     item_xml = ET.parse(xml_fn)
@@ -135,7 +142,7 @@ def load_item(item, parent_dir):
             comp = ICA.get_component('map_cast_sfx')
             comp.value = item.find('sfx_on_cast').text
             final_components.append(comp)
-        
+
         elif component == 'aoe_anim':
             comp = ICA.get_component('map_cast_anim')
             final_components.append(comp)

@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QHBoxLayout, QLineEdit, QMessageBox, QSpinBox,
-                             QVBoxLayout, QWidget)
+                             QVBoxLayout, QWidget, QDoubleSpinBox)
 
 from app.data.difficulty_modes import GrowthOption, PermadeathOption, RNGOption
 from app.editor.stat_widget import StatListWidget
@@ -34,7 +34,7 @@ class DifficultyModeProperties(QWidget):
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
 
         self.name_box = PropertyBox("Display Name", QLineEdit, self)
-        self.name_box.edit.setMaxLength(20)
+
         self.name_box.edit.textChanged.connect(self.name_changed)
 
         self.color_box = PropertyBox("Color", ComboBox, self)
@@ -79,6 +79,12 @@ class DifficultyModeProperties(QWidget):
         autolevel_section.addWidget(self.enemy_autolevels)
         autolevel_section.addWidget(self.boss_autolevels)
 
+        self.promoted_autolevels_fraction_box = PropertyBox("Promoted Autolevels Fraction", QDoubleSpinBox, self)
+        self.promoted_autolevels_fraction_box.edit.setAlignment(Qt.AlignRight)
+        self.promoted_autolevels_fraction_box.edit.setRange(0, 10)
+        self.promoted_autolevels_fraction_box.edit.setSingleStep(0.01)
+        self.promoted_autolevels_fraction_box.edit.valueChanged.connect(self.promoted_autolevel_fraction_changed)
+
         main_section = QVBoxLayout()
         main_section.addWidget(self.nid_box)
         main_section.addWidget(self.name_box)
@@ -90,6 +96,7 @@ class DifficultyModeProperties(QWidget):
         main_section.addWidget(self.enemy_stat_widget)
         main_section.addWidget(self.boss_stat_widget)
         main_section.addLayout(autolevel_section)
+        main_section.addWidget(self.promoted_autolevels_fraction_box)
         self.setLayout(main_section)
 
     def nid_changed(self, text):
@@ -133,6 +140,9 @@ class DifficultyModeProperties(QWidget):
     def boss_autolevel_changed(self, index):
         self.current.boss_autolevels = self.boss_autolevels.edit.value()
 
+    def promoted_autolevel_fraction_changed(self, index):
+        self.current.promoted_autolevels_fraction = float(self.promoted_autolevels_fraction_box.edit.value())
+
     def set_current(self, current):
         self.current = current
         self.nid_box.edit.setText(current.nid)
@@ -152,3 +162,5 @@ class DifficultyModeProperties(QWidget):
         self.player_autolevels.edit.setValue(current.player_autolevels)
         self.enemy_autolevels.edit.setValue(current.enemy_autolevels)
         self.boss_autolevels.edit.setValue(current.boss_autolevels)
+
+        self.promoted_autolevels_fraction_box.edit.setValue(current.promoted_autolevels_fraction)

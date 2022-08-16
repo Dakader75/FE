@@ -1,6 +1,6 @@
 Lex Talionis Engine and LT-Maker Editor created by rainlash
 
-With additional programming and help from the Lex Talionis Discord server, including mag, TheeBill, Lord Tweed, ZessDynamite, Nemid, Kyogokudo, KD, beccarte, Meinerevre, and Greentwip.
+With additional programming and help from the Lex Talionis Discord server, including mag, KD, TheeBill, Lord Tweed, ZessDynamite, Nemid, Kyogokudo, beccarte, Meinerieve, Greentwip, and Klokinator.
 
 Narrow fonts originally created by Scraiza.
 

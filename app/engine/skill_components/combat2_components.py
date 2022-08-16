@@ -1,14 +1,15 @@
-from app.data.skill_components import SkillComponent
+from app.data.skill_components import SkillComponent, SkillTags
 from app.data.components import Type
 
 from app.utilities import utils
 from app.engine import action, skill_system, target_system
 from app.engine.game_state import game
+from app.engine.combat import playback as pb
 
 class Miracle(SkillComponent):
     nid = 'miracle'
     desc = "Unit cannot be reduced below 1 HP"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     def cleanup_combat(self, playback, unit, item, target, mode):
         if unit.get_hp() <= 0:
@@ -19,13 +20,13 @@ class Miracle(SkillComponent):
 class IgnoreDamage(SkillComponent):
     nid = 'ignore_damage'
     desc = "Unit will ignore all damage"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     def after_take_hit(self, actions, playback, unit, item, target, mode, attack_info):
         # Remove any acts that reduce my HP!
         did_something = False
         for act in reversed(actions):
-            if isinstance(act, action.ChangeHP) and act.num < 0:
+            if isinstance(act, action.ChangeHP) and act.num < 0 and act.unit == unit:
                 actions.remove(act)
                 did_something = True
 
@@ -35,70 +36,114 @@ class IgnoreDamage(SkillComponent):
 class LiveToServe(SkillComponent):
     nid = 'live_to_serve'
     desc = r"Unit will be healed X% of amount healed"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Float
     value = 1.0
 
     def after_hit(self, actions, playback, unit, item, target, mode, attack_info):
         total_amount_healed = 0
-        playbacks = [p for p in playback if p[0] == 'heal_hit' and p[1] is unit and p[3] is not unit]
+        playbacks = [p for p in playback if p.nid == 'heal_hit' and p.attacker is unit and p.defender is not unit]
         for p in playbacks:
-            total_amount_healed += p[4]
+            total_amount_healed += p.damage
 
         amount = int(total_amount_healed * self.value)
         if amount > 0:
             true_heal = min(amount, unit.get_max_hp() - unit.get_hp())
-            playback.append(('heal_hit', unit, item, unit, true_heal, true_heal))
+            playback.append(pb.HealHit(unit, item, unit, true_heal, true_heal))
             actions.append(action.ChangeHP(unit, amount))
             actions.append(action.TriggerCharge(unit, self.skill))
 
 class Lifetaker(SkillComponent):
     nid = 'lifetaker'
     desc = r"Heal % of total HP after a kill"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Float
     value = 0.5
 
     def end_combat(self, playback, unit, item, target, mode):
-        playbacks = [p for p in playback if p[0] in ('mark_hit', 'mark_crit') and p[1] is unit and p[2] and p[2] is not unit and p[2].is_dying]
-        unique_units = {p[2] for p in playbacks}
+        playbacks = [p for p in playback if p.nid in ('mark_hit', 'mark_crit') and p.attacker is unit and p.defender is not unit and p.defender.is_dying]
+        unique_units = {p.defender for p in playbacks}
         num_playbacks = len(unique_units)
         if num_playbacks > 0:
             amount = max(2, int(unit.get_max_hp() * self.value * num_playbacks))
             if amount > 0:
                 true_heal = min(amount, unit.get_max_hp() - unit.get_hp())
-                playback.append(('heal_hit', unit, item, unit, true_heal, true_heal))
+                playback.append(pb.HealHit(unit, item, unit, true_heal, true_heal))
                 action.do(action.ChangeHP(unit, amount))
                 action.do(action.TriggerCharge(unit, self.skill))
 
 class Lifelink(SkillComponent):
     nid = 'lifelink'
     desc = "Heals user %% of damage dealt"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Float
     value = 0.5
 
     def after_hit(self, actions, playback, unit, item, target, mode, attack_info):
         total_damage_dealt = 0
-        playbacks = [p for p in playback if p[0] in ('damage_hit', 'damage_crit') and p[1] == unit]
+        playbacks = [p for p in playback if p.nid in ('damage_hit', 'damage_crit') and p.attacker == unit]
         for p in playbacks:
-            total_damage_dealt += p[5]
+            total_damage_dealt += p.true_damage
 
         damage = utils.clamp(total_damage_dealt, 0, target.get_hp())
         true_damage = int(damage * self.value)
         actions.append(action.ChangeHP(unit, true_damage))
 
-        playback.append(('heal_hit', unit, item, unit, true_damage, true_damage))
+        playback.append(pb.HealHit(unit, item, unit, true_damage, true_damage))
 
         actions.append(action.TriggerCharge(unit, self.skill))
+
+class AllyLifelink(SkillComponent):
+    nid = 'ally_lifelink'
+    desc = "Heals adjacent allies %% of damage dealt"
+    tag = SkillTags.COMBAT2
+
+    expose = Type.Float
+    value = 0.5
+
+    def after_hit(self, actions, playback, unit, item, target, mode, attack_info):
+        total_damage_dealt = 0
+        playbacks = [p for p in playback if p.nid in ('damage_hit', 'damage_crit') and p.attacker == unit]
+        for p in playbacks:
+            total_damage_dealt += p.true_damage
+
+        damage = utils.clamp(total_damage_dealt, 0, target.get_hp())
+        true_damage = int(damage * self.value)
+        if true_damage > 0 and unit.position:
+            adj_positions = target_system.get_adjacent_positions(unit.position)
+            did_happen = False
+            for adj_pos in adj_positions:
+                other = game.board.get_unit(adj_pos)
+                if other and skill_system.check_ally(other, unit):
+                    actions.append(action.ChangeHP(other, true_damage))
+                    playback.append(pb.HealHit(unit, item, other, true_damage, true_damage))
+                    did_happen = True
+
+            if did_happen:
+                actions.append(action.TriggerCharge(unit, self.skill))
+
+class Armsthrift(SkillComponent):
+    nid = 'armsthrift'
+    desc = 'Restores uses on hit.'
+    tag = SkillTags.COMBAT2
+
+    expose = Type.Int
+    value = 1
+
+    def after_hit(self, actions, playback, unit, item, target, mode, attack_info):
+        if not item.data.get('uses', None) or not item.data.get('starting_uses', None):
+            return
+        curr_uses = item.data.get('uses')
+        max_uses = item.data.get('starting_uses')
+        actions.append(action.SetObjData(item, 'uses', min(curr_uses + self.value - 1, max_uses)))
 
 class LimitMaximumRange(SkillComponent):
     nid = 'limit_maximum_range'
     desc = "limits unit's maximum allowed range"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Int
     value = 1
@@ -109,7 +154,7 @@ class LimitMaximumRange(SkillComponent):
 class ModifyMaximumRange(SkillComponent):
     nid = 'modify_maximum_range'
     desc = "modifies unit's maximum allowed range"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Int
     value = 1
@@ -117,10 +162,28 @@ class ModifyMaximumRange(SkillComponent):
     def modify_maximum_range(self, unit, item):
         return self.value
 
+class EvalMaximumRange(SkillComponent):
+    nid = 'eval_range'
+    desc = "Gives +X range solved using evaluate"
+    tag = SkillTags.COMBAT2
+
+    expose = Type.String
+
+    def modify_maximum_range(self, unit, item):
+        from app.engine import evaluate
+        try:
+            return int(evaluate.evaluate(self.value, unit, local_args={'item': item}))
+        except:
+            print("Couldn't evaluate %s conditional" % self.value)
+        return 0
+
+    def has_dynamic_range(sellf, unit):
+        return True
+
 class CannotDouble(SkillComponent):
     nid = 'cannot_double'
     desc = "Unit cannot double"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     def no_double(self, unit):
         return True
@@ -128,7 +191,7 @@ class CannotDouble(SkillComponent):
 class CanDoubleOnDefense(SkillComponent):
     nid = 'can_double_on_defense'
     desc = "Unit can double while defending (extraneous if set to True in constants)"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     def def_double(self, unit):
         return True
@@ -136,15 +199,15 @@ class CanDoubleOnDefense(SkillComponent):
 class Vantage(SkillComponent):
     nid = 'vantage'
     desc = "Unit will attack first even while defending"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     def vantage(self, unit):
         return True
 
 class GuaranteedCrit(SkillComponent):
     nid = 'guaranteed_crit'
-    desc = "Unit will have chance to crit even if crit constant is turned off"
-    tag = 'combat2'
+    desc = "Unit will always crit even if crit constant is turned off"
+    tag = SkillTags.COMBAT2
 
     def crit_anyway(self, unit):
         return True
@@ -152,30 +215,23 @@ class GuaranteedCrit(SkillComponent):
 class DistantCounter(SkillComponent):
     nid = 'distant_counter'
     desc = "Unit has infinite range when defending"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     def distant_counter(self, unit):
         return True
 
-class Oversplash(SkillComponent):
-    nid = 'oversplash'
-    desc = "Grants unit +X area of effect for regular and blast items"
-    tag = 'combat2'
+class CloseCounter(SkillComponent):
+    nid = 'close_counter'
+    desc = "Unit can retaliate against adjacent foes even if otherwise unable to"
+    tag = SkillTags.COMBAT2
 
-    expose = Type.Int
-    value = 1
-
-    def empower_splash(self, unit):
-        return self.value
-
-    def alternate_splash(self, unit):
-        from app.engine.item_components.aoe_components import BlastAOE
-        return BlastAOE(0)
+    def close_counter(self, unit):
+        return True
 
 class Cleave(SkillComponent):
     nid = 'Cleave'
     desc = "Grants unit the ability to cleave with all their non-splash attacks"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     def alternate_splash(self, unit):
         from app.engine.item_components.aoe_components import EnemyCleaveAOE
@@ -183,8 +239,8 @@ class Cleave(SkillComponent):
 
 class GiveStatusAfterCombat(SkillComponent):
     nid = 'give_status_after_combat'
-    desc = "Gives a status to target after combat"
-    tag = 'combat2'
+    desc = "Gives a status to target enemy after combat"
+    tag = SkillTags.COMBAT2
 
     expose = Type.Skill
 
@@ -194,16 +250,43 @@ class GiveStatusAfterCombat(SkillComponent):
             action.do(action.AddSkill(target, self.value, unit))
             action.do(action.TriggerCharge(unit, self.skill))
 
-class GiveStatusAfterAttack(SkillComponent):
-    nid = 'give_status_after_attack'
-    desc = "Gives a status to target after attacking the target"
-    tag = 'combat2'
+class GiveAllyStatusAfterCombat(SkillComponent):
+    nid = 'give_ally_status_after_combat'
+    desc = "Gives a status to target ally after combat"
+    tag = SkillTags.COMBAT2
 
     expose = Type.Skill
 
     def end_combat(self, playback, unit, item, target, mode):
-        mark_playbacks = [p for p in playback if p[0] in ('mark_miss', 'mark_hit', 'mark_crit')]
-        if target and any(p[3] == unit or p[1] == p[3].strike_partner \
+        from app.engine import skill_system
+        if target and skill_system.check_ally(unit, target):
+            action.do(action.AddSkill(target, self.value, unit))
+            action.do(action.TriggerCharge(unit, self.skill))
+
+class GiveStatusAfterAttack(SkillComponent):
+    nid = 'give_status_after_attack'
+    desc = "Gives a status to target after attacking the target"
+    tag = SkillTags.COMBAT2
+
+    expose = Type.Skill
+
+    def end_combat(self, playback, unit, item, target, mode):
+        mark_playbacks = [p for p in playback if p.nid in ('mark_miss', 'mark_hit', 'mark_crit')]
+        if target and any(p.attacker is unit and (p.main_attacker is unit or p.attacker is p.main_attacker.strike_partner) \
+                for p in mark_playbacks):  # Unit is overall attacker
+            action.do(action.AddSkill(target, self.value, unit))
+            action.do(action.TriggerCharge(unit, self.skill))
+
+class GiveStatusAfterCombatOnHit(SkillComponent):
+    nid = 'give_status_after_combat_on_hit'
+    desc = "Gives a status to target after combat assuming you hit the target"
+    tag = SkillTags.COMBAT2
+
+    expose = Type.Skill
+
+    def end_combat(self, playback, unit, item, target, mode):
+        mark_playbacks = [p for p in playback if p.nid in ('mark_hit', 'mark_crit')]
+        if target and any(p.attacker is unit and (p.main_attacker is unit or p.attacker is p.main_attacker.strike_partner) \
                 for p in mark_playbacks):  # Unit is overall attacker
             action.do(action.AddSkill(target, self.value, unit))
             action.do(action.TriggerCharge(unit, self.skill))
@@ -211,22 +294,21 @@ class GiveStatusAfterAttack(SkillComponent):
 class GiveStatusAfterHit(SkillComponent):
     nid = 'give_status_after_hit'
     desc = "Gives a status to target after hitting them"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Skill
 
     def after_hit(self, actions, playback, unit, item, target, mode, attack_info):
-        mark_playbacks = [p for p in playback if p[0] in ('mark_hit', 'mark_crit')]
+        mark_playbacks = [p for p in playback if p.nid in ('mark_hit', 'mark_crit')]
 
-        if target and any(p[3] == unit or p[1] == p[3].strike_partner \
-                for p in mark_playbacks):  # Unit is overall attacker
+        if target and any(p.attacker == unit for p in mark_playbacks):
             actions.append(action.AddSkill(target, self.value, unit))
             actions.append(action.TriggerCharge(unit, self.skill))
 
 class GainSkillAfterKill(SkillComponent):
     nid = 'gain_skill_after_kill'
     desc = "Gives a skill to user after a kill"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Skill
 
@@ -238,48 +320,48 @@ class GainSkillAfterKill(SkillComponent):
 class GainSkillAfterAttacking(SkillComponent):
     nid = 'gain_skill_after_attack'
     desc = "Gives a skill to user after an attack"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Skill
 
     def end_combat(self, playback, unit, item, target, mode):
-        mark_playbacks = [p for p in playback if p[0] in ('mark_miss', 'mark_hit', 'mark_crit')]
-        if any(p[3] == unit for p in mark_playbacks):  # Unit is overall attacker
+        mark_playbacks = [p for p in playback if p.nid in ('mark_miss', 'mark_hit', 'mark_crit')]
+        if any(p.attacker is unit and p.main_attacker is unit for p in mark_playbacks):  # Unit is overall attacker
             action.do(action.AddSkill(unit, self.value))
             action.do(action.TriggerCharge(unit, self.skill))
 
 class GainSkillAfterActiveKill(SkillComponent):
     nid = 'gain_skill_after_active_kill'
     desc = "Gives a skill after a kill on personal phase"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Skill
 
     def end_combat(self, playback, unit, item, target, mode):
-        mark_playbacks = [p for p in playback if p[0] in ('mark_miss', 'mark_hit', 'mark_crit')]
-        if target and target.get_hp() <= 0 and any(p[3] == unit for p in mark_playbacks):  # Unit is overall attacker
+        mark_playbacks = [p for p in playback if p.nid in ('mark_miss', 'mark_hit', 'mark_crit')]
+        if target and target.get_hp() <= 0 and any(p.main_attacker is unit for p in mark_playbacks):  # Unit is overall attacker
             action.do(action.AddSkill(unit, self.value))
             action.do(action.TriggerCharge(unit, self.skill))
 
 class DelayInitiativeOrder(SkillComponent):
     nid = 'delay_initiative_order'
     desc = "Delays the target's next turn by X after hit. Cannot activate when unit is defending."
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Int
     value = 1
     author = "KD"
 
     def after_hit(self, actions, playback, unit, item, target, mode, attack_info):
-        mark_playbacks = [p for p in playback if p[0] in ('mark_miss', 'mark_hit', 'mark_crit')]
-        if target and target.get_hp() <= 0 and any(p[3] == unit for p in mark_playbacks):  # Unit is overall attacker
+        mark_playbacks = [p for p in playback if p.nid in ('mark_hit', 'mark_crit')]
+        if target and target.get_hp() <= 0 and any(p.attacker is unit and p.main_attacker is unit for p in mark_playbacks):  # Unit is overall attacker
             actions.append(action.MoveInInitiative(target, self.value))
             actions.append(action.TriggerCharge(unit, self.skill))
 
 class Recoil(SkillComponent):
     nid = 'recoil'
     desc = "Unit takes non-lethal damage after combat with an enemy"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Int
     value = 0
@@ -294,7 +376,7 @@ class Recoil(SkillComponent):
 class PostCombatDamage(SkillComponent):
     nid = 'post_combat_damage'
     desc = "Target takes non-lethal flat damage after combat"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Int
     value = 0
@@ -309,12 +391,12 @@ class PostCombatDamage(SkillComponent):
 class PostCombatDamagePercent(SkillComponent):
     nid = 'post_combat_damage_percent'
     desc = "Target takes non-lethal MaxHP percent damage after combat"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
 
     expose = Type.Float
     value = 0.2
     author = 'Lord_Tweed'
-    
+
     def end_combat(self, playback, unit, item, target, mode):
         if target and skill_system.check_enemy(unit, target):
             end_health = int(target.get_hp() - (target.get_max_hp() * self.value))
@@ -324,7 +406,7 @@ class PostCombatDamagePercent(SkillComponent):
 class PostCombatSplash(SkillComponent):
     nid = 'post_combat_splash'
     desc = "Deals flat damage to enemies in a range defined by the PostCombatSplashAOE component"
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
     paired_with = ('post_combat_splash_aoe', )
 
     expose = Type.Int
@@ -337,7 +419,7 @@ class PostCombatSplash(SkillComponent):
 class PostCombatSplashAOE(SkillComponent):
     nid = 'post_combat_splash_aoe'
     desc = 'Defines the range for PostCombatSplash damage to hit.'
-    tag = 'combat2'
+    tag = SkillTags.COMBAT2
     paired_with = ('post_combat_splash', )
 
     expose = Type.Int
@@ -347,7 +429,7 @@ class PostCombatSplashAOE(SkillComponent):
     def end_combat(self, playback, unit, item, target, mode):
         if target and skill_system.check_enemy(unit, target):
             r = set(range(self.value+1))
-            locations = target_system.get_shell({target.position}, r, game.tilemap.width, game.tilemap.height)
+            locations = target_system.get_shell({target.position}, r, game.board.bounds)
             damage = get_pc_damage(unit, self.skill)
             if damage > 0:
                 for loc in locations:
@@ -361,3 +443,12 @@ def get_pc_damage(unit, skill) -> int:
         if component.defines('post_combat_damage'):
             return component.post_combat_damage()
     return 0  # 0 is default
+
+class AllBrave(SkillComponent):
+    nid = 'all_brave'
+    desc = "All items multi-attack"
+    tag = SkillTags.COMBAT2
+    author = 'BigMood'
+
+    def dynamic_multiattacks(self, unit, item, target, mode, attack_info, base_value):
+        return 1

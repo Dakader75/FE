@@ -67,7 +67,7 @@ class OverworldPropertiesMenu(QWidget):
 
     def access_music_resources(self):
         res, ok = sound_tab.get_music()
-        if ok:
+        if ok and res and len(res) > 0:
             nid = res[0].nid
             self.current.music = nid
             self.music_box.edit.setText(nid)

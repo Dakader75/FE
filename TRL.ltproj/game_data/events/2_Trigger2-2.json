@@ -1,0 +1,33 @@
+[
+    {
+        "name": "Trigger2-2",
+        "trigger": "turn_change",
+        "level_nid": "2",
+        "condition": "game.level_vars['ReinActiveTurn2'] == (game.turncount - 1) and game.level_vars['ReinActiveTurn2'] > 0",
+        "commands": [
+            [
+                "add_group",
+                [
+                    "Rein4",
+                    "Rein4",
+                    "fade",
+                    "closest"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "135"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

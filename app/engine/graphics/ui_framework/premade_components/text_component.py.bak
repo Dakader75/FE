@@ -24,7 +24,7 @@ class TextProperties(ComponentProperties):
         self.overflow = (0, 0, 0, 0)
         # self-explanatory: the font (BmpFont)
         # font_name (str of the font name) is more encouraged to be used, but either works
-        self.font: BmpFont = FONT['text-white']
+        self.font: BmpFont = FONT['text']
         self.font_name: str = None
         # if the text component is multiline, how much space
         # is between the two lines. Can be percentage or pixel value.

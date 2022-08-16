@@ -1,8 +1,17 @@
+from __future__ import annotations
+
 from app.constants import WINWIDTH, WINHEIGHT
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
 from app.engine import engine, base_surf, image_mods, icons, text_funcs, item_system
 from app.data import skills, items
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.engine.objects.item import ItemObject
+    from app.engine.objects.skill import SkillObject
+    from app.engine.objects.unit import UnitObject
 
 class Banner():
     update_flag = False
@@ -13,13 +22,12 @@ class Banner():
     surf = None
 
     def __init__(self):
-        self.text = []
+        self.text = ""
         self.item = None
-        self.font = []
         self.sound = None
 
     def figure_out_size(self):
-        self.length = FONT['text-white'].width(''.join(self.text))
+        self.length = FONT['text'].width(self.text)
         self.length += 16
         self.length -= self.length%8
         self.length += (16 if self.item else 0)
@@ -32,8 +40,8 @@ class Banner():
             self.time_to_start = engine.get_time()
             # play sound
             if self.sound:
-                from app.engine.sound import SOUNDTHREAD
-                SOUNDTHREAD.play_sfx(self.sound)
+                from app.engine.sound import get_sound_thread
+                get_sound_thread().play_sfx(self.sound)
         if engine.get_time() - self.time_to_start > self.time_to_wait:
             self.remove_flag = True
 
@@ -51,33 +59,26 @@ class Banner():
             self.surf = image_mods.make_translucent(self.surf, .1)
 
         bg_surf = self.surf.copy()
-        
-        left = 6
-        
-        for idx, word in enumerate(self.text):
-            word_width = FONT[self.font[idx]].width(word)
-            FONT[self.font[idx]].blit(word, bg_surf, (left, self.size[1]//2 - self.font_height//2 + 3))
-            left += word_width
+
+        FONT['text'].blit(self.text, bg_surf, (6, self.size[1]//2 - self.font_height//2 + 3))
 
         self.draw_icon(bg_surf)
-        
+
         engine.blit_center(surf, bg_surf)
         return surf
 
 class AcquiredItem(Banner):
-    def __init__(self, unit, item):
+    def __init__(self, unit: UnitObject, item: ItemObject):
         super().__init__()
         self.unit = unit
         self.item = item
         article = 'an' if self.item.name.lower()[0] in ('a', 'e', 'i', 'o', 'u') else 'a'
-        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'text-blue'
+        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'blue'
         if "'" in self.item.name:
             # No article for things like Prim's Charm, Ophie's Blade, etc.
-            self.text = [unit.name, ' got ', item.name, '.']
-            self.font = ['text-blue', 'text-white', item_color, 'text-white']
+            self.text = '<blue>{name}</> got <{item_color}>{item_name}</>.'.format(name=unit.name, item_color=item_color, item_name=item.name)
         else:
-            self.text = [unit.name, ' got ', article, ' ', item.name, '.']
-            self.font = ['text-blue', 'text-white', 'text-white', 'text-white', item_color, 'text-white']
+            self.text = '<blue>{name}</> got {article} <{item_color}>{item_name}</>.'.format(name=unit.name, article=article, item_color=item_color, item_name=item.name)
         self.figure_out_size()
         self.sound = 'Item'
 
@@ -86,15 +87,13 @@ class StoleItem(Banner):
         super().__init__()
         self.unit = unit
         self.item = item
-        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'text-blue'
+        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'blue'
         article = 'an' if self.item.name.lower()[0] in ('a', 'e', 'i', 'o', 'u') else 'a'
         if "'" in self.item.name:
             # No article for things like Prim's Charm, Ophie's Blade, etc.
-            self.text = [unit.name, ' stole ', item.name, '.']
-            self.font = ['text-blue', 'text-white', item_color, 'text-white']
+            self.text = '<blue>{name}</> stole <{item_color}>{item_name}</>.'.format(name=unit.name, item_color=item_color, item_name=item.name)
         else:
-            self.text = [unit.name, ' stole ', article, ' ', item.name, '.']
-            self.font = ['text-blue', 'text-white', 'text-white', 'text-white', item_color, 'text-white']
+            self.text = '<blue>{name}</> stole {article} <{item_color}>{item_name}</>.'.format(name=unit.name, article=article, item_color=item_color, item_name=item.name)
         self.figure_out_size()
         if self.unit.team in ('player', 'other'):
             self.sound = 'Item'
@@ -102,30 +101,29 @@ class StoleItem(Banner):
             self.sound = 'ItemBreak'
 
 class SentToConvoy(Banner):
-    def __init__(self, item):
+    def __init__(self, item: ItemObject):
         super().__init__()
         self.item = item
-        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'text-blue'
-        self.text = [item.name, ' sent to convoy.']
-        self.font = [item_color, 'text-white']
+        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'blue'
+        self.text = '<{item_color}>{item_name}</> sent to convoy.'.format(item_color=item_color, item_name=item.name)
         self.figure_out_size()
         self.sound = 'Item'
 
 class BrokenItem(Banner):
-    def __init__(self, unit, item):
+    def __init__(self, unit: UnitObject, item: ItemObject):
         super().__init__()
         self.unit = unit
         self.item = item
-        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'text-blue'
-        self.text = [unit.name, ' broke ', item.name, '.']
-        self.font = ['text-blue', 'text-white', item_color, 'text-blue']
+        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'blue'
+        self.text = '<{item_color}>{item_name}</> broke.'.format(item_color=item_color, item_name=item.name)
         self.figure_out_size()
         self.sound = 'ItemBreak'
 
 class TakeItem(BrokenItem):
-    def __init__(self, unit, item):
+    def __init__(self, unit: UnitObject, item: ItemObject):
         super().__init__(unit, item)
-        self.text = [unit.name, ' lost ', item.name, '.']
+        item_color = item_system.text_color(None, item) if item_system.text_color(None, item) else 'blue'
+        self.text = '<blue>{name}</> lost <{item_color}>{item_name}</>.'.format(name=unit.name, item_color=item_color, item_name=item.name)
         self.figure_out_size()
 
 class GainWexp(Banner):
@@ -134,8 +132,7 @@ class GainWexp(Banner):
         self.unit = unit
         self.weapon_type = self.item = weapon_type
         self.weapon_rank = weapon_rank
-        self.text = [unit.name, ' reached rank ', self.weapon_rank]
-        self.font = ['text-blue', 'text-white', 'text-blue']
+        self.text = '<blue>{name}</> reached rank <blue>{rank_name}</>.'.format(name=unit.name, rank_name=self.weapon_rank)
         self.figure_out_size()
         self.sound = 'Item'
 
@@ -144,12 +141,11 @@ class GainWexp(Banner):
             icons.draw_weapon(surf, self.item, (self.size[0] - 20, 7))
 
 class GiveSkill(Banner):
-    def __init__(self, unit, skill):
+    def __init__(self, unit: UnitObject, skill: SkillObject):
         super().__init__()
         self.unit = unit
         self.item = skill
-        self.text = [unit.name, ' got ', skill.name]
-        self.font = ['text-blue', 'text-white', 'text-blue']
+        self.text = '<blue>{name}</> got <blue>{skill_name}</>.'.format(name=unit.name, skill_name=skill.name)
         self.figure_out_size()
         self.sound = 'Item'
 
@@ -158,42 +154,42 @@ class GiveSkill(Banner):
             icons.draw_skill(surf, self.item, (self.size[0] - 20, 7), simple=True)
 
 class TakeSkill(GiveSkill):
-    def __init__(self, unit, skill):
+    def __init__(self, unit: UnitObject, skill: SkillObject):
         super().__init__(unit, skill)
-        self.text = [unit.name, ' lost ', skill.name]
+        self.text = '<blue>{name}</> lost <blue>{skill_name}</>.'.format(name=unit.name, skill_name=skill.name)
         self.figure_out_size()
 
 class Custom(Banner):
     def __init__(self, text, sound=None):
-        self.text = [text]
-        self.font = ['text-white']
+        self.text = text
         self.item = None
         self.figure_out_size()
         self.sound = sound
 
 class CustomIcon(Banner):
     def __init__(self, text, icon, sound=None):
-        self.text = [text]
-        self.font = ['text-white']
+        self.text = text
         self.item = icon
         self.figure_out_size()
         self.sound = sound
-    
+
     def figure_out_size(self):
-        self.length = FONT['text-white'].width(''.join(self.text))
+        self.length = FONT['text'].width(self.text)
         self.length += 16
         self.length -= self.length%8
         self.length += (10 if self.item else 0)
         self.font_height = 16
         self.size = self.length, 24
-    
+
     def draw_icon(self, surf):
         if self.item:
             if isinstance(self.item, skills.SkillPrefab):
                 icons.draw_skill(surf, self.item, (2, 7), simple=True)
             elif isinstance(self.item, items.ItemPrefab):
                 icons.draw_item(surf, self.item, (2,7), cooldown=False)
-    
+            elif isinstance(self.item, str):
+                icons.draw_icon_by_alias(surf, self.item, (2, 7))
+
     def draw(self, surf):
         if not self.surf:
             w, h = self.size
@@ -204,23 +200,17 @@ class CustomIcon(Banner):
             self.surf = image_mods.make_translucent(self.surf, .1)
 
         bg_surf = self.surf.copy()
-        
-        left = 20
-        
-        for idx, word in enumerate(self.text):
-            word_width = FONT[self.font[idx]].width(word)
-            FONT[self.font[idx]].blit(word, bg_surf, (left, self.size[1]//2 - self.font_height//2 + 3))
-            left += word_width
+
+        FONT['text'].blit(self.text, bg_surf, (20, self.size[1]//2 - self.font_height//2 + 3))
 
         self.draw_icon(bg_surf)
-        
+
         engine.blit_center(surf, bg_surf)
         return surf
 
 class Advanced(Banner):
-    def __init__(self, text: list, font: list, sound=None):
+    def __init__(self, text: list, sound=None):
         self.text = text
-        self.font = font
         self.item = None
         self.figure_out_size()
         self.sound = sound
@@ -230,7 +220,7 @@ class Pennant():
     Lower banner that scrolls across bottom of screen
     """
 
-    font = FONT['convo-white']
+    font = FONT['convo']
     bg_surf = SPRITES.get('pennant_bg')
 
     def __init__(self, text):
@@ -258,12 +248,12 @@ class Pennant():
         if draw_on_top:
             surf.blit(engine.flip_vert(self.bg_surf), (0, -self.sprite_offset))
             while counter < self.width:
-                self.font.blit(self.text, surf, (counter, -self.sprite_offset))
+                self.font.blit(self.text, surf, (counter, -self.sprite_offset), 'white')
                 counter += self.text_width + 24
         else:
             surf.blit(self.bg_surf, (0, WINHEIGHT - self.height + self.sprite_offset))
             while counter < self.width:
-                self.font.blit(self.text, surf, (counter, WINHEIGHT - self.height + self.sprite_offset))
+                self.font.blit(self.text, surf, (counter, WINHEIGHT - self.height + self.sprite_offset), 'white')
                 counter += self.text_width + 24
 
         self.text_counter += (engine.get_time() - self.last_update)/24

@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
 
+from app.editor import tilemap_editor
 from app.resources.resources import RESOURCES
 from app.data.database import DB
 from app.data.levels import LevelPrefab
@@ -96,7 +97,7 @@ class LevelModel(DragDropCollectionModel):
             level = self._data[index.row()]
             res = RESOURCES.tilemaps.get(level.tilemap)
             if res:
-                pix = tile_model.create_tilemap_pixmap(res)
+                pix = tilemap_editor.get_tilemap_pixmap(res)
                 img = QIcon(pix)
                 return img
         return None

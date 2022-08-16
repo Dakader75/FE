@@ -1,9 +1,10 @@
+from app.engine.exp_calculator import ExpCalcType, ExpCalculator
 import math
 from functools import partial
 
 from PyQt5.QtWidgets import QGridLayout, QLineEdit, QSpinBox, QHBoxLayout, \
     QVBoxLayout, QGroupBox, QTreeView, QWidget, QDoubleSpinBox, QLabel, QSizePolicy, \
-    QSplitter, QFrame, QPushButton
+    QSplitter, QFrame, QPushButton, QFormLayout
 from PyQt5.QtCore import Qt, QAbstractItemModel
 
 from app.utilities.data import Data
@@ -62,10 +63,41 @@ class MainExpEquation(QWidget):
         label = QLabel('Combat Experience Equation:', self)
         label.setAlignment(Qt.AlignBottom)
         label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+
+        exp_calc_type = ExpCalcType(self._data.get('exp_formula').value).name
+        self.exp_calc_type_selector = PropertyBox("Exp Formula Type", ComboBox, self.window)
+        objs = [e.name for e in ExpCalcType]
+        self.exp_calc_type_selector.edit.addItems(objs)
+        self.exp_calc_type_selector.edit.setCurrentText(exp_calc_type)
+        self.exp_calc_type_selector.edit.currentIndexChanged.connect(self.update_exp_type)
+
         layout = QVBoxLayout()
         self.setLayout(layout)
         layout.addWidget(label)
+        layout.addWidget(self.exp_calc_type_selector)
 
+        self.standard_exp_frame = self.create_standard_exp_frame()
+        self.gompertz_exp_frame = self.create_gompertz_frame()
+        layout.addWidget(self.standard_exp_frame)
+        layout.addWidget(self.gompertz_exp_frame)
+        self.toggle_exp_frame()
+
+    def toggle_exp_frame(self):
+        self.standard_exp_frame.hide()
+        self.gompertz_exp_frame.hide()
+        if self._data.get('exp_formula').value == ExpCalcType.GOMPERTZ.value:
+            self.gompertz_exp_frame.show()
+        else:
+            self.standard_exp_frame.show()
+
+    def update_exp_type(self):
+        exp_type = self.exp_calc_type_selector.edit.currentText()
+        self._data.get('exp_formula').set_value(ExpCalcType[exp_type].value)
+        self.toggle_exp_frame()
+        self.window.parameters_changed(0)
+
+    def create_standard_exp_frame(self):
+        # classic_exp frame
         exp_magnitude = self._data.get('exp_magnitude')
         self.exp_magnitude = QDoubleSpinBox(self)
         self.exp_magnitude.setValue(exp_magnitude.value)
@@ -93,6 +125,7 @@ class MainExpEquation(QWidget):
         label2 = QLabel(' * (<b>Level Difference</b> + ', self)
         label3 = QLabel('))', self)
 
+        standard_exp_frame = QFrame()
         eq_layout = QHBoxLayout()
         eq_layout.setAlignment(Qt.AlignHCenter)
         eq_layout.setSpacing(0)
@@ -103,7 +136,63 @@ class MainExpEquation(QWidget):
         eq_layout.addWidget(label2)
         eq_layout.addWidget(self.exp_offset)
         eq_layout.addWidget(label3)
-        layout.addLayout(eq_layout)
+        standard_exp_frame.setLayout(eq_layout)
+        return standard_exp_frame
+
+    def create_gompertz_frame(self):
+        # classic_exp frame
+        gexp_max = self._data.get('gexp_max')
+        self.gexp_max = QDoubleSpinBox(self)
+        self.gexp_max.setValue(gexp_max.value)
+        self.gexp_max.setDecimals(1)
+        self.gexp_max.setRange(0, 255)
+        self.gexp_max.valueChanged.connect(gexp_max.set_value)
+        gexp_min = self._data.get('gexp_min')
+        self.gexp_min = QDoubleSpinBox(self)
+        self.gexp_min.setValue(gexp_min.value)
+        self.gexp_min.setDecimals(1)
+        self.gexp_min.setRange(0, 255)
+        self.gexp_min.valueChanged.connect(gexp_min.set_value)
+        gexp_slope = self._data.get('gexp_slope')
+        self.gexp_slope = QDoubleSpinBox(self)
+        self.gexp_slope.setValue(gexp_slope.value)
+        self.gexp_slope.setDecimals(3)
+        self.gexp_slope.setRange(-255, 255)
+        self.gexp_slope.valueChanged.connect(gexp_slope.set_value)
+        gexp_intercept = self._data.get('gexp_intercept')
+        self.gexp_intercept = QDoubleSpinBox(self)
+        self.gexp_intercept.setValue(gexp_intercept.value)
+        self.gexp_intercept.setDecimals(1)
+        self.gexp_intercept.setRange(gexp_min.value + 1, gexp_max.value - 1)
+        self.gexp_intercept.valueChanged.connect(gexp_intercept.set_value)
+
+        self.gexp_max.valueChanged.connect(self.window.parameters_changed)
+        self.gexp_min.valueChanged.connect(self.window.parameters_changed)
+        self.gexp_slope.valueChanged.connect(self.window.parameters_changed)
+        self.gexp_intercept.valueChanged.connect(self.window.parameters_changed)
+
+        left_layout = QFormLayout()
+        left_layout.addRow('Minimum exp from hit: <b>(MinExp)</b>', self.gexp_min)
+        left_layout.addRow('Maximum exp from hit: <b>(MaxExp)</b>', self.gexp_max)
+        left_layout.addRow('How quickly exp rises or drops off from par: <b>(Slope)</b>', self.gexp_slope)
+        left_layout.addRow('Par exp earned in combat between same level units: <b>(Intercept)</b>', self.gexp_intercept)
+
+        right_layout = QVBoxLayout()
+        magLabel = QLabel('<b>Magnitude</b> = <b>MaxExp</b> - <b>MinExp</b>', self)
+        offsetLabel = QLabel('<b>Offset</b> = log(-log((<b>Intercept</b> - <b>MinExp</b>) / <b>Magnitude</b>)) / <b>Slope</b>')
+        gompertzLabel = QLabel('<b>Exp</b> = <b>MinExp</b> + <b>Magnitude</b> * e ^ (-e ^ (<b>-Slope</b> * (<b>Level Diff</b> - <b>Offset</b>)))')
+        right_layout.addWidget(magLabel)
+        right_layout.addWidget(offsetLabel)
+        right_layout.addWidget(gompertzLabel)
+
+        gompertz_frame = QFrame()
+        eq_layout = QHBoxLayout()
+        eq_layout.setSpacing(10)
+        eq_layout.setContentsMargins(0, 0, 0, 0)
+        eq_layout.addLayout(left_layout)
+        eq_layout.addLayout(right_layout)
+        gompertz_frame.setLayout(eq_layout)
+        return gompertz_frame
 
 class DisplayExpResults(QWidget):
     @classmethod
@@ -167,9 +256,18 @@ class DisplayExpResults(QWidget):
         self.update_parameters()
 
     def update_parameters(self, val=None):
-        level_diff = self.level2.value() - self.level1.value() + self._data.get('exp_offset').value
-        exp_gained = self._data.get('exp_magnitude').value * math.exp(level_diff * self._data.get('exp_curve').value)
-        exp_gained = max(self._data.get('min_exp').value, exp_gained)
+        level_diff = self.level2.value() - self.level1.value()
+        if self._data.get('exp_formula').value == ExpCalcType.STANDARD.value:
+            exp_gained = ExpCalculator.classical_curve_calculator(level_diff,
+                                                                  self._data.get('exp_offset').value,
+                                                                  self._data.get('exp_curve').value,
+                                                                  self._data.get('exp_magnitude').value)
+        elif self._data.get('exp_formula').value == ExpCalcType.GOMPERTZ.value:
+            exp_gained = ExpCalculator.gompertz_curve_calculator(level_diff,
+                                                                 self._data.get('gexp_max').value,
+                                                                 self._data.get('gexp_min').value,
+                                                                 self._data.get('gexp_slope').value,
+                                                                 self._data.get('gexp_intercept').value)
         display = str(int(exp_gained)) + " (" + str(round(exp_gained, 2)) + ")"
         self.edit_box.setText(display)
 
@@ -355,7 +453,9 @@ class ConstantDatabase(DatabaseTab):
         self.bool_model = BoolConstantsModel(bool_constants, self)
         bool_view = QTreeView()
         bool_view.setModel(self.bool_model)
+        bool_view.resizeColumnToContents(0)
         bool_view.header().hide()
+        bool_view.header().setStretchLastSection(False)
         bool_view.clicked.connect(self.on_bool_click)
 
         bool_layout = QHBoxLayout()
@@ -369,7 +469,7 @@ class ConstantDatabase(DatabaseTab):
                        "How should enemy units get their automatic level ups")
         battle_section = self.create_section(battle_constants, battle_info)
         battle_section.setTitle("Battle Constants")
-        misc_constants = ('game_nid', 'title', 'num_save_slots')
+        misc_constants = ('game_nid', 'title', 'num_save_slots', 'sell_modifier')
         misc_section = self.create_section(misc_constants)
         misc_section.setTitle("Miscellaneous Constants")
         music_constants = ('music_main', 'music_promotion', 'music_class_change')
@@ -430,6 +530,13 @@ class ConstantDatabase(DatabaseTab):
                 box = PropertyBox(constant.name, QSpinBox, self)
                 box.edit.setRange(0, 10)
                 box.edit.setValue(constant.value)
+                box.edit.setAlignment(Qt.AlignRight)
+                box.edit.valueChanged.connect(constant.set_value)
+            elif constant.attr == float:
+                box = PropertyBox(constant.name, QDoubleSpinBox, self)
+                box.edit.setRange(0, 10)
+                box.edit.setValue(constant.value)
+                box.edit.setDecimals(1)
                 box.edit.setAlignment(Qt.AlignRight)
                 box.edit.valueChanged.connect(constant.set_value)
             elif constant.attr == str:

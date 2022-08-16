@@ -1,7 +1,9 @@
 from typing import List
-from app.data.database import DB
+
+from app.engine.graphics.text.text_renderer import rendered_text_width
 
 def translate(string):
+    from app.data.database import DB
     if string in DB.translations.keys():
         return DB.translations.get(string).text
     else:
@@ -10,8 +12,15 @@ def translate(string):
 def get_max_width(font, text_list):
     return max(font.width(t) for t in text_list)
 
-def split(font, string, num_lines, max_width):
-    total_length = font.width(string)
+def split(font_name, string, num_lines, max_width):
+    """
+    This takes a string of text and wraps it into multiple lines
+    In general, unlike the text_wrap function below, it tries
+    to make the lines roughly equal in length,
+    and no more than `max_width` pixels in length
+    No method to force a skip: (`\n`, {br}) are ignored
+    """
+    total_length = rendered_text_width([font_name], [string])
     lines = []
     for line in range(num_lines):
         lines.append([])
@@ -29,7 +38,7 @@ def split(font, string, num_lines, max_width):
         if which_line >= len(lines):
             lines.append([]) # This shouldn't happen normally
         lines[which_line].append(character)
-        length_so_far = font.width(''.join(lines[which_line]))
+        length_so_far = rendered_text_width([font_name], [''.join(lines[which_line])])
         if num_lines > 1 and length_so_far >= total_length // num_lines - 5:
             new_line = True
         elif length_so_far >= max_width:
@@ -42,14 +51,18 @@ def line_chunk(string: str) -> list:
     chunks = [x for x in chunks if x]  # Remove empty chunks
     return chunks
 
-def line_wrap(font, string: str, width: int, pad=False) -> List[str]:
+def line_wrap(font_name, string: str, width: int, pad=False) -> List[str]:
     """
     Adapted from text wrap module
+    This takes a string of text and wraps it into multiple lines
+    Each line cannot be more than `width` pixels wide
+    Splits on spaces.
+    No method to force a skip: (`\n`, {br}) are ignored
     """
     assert width > 0
     chunks = line_chunk(string)
     chunks.reverse()
-    space_length = font.width(' ')
+    space_length = rendered_text_width([font_name], [' '])
 
     lines = []
     while chunks:
@@ -59,7 +72,7 @@ def line_wrap(font, string: str, width: int, pad=False) -> List[str]:
         cur_len = 0
 
         while chunks:
-            length = font.width(chunks[-1])
+            length = rendered_text_width([font_name], [chunks[-1]])
 
             # Can at least squeeze this chunk on the current line
             if cur_len + length <= width:
@@ -81,3 +94,12 @@ def line_wrap(font, string: str, width: int, pad=False) -> List[str]:
             lines.append(chunks.pop())
 
     return lines
+
+if __name__ == '__main__':
+    from app.engine.fonts import FONT
+    font = FONT['text-white']
+    text = 'Hello there, General Kenobi. A pleasure doing business with you'
+    lines = line_wrap('text-white', text, 220)
+    print(lines)
+    lines = split('text-white', text, 2, 220)
+    print(lines)

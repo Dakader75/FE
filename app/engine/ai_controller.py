@@ -2,6 +2,7 @@ import logging
 import math
 
 from app.data.database import DB
+from app.events.regions import RegionType
 from app.engine import (action, combat_calcs, engine, equations, evaluate,
                         item_funcs, item_system, line_of_sight, pathfinding,
                         skill_system, target_system)
@@ -67,6 +68,11 @@ class AIController():
         logging.info("AI Act!")
 
         change = False
+        if game.movement.check_region_interrupt(self.unit):
+            self.move_ai_complete = True
+            self.attack_ai_complete = True
+            self.canto_ai_complete = True
+
         if not self.move_ai_complete:
             if self.think():
                 change = self.move()
@@ -85,8 +91,6 @@ class AIController():
     def move(self):
         if self.goal_position and self.goal_position != self.unit.position:
             path = target_system.get_path(self.unit, self.goal_position)
-            # if self.unit.has_attacked:
-            #     self.unit.wait()
             game.state.change('movement')
             action.do(action.Move(self.unit, self.goal_position, path))
             return True
@@ -96,8 +100,12 @@ class AIController():
     def attack(self):
         # Attacking or supporting
         if self.goal_target:  # Target is a position tuple
-            if self.goal_item and self.goal_item in item_funcs.get_all_items(self.unit):
-                self.unit.equip(self.goal_item)
+            if not self.goal_item:
+                return False
+            if not item_funcs.available(self.unit, self.goal_item):
+                return False
+            if self.goal_item in item_funcs.get_all_items(self.unit):
+                action.do(action.EquipItem(self.unit, self.goal_item))
             # Highlights
             if item_system.is_weapon(self.unit, self.goal_item):
                 game.highlight.remove_highlights()
@@ -124,6 +132,7 @@ class AIController():
                 self.goal_item.data['target_item'] = items[-1]
 
             # Combat
+            # Checks to make sure the unit wasn't interrupted during movement
             interaction.start_combat(self.unit, self.goal_target, self.goal_item, ai_combat=True, skip=self.do_skip)
             return True
         # Interacting with regions
@@ -131,15 +140,17 @@ class AIController():
             # Get region
             region = None
             for r in game.level.regions:
-                if r.contains(self.goal_position) and r.region_type == 'event' and r.sub_nid == self.behaviour.target_spec:
+                if r.contains(self.goal_position) and r.region_type == RegionType.EVENT and r.sub_nid == self.behaviour.target_spec:
                     try:
-                        if not r.condition or evaluate.evaluate(r.condition, self.unit, position=self.goal_position):
+                        if not r.condition or evaluate.evaluate(r.condition, self.unit, position=self.goal_position, local_args={'region': r}):
                             region = r
                             break
                     except:
                         logging.warning("Could not evaluate region conditional %s" % r.condition)
             if region:
-                did_trigger = game.events.trigger(region.sub_nid, self.unit, position=self.unit.position, region=region)
+                did_trigger = game.events.trigger(region.sub_nid, self.unit, position=self.unit.position, local_args={'region': region})
+                if not did_trigger:  # Just in case we need the generic one
+                    did_trigger = game.events.trigger('on_region_interact', self.unit, position=self.unit.position, local_args={'region': region})
                 if did_trigger and region.only_once:
                     action.do(action.RemoveRegion(region))
                 if did_trigger:
@@ -181,10 +192,14 @@ class AIController():
             return False
 
     def get_true_valid_moves(self) -> set:
-        valid_moves = target_system.get_valid_moves(self.unit)
-        other_unit_positions = {unit.position for unit in game.units if unit.position and unit is not self.unit}
-        valid_moves -= other_unit_positions
-        return valid_moves
+        # Guard AI
+        if self.behaviour.view_range == -1 and not self.unit.ai_group_active:
+            return {self.unit.position}
+        else:
+            valid_moves = target_system.get_valid_moves(self.unit)
+            other_unit_positions = {unit.position for unit in game.units if unit.position and unit is not self.unit}
+            valid_moves -= other_unit_positions
+            return valid_moves
 
     def think(self):
         time = engine.get_time()
@@ -280,11 +295,7 @@ class AIController():
                     action.do(action.AIGroupPing(unit))
 
     def build_primary(self):
-        if self.behaviour.view_range == -1:  # Guard AI
-            valid_moves = {self.unit.position}
-        else:
-            valid_moves = self.get_true_valid_moves()
-
+        valid_moves = self.get_true_valid_moves()
         return PrimaryAI(self.unit, valid_moves, self.behaviour)
 
     def build_secondary(self):
@@ -434,24 +445,26 @@ class PrimaryAI():
         # Not done yet
         return (False, self.best_target, self.best_position, self.best_item)
 
-    def determine_utility(self, move, target, item):
+    def determine_utility(self, move, target_pos, item):
         tp = 0
-        main_target_pos, splash = item_system.splash(self.unit, item, target)
+        main_target_pos, splash = item_system.splash(self.unit, item, target_pos)
         if item_system.target_restrict(self.unit, item, main_target_pos, splash):
             tp = self.compute_priority(main_target_pos, splash, move, item)
 
-        unit = game.board.get_unit(target)
+        target = game.board.get_unit(target_pos)
         # Don't target self if I've already moved and I'm not targeting my new position
-        if unit is self.unit and target != self.unit.position:
+        if target is self.unit and target_pos != self.unit.position:
             return
-        if unit:
-            name = unit.nid
-        else:
-            name = '--'
 
-        logging.info("Choice %.5f - Weapon: %s, Position: %s, Target: %s, Target Position: %s", tp, item, move, name, target)
+        # Don't bother using Primary AI if we're not able to attack
+        # Will just fall through to Secondary AI
+        if item_system.no_attack_after_move(self.unit, item) or skill_system.no_attack_after_move(self.unit):
+            if move != self.orig_pos:
+                return
+
+        logging.info("Choice %.5f - Weapon: %s, Position: %s, Target: %s, Target Position: %s", tp, item, move, target.nid if target else '--', target_pos)
         if tp > self.max_tp:
-            self.best_target = target
+            self.best_target = target_pos
             self.best_position = move
             self.best_item = item
             self.max_tp = tp
@@ -610,7 +623,7 @@ def get_targets(unit, behaviour):
         all_targets = []
         for region in game.level.regions:
             try:
-                if region.region_type == 'event' and region.sub_nid == target_spec and (not region.condition or evaluate.evaluate(region.condition, unit)):
+                if region.region_type == RegionType.EVENT and region.sub_nid == target_spec and (not region.condition or evaluate.evaluate(region.condition, unit, local_args={'region': region})):
                     all_targets += region.get_all_positions()
             except:
                 logging.warning("Region Condition: Could not parse %s" % region.condition)
@@ -652,7 +665,7 @@ class SecondaryAI():
         self.grid = game.board.get_grid(movement_group)
         self.pathfinder = \
             pathfinding.AStar(self.unit.position, None, self.grid,
-                              game.tilemap.width, game.tilemap.height,
+                              game.board.bounds, game.tilemap.height,
                               self.unit.team, skill_system.pass_through(self.unit),
                               DB.constants.value('ai_fog_of_war'))
 
@@ -714,7 +727,7 @@ class SecondaryAI():
                 self.widen_flag = True
                 self.view_range = -4
                 self.available_targets = [t for t in self.all_targets if t not in self.available_targets]
-            else:
+            else:  # No targets possible
                 return True, None
         return False, None
 

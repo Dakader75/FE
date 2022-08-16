@@ -2,13 +2,13 @@ from app.constants import WINWIDTH, WINHEIGHT, TILEX, TILEY
 
 from app.utilities import utils
 from app.sprites import SPRITES
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.data.database import DB
 from app.engine import engine, image_mods
 from app.engine.state import MapState
 from app.engine.game_state import game
 
-from app.engine.input_manager import INPUT
+from app.engine.input_manager import get_input_manager
 
 class Link():
     def __init__(self, pos):
@@ -31,7 +31,7 @@ class CliffManager():
         self.width, self.height = size
         self.orientation_grid = [0 for _ in range(self.width*self.height)]
 
-        chain_length = sum(len(chain) for chain in self.chains) 
+        chain_length = sum(len(chain) for chain in self.chains)
         assert chain_length == unexplored_length, "%s, %s" % (chain_length, unexplored_length)
 
         for chain in self.chains:
@@ -168,7 +168,7 @@ class CliffManager():
             current.orientation = 3
         else:
             current.orientation = 4
-                            
+
     def get_difference(self, a, b):
         dx = b.position[0] - a.position[0]
         dy = b.position[1] - a.position[1]
@@ -254,7 +254,7 @@ class MiniMap(object):
         else:
             minimap_nid = DB.minimap.single_map[0]
         return minimap_nid
-        
+
     def handle_key(self, key, position):
         # print(key)
         # Normal keys
@@ -289,7 +289,7 @@ class MiniMap(object):
 
     def build_units(self, units):
         for unit in units:
-            if unit.position and game.board.in_vision(unit.position):
+            if unit.position and 'Tile' not in unit.tags and game.board.in_vision(unit.position):
                 pos = unit.position[0] * self.scale_factor, unit.position[1] * self.scale_factor
                 if unit.team == 'player':
                     self.pin_surf.blit(engine.subsurface(self.minimap_units, (0, 0, self.scale_factor, self.scale_factor)), pos)
@@ -458,7 +458,7 @@ class MiniMap(object):
 
     def complex_shape(self, key, position):
         column = self.complex_map.index(key) + 2
-        
+
         if key == 'Sand':
             keys = ('Sand', 'Desert', 'Desert_Cliff', 'Wall')
         elif key in ('Sea', 'River'):
@@ -515,7 +515,7 @@ class MiniMap(object):
         yprogress = int(ydiff * yperc * self.scale_factor)
         rect = (xprogress, yprogress, min(image.get_width(), WINWIDTH - 2 * self.scale_factor), min(image.get_height(), WINHEIGHT - 2 * self.scale_factor))
         image = engine.subsurface(image, rect)
-        
+
         image = image_mods.make_translucent(image.convert_alpha(), .1)
         topleftpos = (max(4, WINWIDTH//2 - image.get_width()//2), max(4, WINHEIGHT//2 - image.get_height()//2))
         surf.blit(image, topleftpos)
@@ -558,7 +558,7 @@ class MinimapState(MapState):
     transparent = True
 
     def start(self):
-        SOUNDTHREAD.play_sfx('Map In')
+        get_sound_thread().play_sfx('Map In')
         self.minimap = MiniMap(game.tilemap, game.units)
         self.arrive_flag = True
         self.arrive_time = engine.get_time()
@@ -568,11 +568,11 @@ class MinimapState(MapState):
         self.progress = 200
 
     def take_input(self, event):
-        game.cursor.set_speed_state(INPUT.is_pressed('BACK'))
+        game.cursor.set_speed_state(get_input_manager().is_pressed('BACK'))
         game.cursor.take_input()
 
         if event in ('BACK', 'SELECT', 'START') and not self.arrive_flag and not self.exit_flag:
-            SOUNDTHREAD.play_sfx('Map Out')
+            get_sound_thread().play_sfx('Map Out')
             self.exit_flag = True
             self.exit_time = engine.get_time()
 

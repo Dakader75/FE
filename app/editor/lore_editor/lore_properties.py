@@ -11,7 +11,7 @@ class LoreProperties(QWidget):
         super().__init__(parent)
         self.window = parent
         self._data = self.window._data
-    
+
         self.current = current
 
         name_section = QVBoxLayout()
@@ -22,17 +22,17 @@ class LoreProperties(QWidget):
         name_section.addWidget(self.nid_box)
 
         self.short_name_box = PropertyBox("Short Name", QLineEdit, self)
-        self.short_name_box.edit.setMaxLength(13)
+
         self.short_name_box.edit.textChanged.connect(self.short_name_changed)
         name_section.addWidget(self.short_name_box)
 
         self.long_name_box = PropertyBox("Long Name", QLineEdit, self)
-        self.long_name_box.edit.setMaxLength(26)
+
         self.long_name_box.edit.textChanged.connect(self.long_name_changed)
         name_section.addWidget(self.long_name_box)
 
         self.category_box = PropertyBox("Category", QLineEdit, self)
-        self.category_box.edit.setMaxLength(13)
+
         self.category_box.edit.textChanged.connect(self.category_changed)
         name_section.addWidget(self.category_box)
 

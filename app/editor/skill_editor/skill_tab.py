@@ -17,6 +17,7 @@ class SkillProperties(ComponentProperties):
     title = "Skill"
     get_components = staticmethod(SCA.get_skill_components)
     get_templates = staticmethod(SCA.get_templates)
+    get_tags = staticmethod(SCA.get_skill_tags)
 
 class SkillDatabase(DatabaseTab):
     allow_import_from_lt = True

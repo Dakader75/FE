@@ -18,7 +18,9 @@ def populate_palettes(current, images, nid):
     for image_fn in images:
         palette_name = os.path.split(image_fn)[-1][:-4].split('-')[-1]
         palette_nid = nid + '_' + palette_name
+        logging.debug("palette_nid: %s", palette_nid)
         palette_names = [_[0] for _ in current.palettes]
+        logging.debug("palette name: %s %s", palette_name, palette_name in palette_names)
         if palette_name in palette_names:
             # Check whether this palette is bigger
             idx = palette_names.index(palette_name)
@@ -37,6 +39,7 @@ def populate_palettes(current, images, nid):
                 # Need to create palette
                 pix = QPixmap(image_fn)
                 palette_colors = editor_utilities.find_palette(pix.toImage())
+                logging.debug("Creating new palette %s", palette_colors)
                 new_palette = combat_palettes.Palette(palette_nid)
                 new_palette.assign_colors(palette_colors)
                 RESOURCES.combat_palettes.append(new_palette)
@@ -54,6 +57,7 @@ def add_frames(index_fn, current, new_weapon, images):
 
     # Need to convert to universal coord palette
     convert_dict = editor_utilities.get_color_conversion(palette)
+    logging.debug("Add Frames: Palette Name: %s, Palette Nid: %s, Conversion Dict: %s", palette_name, palette_nid, editor_utilities.human_readable(convert_dict))
     main_pixmap = QPixmap(images[0])
     for i in index_lines:
         # Only accepts length 4 lines
@@ -65,9 +69,11 @@ def add_frames(index_fn, current, new_weapon, images):
         width, height = [int(_) for _ in i[2].split(',')]
         offset_x, offset_y = [int(_) for _ in i[3].split(',')]
         new_pixmap = main_pixmap.copy(x, y, width, height)
-        # Need to convert to universal base palette
+        assert width > 0 and height > 0
+        # Convert to universal base palette
         new_pixmap = editor_utilities.color_convert_pixmap(new_pixmap, convert_dict)
         new_frame = combat_anims.Frame(nid, (x, y, width, height), (offset_x, offset_y), pixmap=new_pixmap)
+        # print(new_frame.nid, id(new_frame.pixmap), new_frame.pixmap.width(), new_frame.pixmap.height(), editor_utilities.find_palette(QImage(new_frame.pixmap)))
         new_weapon.frames.append(new_frame)
     return main_pixmap
 
@@ -114,7 +120,7 @@ def import_from_legacy(current, fn):
         QMessageBox.critical(None, "Error", "Not a valid combat animation script file: %s" % fn)
         return
     kind = os.path.split(fn)[-1].replace('-Script.txt', '')
-    logging.info("Script kind: %s", fn)
+    logging.info("Script kind: %s", kind)
     nid, weapon = kind.split('-')
     index_fn = fn.replace('-Script.txt', '-Index.txt')
     if not os.path.exists(index_fn):
@@ -130,15 +136,20 @@ def import_from_legacy(current, fn):
     new_weapon = combat_anims.WeaponAnimation(weapon)
 
     main_pixmap = add_frames(index_fn, current, new_weapon, images)
+    # print([(frame.nid, id(frame.pixmap)) for frame in new_weapon.frames])
 
     # Need to build full image file now
     build_full_image(main_pixmap, new_weapon)
+    # print(id(new_weapon), new_weapon.nid, id(new_weapon.pixmap), new_weapon.pixmap.width(), new_weapon.pixmap.height())
+    main_pixmap.save("main_pixmap.png")
+    new_weapon.pixmap.save("new_weapon_pixmap.png")
 
     add_poses(fn, new_weapon)
     # Actually add weapon to current
     if new_weapon.nid in current.weapon_anims.keys():
         current.weapon_anims.remove_key(new_weapon.nid)
     current.weapon_anims.append(new_weapon)
+    # print(id(new_weapon), id(new_weapon.pixmap))
 
 def get_child_effects(fn_dir: str, current: combat_anims.EffectAnimation):
     for pose in current.poses:
@@ -336,7 +347,8 @@ def import_from_gba(current, fn):
         "*.txt" file to read from
     """
     weapon_types = {'Sword', 'Lance', 'Axe', 'Disarmed', 'Unarmed', 'Handaxe',
-                    'Bow', 'Magic', 'Staff', 'Monster', 'Dragonstone', 'Refresh'}
+                    'Bow', 'Magic', 'Staff', 'Monster', 'Dragonstone', 'Refresh',
+                    'Transform', 'Revert', 'Knife'}
     logging.info("Import GBA weapon animation from script %s", fn)
     head, tail = os.path.split(fn)
     # if any(bad_char in head for bad_char in ('[', ']', '*', '?', '!')):
@@ -380,7 +392,10 @@ def import_from_gba(current, fn):
             my_palette = palette
             logging.info("Using existing palette! %s" % palette.nid)
             # Change first color to colorkey
-            colorkey_conversion = {qRgb(*all_palette_colors[0]): editor_utilities.qCOLORKEY}
+            colorkey_conversion = {
+                qRgb(*all_palette_colors[0]): editor_utilities.qCOLORKEY,
+                qRgb(0, 0, 0): qRgb(40, 40, 40),  # Need to make sure there's no 0, 0, 0 in the image
+            }
             pixmaps = {name: editor_utilities.color_convert_pixmap(pixmap, colorkey_conversion) for name, pixmap in pixmaps.items()}
             break
     else:
@@ -391,9 +406,15 @@ def import_from_gba(current, fn):
         palette_name = str_utils.get_next_name('GenericBlue', [name for name, nid in current.palettes])
         current.palettes.append([palette_name, my_palette.nid])
         # Change first color to colorkey
-        colorkey_conversion = {qRgb(*all_palette_colors[0]): editor_utilities.qCOLORKEY}
+        colorkey_conversion = {
+            qRgb(*all_palette_colors[0]): editor_utilities.qCOLORKEY,
+            qRgb(0, 0, 0): qRgb(40, 40, 40),  # Need to make sure there's no 0, 0, 0 in the image
+        }
         pixmaps = {name: editor_utilities.color_convert_pixmap(pixmap, colorkey_conversion) for name, pixmap in pixmaps.items()}
         all_palette_colors[0] = COLORKEY
+        if (0, 0, 0) in all_palette_colors:
+            idx = all_palette_colors.index((0, 0, 0))
+            all_palette_colors[idx] = (40, 40, 40)
         my_palette.assign_colors(all_palette_colors)
 
     # Now do a simple crop to get rid of palette extras
@@ -425,6 +446,13 @@ def import_from_gba(current, fn):
         weapon_anim.poses.append(stand_pose)
         weapon_anim.poses.append(dodge_pose)
 
+    def transform_pose_setup(weapon_anim):
+        stand_pose = weapon_anim.poses.get('Stand')
+        transform_pose = weapon_anim.poses.get('Attack')
+        weapon_anim.poses.clear()
+        weapon_anim.poses.append(stand_pose)
+        weapon_anim.poses.append(transform_pose)
+
     def add_weapon(weapon_anim):
         if weapon_anim.nid in current.weapon_anims.keys():
             current.weapon_anims.remove_key(weapon_anim.nid)
@@ -448,7 +476,10 @@ def import_from_gba(current, fn):
         add_weapon(ranged_weapon_anim)        
     elif weapon_type == 'Handaxe':
         ranged_weapon_anim.nid = "RangedAxe"
-        add_weapon(ranged_weapon_anim)        
+        add_weapon(ranged_weapon_anim)
+    elif weapon_type == 'Knife':
+        ranged_weapon_anim.nid = "RangedSword"
+        add_weapon(ranged_weapon_anim)    
     elif weapon_type == 'Bow':
         ranged_weapon_anim.nid = "RangedBow"
         add_weapon(ranged_weapon_anim)        
@@ -479,6 +510,16 @@ def import_from_gba(current, fn):
         add_weapon(ranged_weapon_anim)
         melee_weapon_anim.nid = "Unarmed"
         unarmed_pose_setup(melee_weapon_anim)
+        add_weapon(melee_weapon_anim)
+    elif weapon_type == 'Transform':
+        melee_weapon_anim.nid = "Transform"
+        # Make sure we only use stand and attack poses
+        transform_pose_setup(melee_weapon_anim)
+        add_weapon(melee_weapon_anim)
+    elif weapon_type == 'Revert':
+        melee_weapon_anim.nid = "Revert"
+        # Make sure we only use stand and attack poses
+        transform_pose_setup(melee_weapon_anim)
         add_weapon(melee_weapon_anim)
 
     # Need to save the full image somewhere
@@ -522,7 +563,7 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
                 return None, None
         # Only certain modes allowed for transforming and reverting
         if weapon_type in ('Transform', 'Revert'):
-            if mode not in (1, 9, 11):
+            if mode not in (1, 9):
                 return None, None
         if mode in (1, 2):
             return 'Attack', melee_weapon_anim

@@ -12,7 +12,7 @@ class IconRow(UIComponent):
                  width: str = '100%', height: str = '0%', text: str = '',
                  icon: engine.Surface | UIComponent = None,
                  text_align: HAlignment = HAlignment.LEFT,
-                 font: str = 'text-white', data=None):
+                 font: str = 'text', data=None):
         super().__init__(name=name, parent=parent)
         if text_align == HAlignment.LEFT:
             self.props.layout = UILayoutType.LIST
@@ -43,9 +43,7 @@ class IconRow(UIComponent):
     def update_font(self):
         total_width = self.icon.width + self.text.twidth
         if total_width > self.max_width:
-            [_, fcolor] = self.text.props.font_name.split('-')
-            new_font_name = 'narrow-' + fcolor
-            self.text.set_font_name(new_font_name)
+            self.text.set_font_name('narrow')
 
     def process_icon(self, icon: UIComponent | engine.Surface | None) -> UIComponent:
         if isinstance(icon, UIComponent):

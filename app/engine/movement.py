@@ -4,7 +4,7 @@ import app.engine.config as cf
 from app.data.database import DB
 from app.engine import action, engine, equations, skill_system
 from app.engine.game_state import game
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.utilities import utils
 
 
@@ -50,6 +50,12 @@ class MovementManager():
         else:
             return None
 
+    def check_if_occupied_in_future(self, pos):
+        for unit_nid, movement_data in self.moving_units.items():
+            if movement_data.path and movement_data.path[0] == pos:
+                return game.get_unit(unit_nid)
+        return None
+
     @classmethod
     def get_movement_group(cls, unit_to_move):
         movement_group = skill_system.movement_type(unit_to_move)
@@ -73,16 +79,21 @@ class MovementManager():
         return mcost
 
     def check_traversable(self, unit_to_move, pos) -> bool:
-        if not game.tilemap.check_bounds(pos):
+        if not game.board.check_bounds(pos):
             return False
         mcost = self.get_mcost(unit_to_move, pos)
         movement = equations.parser.movement(unit_to_move)
-        if mcost <= movement:
-            return True
-        return False
+        return mcost <= movement
+
+    def check_weakly_traversable(self, unit_to_move, pos) -> bool:
+        if not game.board.check_bounds(pos):
+            return False
+        mcost = self.get_mcost(unit_to_move, pos)
+        movement = equations.parser.movement(unit_to_move)
+        return mcost <= 5 or mcost <= movement
 
     def check_simple_traversable(self, pos) -> bool:
-        if not game.tilemap.check_bounds(pos):
+        if not game.board.check_bounds(pos):
             return False
         mcost = self.get_mcost(None, pos)
         return mcost <= 5
@@ -92,6 +103,9 @@ class MovementManager():
         # Check if we run into an enemy
         # Returns True if position is OK
         """
+        interrupted = self.check_region_interrupt(unit)
+        if interrupted:
+            return False
         if data.event:
             return True
         elif skill_system.pass_through(unit):
@@ -108,6 +122,15 @@ class MovementManager():
                 return False
 
     def done_moving(self, unit_nid, data, unit, surprise=False):
+        if surprise:
+            get_sound_thread().play_sfx('Surprise')
+            unit.sprite.change_state('normal')
+            unit.sprite.reset()
+            action.do(action.HasAttacked(unit))
+            if unit.team == 'player':
+                self.surprised = True
+                self.update_surprise()
+
         del self.moving_units[unit_nid]
         game.arrive(unit)
         if unit.sound:
@@ -122,11 +145,18 @@ class MovementManager():
         if self.camera_follow == unit_nid:
             self.camera_follow = None
 
-        if surprise:
-            SOUNDTHREAD.play_sfx('Surprise')
-            unit.sprite.change_state('normal')
-            unit.sprite.reset()
-            unit.wait()
+    def check_region_interrupt(self, unit) -> bool:
+        '''Checks if the unit is in a region that interrupts. If so, checks if the trigger conditions for the region are met. If so, runs the even and removes the region if appropriate.
+        Returns true if the unit was interrupted, false otherwise.'''
+        for region in game.level.regions:
+            if region.contains(unit.position) and region.interrupt_move:
+                return True
+        return False
+
+    def update_surprise(self):
+        game.state.clear()
+        game.state.change('free')
+        game.state.change('wait')
 
     def update(self):
         current_time = engine.get_time()
@@ -152,6 +182,7 @@ class MovementManager():
                         else:  # Can only happen when not in an event
                             self.done_moving(unit_nid, data, unit, surprise=True)
                             if unit.team == 'player':
+                                self.update_surprise()
                                 self.surprised = True
                             continue
 
@@ -168,4 +199,5 @@ class MovementManager():
                             game.camera.set_center(*unit.position)
 
                 else: # Path is empty, so we are done
-                    self.done_moving(unit_nid, data, unit)
+                    surprise = self.check_region_interrupt(unit)
+                    self.done_moving(unit_nid, data, unit, surprise=surprise)

@@ -2,13 +2,15 @@ from app.utilities import utils
 from enum import IntEnum
 
 from app.engine.game_state import game
+from app.engine import skill_system
+
 
 class Visibility(IntEnum):
     Unknown = 0
     Dark = 1
     Lit = 2
 
-def get_line(start: tuple, end: tuple) -> bool:
+def get_line(start: tuple, end: tuple, get_opacity) -> bool:
     if start == end:
         return True
     x1, y1 = start
@@ -37,18 +39,18 @@ def get_line(start: tuple, end: tuple) -> bool:
                 error -= ddx
                 if error + errorprev < ddx:  # Bottom square
                     pos = x, y - ystep
-                    if pos != end and game.board.get_opacity(pos):
+                    if pos != end and get_opacity(pos):
                         return False
                 elif error + errorprev > ddx:  # Left square
                     pos = x - xstep, y
-                    if pos != end and game.board.get_opacity(pos):
+                    if pos != end and get_opacity(pos):
                         return False
                 else:  # Through the middle
                     pos1, pos2 = (x, y - ystep), (x - xstep, y)
-                    if game.board.get_opacity(pos1) and game.board.get_opacity(pos2):
+                    if get_opacity(pos1) and get_opacity(pos2):
                         return False
             pos = x, y
-            if pos != end and game.board.get_opacity(pos):
+            if pos != end and get_opacity(pos):
                 return False
             errorprev = error
     else:
@@ -61,18 +63,18 @@ def get_line(start: tuple, end: tuple) -> bool:
                 error -= ddy
                 if error + errorprev < ddy:  # Bottom square
                     pos = x - xstep, y
-                    if pos != end and game.board.get_opacity(pos):
+                    if pos != end and get_opacity(pos):
                         return False
                 elif error + errorprev > ddy:  # Left square
                     pos = x, y - ystep
-                    if pos != end and game.board.get_opacity(pos):
+                    if pos != end and get_opacity(pos):
                         return False
                 else:  # Through the middle
                     pos1, pos2 = (x, y - ystep), (x - xstep, y)
-                    if game.board.get_opacity(pos1) and game.board.get_opacity(pos2):
+                    if get_opacity(pos1) and get_opacity(pos2):
                         return False
             pos = x, y
-            if pos != end and game.board.get_opacity(pos):
+            if pos != end and get_opacity(pos):
                 return False
             errorprev = error
     assert x == x2 and y == y2
@@ -90,7 +92,7 @@ def line_of_sight(source_pos: list, dest_pos: list, max_range: int) -> list:
     for pos, vis in all_tiles.items():
         if vis == Visibility.Unknown:
             for s_pos in source_pos:
-                if utils.calculate_distance(pos, s_pos) <= max_range and get_line(s_pos, pos):
+                if utils.calculate_distance(pos, s_pos) <= max_range and get_line(s_pos, pos, game.board.get_opacity):
                     all_tiles[pos] = Visibility.Lit
                     break
             else:
@@ -99,14 +101,29 @@ def line_of_sight(source_pos: list, dest_pos: list, max_range: int) -> list:
     lit_tiles = [pos for pos in dest_pos if all_tiles[pos] != Visibility.Dark]
     return lit_tiles
 
-def simple_check(dest_pos: tuple, team: str, max_range: int) -> bool:
+def simple_check(dest_pos: tuple, team: str, default_range: int) -> bool:
     """
     Returns true if can see position with line of sight
     """
-    player_pos = [unit.position for unit in game.units if unit.position and unit.team == team]
-    for s_pos in player_pos:
+    info = [(unit.position, skill_system.sight_range(unit)) for unit in game.units if unit.position and unit.team == team]
+    for s_pos, extra_range in info:
         if s_pos == dest_pos:
             return True
-        elif utils.calculate_distance(dest_pos, s_pos) <= max_range and get_line(s_pos, dest_pos):
+        elif utils.calculate_distance(dest_pos, s_pos) <= default_range + extra_range and get_line(s_pos, dest_pos, game.board.get_opacity):
             return True
     return False
+
+if __name__ == '__main__':
+    import random, time
+    num_trials = 100000  # 400 +/- 30 ms
+    random_nums = [random.randint(0, 9) for i in range(num_trials * 4)]
+    start = time.time_ns() / 1e6
+    for x in range(num_trials):
+        out = bool(get_line(
+            (random_nums[x * 4], random_nums[x * 4 + 1]), 
+            (random_nums[x * 4 + 2], random_nums[x * 4 + 3]),
+            lambda x: False))
+    end = time.time_ns() / 1e6
+    print(end - start)
+
+    print(out)

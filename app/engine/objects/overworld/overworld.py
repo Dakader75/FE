@@ -41,11 +41,16 @@ class OverworldNodeObject():
     def nid(self) -> NID:
         return self.prefab.nid
 
+    @property
+    def name(self) -> str:
+        return self.prefab.name
+
     @classmethod
     def from_prefab(cls, prefab: OverworldNodePrefab):
         node = cls()
         node.prefab = prefab
         node.sprite = OverworldNodeSprite(prefab)
+        node.menu_options = prefab.menu_options
         return node
 
 class RoadObject():
@@ -124,6 +129,8 @@ class OverworldObject():
         self.tilemap: TileMapObject = None  # tilemap
         self.enabled_nodes: Set[NID] = set() # set of ids of nodes that are accessible right now
         self.enabled_roads: Set[NID] = set() # set of ids of roads that are accessible right now
+        self.enabled_menu_options: Dict[NID, Dict[NID, bool]] = {} # dict of node ids and node menu events that are accessible right now
+        self.visible_menu_options: Dict[NID, Dict[NID, bool]] = {} # dict of node ids and node menu events that are visible right now
         self.overworld_entities: Dict[NID, OverworldEntityObject] = {} # list of entities on the map (e.g. player party, wandering encounters)
 
         self.selected_party_nid: NID = None
@@ -158,6 +165,12 @@ class OverworldObject():
         for pnid in party_registry.keys():
             overworld_party = OverworldEntityObject.from_party_prefab(None, pnid, unit_registry)
             overworld.overworld_entities[pnid] = overworld_party
+        for node in overworld.prefab.overworld_nodes:
+            overworld.enabled_menu_options[node.nid] = {}
+            overworld.visible_menu_options[node.nid] = {}
+            for option in node.menu_options:
+                overworld.enabled_menu_options[node.nid][option.nid] = option.enabled
+                overworld.visible_menu_options[node.nid][option.nid] = option.visible
         return overworld
 
     def save(self):
@@ -167,7 +180,9 @@ class OverworldObject():
                   'prefab_nid': self.nid,
                   'overworld_entities': [entity.save() for entity in self.overworld_entities.values()],
                   'selected_party_nid': self.selected_party_nid,
-                  'node_properties': self.node_properties
+                  'node_properties': self.node_properties,
+                  'enabled_menu_options':self.enabled_menu_options,
+                  'visible_menu_options':self.visible_menu_options
                   }
         return s_dict
 
@@ -178,6 +193,8 @@ class OverworldObject():
         overworld.enabled_nodes = set(s_dict['enabled_nodes'])
         overworld.enabled_roads = set(s_dict['enabled_roads'])
         overworld.node_properties = s_dict.get('node_properties', {})
+        overworld.enabled_menu_options = s_dict.get('enabled_menu_options', {})
+        overworld.visible_menu_options = s_dict.get('visible_menu_options', {})
 
         for entity in s_dict['overworld_entities']:
             entity_obj = OverworldEntityObject.restore(entity, game)

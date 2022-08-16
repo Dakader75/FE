@@ -1,11 +1,11 @@
 from app.constants import WINHEIGHT
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 
 from app.events import event_commands
 from app.events.event import Event
-from app.engine.input_manager import INPUT
+from app.engine.input_manager import get_input_manager
 
 from app.engine.state import MapState
 from app.engine.game_state import game
@@ -22,7 +22,7 @@ class DebugState(MapState):
         self.current_command = ''
         self.buffer_count = 0
 
-        self.quit_commands += engine.get_key_name(INPUT.key_map['BACK'])
+        self.quit_commands += engine.get_key_name(get_input_manager().key_map['BACK'])
 
     def take_input(self, event):
         game.cursor.take_input()
@@ -47,21 +47,21 @@ class DebugState(MapState):
 
     def parse_command(self, command):
         if command in self.quit_commands:
-            SOUNDTHREAD.play_sfx('Select 4')
+            get_sound_thread().play_sfx('Select 4')
             game.state.back()
             return
 
-        event_command = event_commands.parse_text(command)
+        event_command, error_loc = event_commands.parse_text_to_command(command)
         if not event_command:
             return
-        game.events.add_event('debug_console', [event_command], game.cursor.get_hover())
+        game.events._add_event('debug_console', [event_command], unit=game.cursor.get_hover(), position=game.cursor.position)
 
     def draw(self, surf):
         surf = super().draw(surf)
         surf.blit(self.bg, (0, WINHEIGHT - (5 * 16)))
         for idx, command in enumerate(reversed(self.commands[-self.num_back:])):
-            FONT['text-white'].blit(command, surf, (0, WINHEIGHT - idx * 16 - 32))
-        FONT['text-white'].blit(self.current_command, surf, (0, WINHEIGHT - 16))
+            FONT['text'].blit(command, surf, (0, WINHEIGHT - idx * 16 - 32))
+        FONT['text'].blit(self.current_command, surf, (0, WINHEIGHT - 16))
         return surf
 
     def end(self):

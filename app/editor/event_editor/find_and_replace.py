@@ -69,9 +69,15 @@ class Find(QDialog):
         if self.whole_words.isChecked():
             query = r'\W' + query + r'\W'
 
-        flags = 0 if self.case_sens.isChecked() else re.I
-        pattern = re.compile(query, flags)
+        if self.normal_radio.isChecked():
+            query = re.escape(query)
 
+        flags = 0 if self.case_sens.isChecked() else re.I
+        try:
+            pattern = re.compile(query, flags)
+        except:
+            # todo(rainlash): display an error message for invalid regex or smth
+            return
         start = self.last_match.start() + 1 if self.last_match else 0
         self.last_match = pattern.search(text, start)
 
@@ -84,9 +90,11 @@ class Find(QDialog):
                 end -= 1
 
             self.moveCursor(start, end)
+            return (start, end)
 
         else:
             self.window.text_box.moveCursor(QTextCursor.End)
+            return None
 
     def replace(self):
         cursor = self.window.text_box.textCursor()
@@ -96,11 +104,23 @@ class Find(QDialog):
 
     def replace_all(self):
         self.last_match = None  # To start from beginning of document
-        self.find()
-
+        all_finds = []
+        all_finds.append(self.find())
         while self.last_match:
+            all_finds.append(self.find())
+        all_finds.pop()  # Remove last one which failed
+
+        # Now actually do the replacing
+        change_in_length = 0
+        for start, end in all_finds:
+            orig_length = end - start
+            new_length = len(self.replace_field.text())
+            self.moveCursor(start + change_in_length, end + change_in_length)
+            change_in_length += (new_length - orig_length)
+            self.last_match = True
             self.replace()
-            self.find()
+
+        self.last_match = None
 
     def regex_mode(self):
         self.case_sens.setChecked(False)

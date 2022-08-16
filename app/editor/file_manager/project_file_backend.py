@@ -4,10 +4,12 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
+from time import time_ns
 
 from app.constants import VERSION
-from app.data.database import DB
+from app.data.database import DB, Database
 from app.editor import timer
+from app.editor.lib.csv.csv_exporter import dump_as_csv
 from app.editor.new_game_dialog import NewGameDialog
 from app.editor.settings import MainSettingsController
 from app.resources.resources import RESOURCES
@@ -92,22 +94,23 @@ class ProjectFileBackend():
             if os.path.exists(self.tmp_proj):
                 shutil.rmtree(self.tmp_proj)
 
-            # check if autosave or current save is more recent
             most_recent_path = self.current_proj
-            try:
-                autosave_dir = os.path.abspath('autosave.ltproj')
-                autosave_meta = json.load(open(autosave_dir + '/metadata.json'))
-                curr_meta = json.load(open(self.current_proj + '/metadata.json'))
-                if autosave_meta['project'] == curr_meta['project']: # make sure same project
-                    autosave_ts = datetime.strptime(autosave_meta['date'], '%Y-%m-%d %H:%M:%S.%f')
-                    curr_ts = datetime.strptime(curr_meta['date'], '%Y-%m-%d %H:%M:%S.%f')
-                    if autosave_ts > curr_ts:
-                        most_recent_path = autosave_dir
-            except Exception as e:
-                # autosave doesn't have metadata, autosave doesn't exist, etc.
-                # just copy the previous save
-                pass
-            shutil.copytree(most_recent_path, self.tmp_proj)
+            # check if autosave or current save is more recent
+            # try:
+            #     autosave_dir = os.path.abspath('autosave.ltproj')
+            #     autosave_meta = json.load(open(autosave_dir + '/metadata.json'))
+            #     curr_meta = json.load(open(self.current_proj + '/metadata.json'))
+            #     if autosave_meta['project'] == curr_meta['project']: # make sure same project
+            #         autosave_ts = datetime.strptime(autosave_meta['date'], '%Y-%m-%d %H:%M:%S.%f')
+            #         curr_ts = datetime.strptime(curr_meta['date'], '%Y-%m-%d %H:%M:%S.%f')
+            #         if autosave_ts > curr_ts:
+            #             most_recent_path = autosave_dir
+            # except Exception as e:
+            #     print(e)
+            #     # autosave doesn't have metadata, autosave doesn't exist, etc.
+            #     # just copy the previous save
+            #     pass
+            shutil.move(most_recent_path, self.tmp_proj)
         self.save_progress.setLabelText("Saving project to %s" % self.current_proj)
         self.save_progress.setValue(10)
 
@@ -115,32 +118,62 @@ class ProjectFileBackend():
         RESOURCES.save(self.current_proj, progress=self.save_progress)
         self.save_progress.setValue(75)
         DB.serialize(self.current_proj)
-        self.save_progress.setValue(99)
+        self.save_progress.setValue(85)
 
         # Save metadata
         self.save_metadata(self.current_proj)
-
-        self.save_progress.setValue(100)
-
+        self.save_progress.setValue(87)
         if not new and self.settings.get_should_make_backup_save():
-            # we have fully saved the current project; remove the backup folder
-            if os.path.isdir(self.tmp_proj):
-                shutil.rmtree(self.tmp_proj)
+            # we have fully saved the current project.
+            # first, delete the .json files that don't appear in the new project
+            for old_dir, dirs, files in os.walk(self.tmp_proj):
+                new_dir = old_dir.replace(self.tmp_proj, self.current_proj)
+                for f in files:
+                    if f.endswith('.json'):
+                        old_file = os.path.join(old_dir, f)
+                        new_file = os.path.join(new_dir, f)
+                        if not os.path.exists(new_file):
+                            os.remove(old_file)
+            # then replace the files in the original backup folder and rename it back
+            for src_dir, dirs, files in os.walk(self.current_proj):
+                dst_dir = src_dir.replace(self.current_proj, self.tmp_proj)
+                for f in files:
+                    src_file = os.path.join(src_dir, f)
+                    dst_file = os.path.join(dst_dir, f)
+                    if os.path.exists(dst_file + '.bak'):
+                        os.remove(dst_file)
+                    os.rename(src_file, dst_file + '.bak')
+                    if os.path.exists(dst_file):
+                        os.remove(dst_file)
+                    os.rename(dst_file + '.bak', dst_file)
+            if os.path.isdir(self.current_proj):
+                shutil.rmtree(self.current_proj)
+            os.rename(self.tmp_proj, self.current_proj)
+        self.save_progress.setValue(100)
 
         return True
 
     def new(self):
-        if self.maybe_save():
-            result = NewGameDialog.get()
-            if result:
-                identifier, title = result
-
-                RESOURCES.load('default.ltproj')
-                DB.load('default.ltproj')
-                DB.constants.get('game_nid').set_value(identifier)
-                DB.constants.get('title').set_value(title)
-            return result
-        return False
+        if not self.maybe_save():
+            return False
+        result = NewGameDialog.get()
+        if not result:
+            return False
+        identifier, title = result
+        curr_path = QDir()
+        curr_path.cdUp()
+        starting_path = curr_path.path() + '/' + title + '.ltproj'
+        fn, ok = QFileDialog.getSaveFileName(self.parent, "Save Project", starting_path,
+                                                "All Files (*)")
+        if not ok:
+            return
+        shutil.copytree(QDir.currentPath() + '/' + 'default.ltproj', fn)
+        self.current_proj = fn
+        self.settings.set_current_project(fn)
+        self.load()
+        DB.constants.get('game_nid').set_value(identifier)
+        DB.constants.get('title').set_value(title)
+        return result
 
     def open(self):
         if self.maybe_save():
@@ -152,6 +185,10 @@ class ProjectFileBackend():
             fn = QFileDialog.getExistingDirectory(
                 self.parent, "Open Project Directory", starting_path)
             if fn:
+                if not fn.endswith('.ltproj'):
+                    QMessageBox.warning(self.parent, "Incorrect directory type",
+                                        "%s is not an .ltproj." % fn)
+                    return False
                 self.current_proj = fn
                 self.settings.set_current_project(self.current_proj)
                 logging.info("Opening project %s" % self.current_proj)
@@ -177,7 +214,7 @@ class ProjectFileBackend():
                 self.load()
                 return True
             except Exception as e:
-                logging.error(e)
+                logging.exception(e)
                 backup_project_name = path + '.lttmp'
                 corrupt_project_name = path + '.ltcorrupt'
                 logging.warning("Failed to load project at %s. Likely that project is corrupted.", path)
@@ -257,3 +294,15 @@ class ProjectFileBackend():
 
     def clean(self):
         RESOURCES.clean(self.current_proj)
+
+    def dump_csv(self, db: Database):
+        starting_path = self.current_proj or QDir.currentPath()
+        fn = QFileDialog.getExistingDirectory(
+                self.parent, "Choose dump location", starting_path)
+        if fn:
+            csv_direc = fn
+            for ttype, tstr in dump_as_csv(db):
+                with open(os.path.join(csv_direc, ttype + '.csv'), 'w') as f:
+                    f.write(tstr)
+        else:
+            return False

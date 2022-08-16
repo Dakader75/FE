@@ -1,0 +1,61 @@
+[
+    {
+        "name": "Trigger1",
+        "trigger": "turn_change",
+        "level_nid": "2x",
+        "condition": "any_unit_in_region('Trigger1', team='player')",
+        "commands": [
+            [
+                "level_var",
+                [
+                    "monster_list",
+                    "['Entombed','Lich','Deathgoyle','Balor']"
+                ]
+            ],
+            [
+                "level_var",
+                [
+                    "random_nums",
+                    "[game.get_random(0,3),game.get_random(0,3)]"
+                ]
+            ],
+            [
+                "for",
+                [
+                    "MONSTERS",
+                    "[(game.level_vars['monster_list'])[entry] for entry in game.level_vars['random_nums']]"
+                ]
+            ],
+            [
+                "move_cursor",
+                [
+                    "2,8"
+                ]
+            ],
+            [
+                "create_unit",
+                [
+                    "{MONSTERS}",
+                    "",
+                    "10",
+                    "2,8",
+                    "warp",
+                    "closest",
+                    "FLAG(copy_stats)"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "endf",
+                []
+            ]
+        ],
+        "only_once": true,
+        "priority": 20
+    }
+]

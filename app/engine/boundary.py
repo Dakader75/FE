@@ -41,6 +41,8 @@ class BoundaryInterface():
 
         self.surf = None
         self.fog_of_war_surf = None
+        self.should_reset_surf: bool = False
+        self.frozen: bool = False  # Whether I should update my display surf (generally False, for immediate updates)
 
     def init_grid(self):
         cells = []
@@ -55,22 +57,23 @@ class BoundaryInterface():
     def hide(self):
         self.draw_flag = False
 
-    def check_bounds(self, pos):
-        return 0 <= pos[0] < self.width and 0 <= pos[1] < self.height
-
     def toggle_unit(self, unit):
         if unit.nid in self.displaying_units:
             self.displaying_units.discard(unit.nid)
         else:
             self.displaying_units.add(unit.nid)
-        self.surf = None
+        self.reset_surf()
 
     def reset_unit(self, unit):
         if unit.nid in self.displaying_units:
             self.displaying_units.discard(unit.nid)
-            self.surf = None
+            self.reset_surf()
+
+    def reset_surf(self):
+        self.should_reset_surf = True
 
     def reset_fog_of_war(self):
+        self.reset_surf()  # Also needs to reset surf since the units you can see in fog of war may have changed
         self.fog_of_war_surf = None
 
     def _set(self, positions, mode, nid):
@@ -89,8 +92,8 @@ class BoundaryInterface():
             for x in range(self.width):
                 for y in range(self.height):
                     self.grids[m][x * self.height + y].clear()
-        self.surf = None
-        self.fog_of_war_surf = None
+        self.reset_surf()
+        self.reset_fog_of_war()
 
     def _add_unit(self, unit):
         valid_moves = target_system.get_valid_moves(unit, force=True)
@@ -107,10 +110,10 @@ class BoundaryInterface():
         self._set(valid_spells, 'spell', unit.nid)
 
         area_of_influence = target_system.find_manhattan_spheres(set(range(1, equations.parser.movement(unit) + 1)), *unit.position)
-        area_of_influence = {pos for pos in area_of_influence if self.check_bounds(pos)}
+        area_of_influence = {pos for pos in area_of_influence if game.board.check_bounds(pos)}
         self._set(area_of_influence, 'movement', unit.nid)
 
-        self.surf = None
+        self.reset_surf()
 
     def _remove_unit(self, unit):
         for mode, grid in self.grids.items():
@@ -118,7 +121,7 @@ class BoundaryInterface():
                 for (x, y) in self.dictionaries[mode][unit.nid]:
                     grid[x * self.height + y].discard(unit.nid)
                 # del self.dictionaries[mode][unit.nid]
-        self.surf = None
+        self.reset_surf()
 
     def recalculate_unit(self, unit):
         if unit.team in self.enemy_teams:
@@ -136,11 +139,16 @@ class BoundaryInterface():
             other_units = {game.get_unit(nid) for nid in self.grids['movement'][x * self.height + y]}
             other_units = {other_unit for other_unit in other_units if not utils.compare_teams(unit.team, other_unit.team)}
 
+            # Set unit's position to non-existent for a brief momement
+            game.board.remove_unit(unit.position, unit)
+            unit.position = None
             for other_unit in other_units:
                 self._remove_unit(other_unit)
             for other_unit in other_units:
                 if other_unit.position:
                     self._add_unit(other_unit)
+            unit.position = (x, y)  # Reset it back for future
+            game.board.set_unit(unit.position, unit)
 
     def arrive(self, unit):
         if unit.position:
@@ -174,15 +182,19 @@ class BoundaryInterface():
 
     def show_all_enemy_attacks(self):
         self.all_on_flag = True
-        self.surf = None
+        self.reset_surf()
 
     def clear_all_enemy_attacks(self):
         self.all_on_flag = False
-        self.surf = None
+        self.reset_surf()
 
     def draw(self, surf, full_size, cull_rect):
         if not self.draw_flag:
             return surf
+
+        if self.should_reset_surf and not self.frozen:
+            self.surf = None
+            self.should_reset_surf = False
 
         if not self.surf:
             self.surf = engine.create_surface(full_size, transparent=True)
@@ -252,19 +264,19 @@ class BoundaryInterface():
         right = False
 
         if grid_name == 'all_attack' or grid_name == 'all_spell':
-            if self.check_bounds(top_pos) and grid[x * self.height + y - 1]:
+            if game.board.check_bounds(top_pos) and grid[x * self.height + y - 1]:
                 top = True
-            if self.check_bounds(bottom_pos) and grid[x * self.height + y + 1]:
+            if game.board.check_bounds(bottom_pos) and grid[x * self.height + y + 1]:
                 bottom = True
-            if self.check_bounds(left_pos) and grid[(x - 1) * self.height + y]:
+            if game.board.check_bounds(left_pos) and grid[(x - 1) * self.height + y]:
                 left = True
-            if self.check_bounds(right_pos) and grid[(x + 1) * self.height + y]:
+            if game.board.check_bounds(right_pos) and grid[(x + 1) * self.height + y]:
                 right = True
         else:
-            top = any(nid in self.displaying_units for nid in grid[x * self.height + y - 1]) if self.check_bounds(top_pos) else False
-            left = any(nid in self.displaying_units for nid in grid[(x - 1) * self.height + y]) if self.check_bounds(left_pos) else False
-            right = any(nid in self.displaying_units for nid in grid[(x + 1) * self.height + y]) if self.check_bounds(right_pos) else False
-            bottom = any(nid in self.displaying_units for nid in grid[x * self.height + y + 1]) if self.check_bounds(bottom_pos) else False
+            top = any(nid in self.displaying_units for nid in grid[x * self.height + y - 1]) if game.board.check_bounds(top_pos) else False
+            left = any(nid in self.displaying_units for nid in grid[(x - 1) * self.height + y]) if game.board.check_bounds(left_pos) else False
+            right = any(nid in self.displaying_units for nid in grid[(x + 1) * self.height + y]) if game.board.check_bounds(right_pos) else False
+            bottom = any(nid in self.displaying_units for nid in grid[x * self.height + y + 1]) if game.board.check_bounds(bottom_pos) else False
         idx = top*8 + left*4 + right*2 + bottom  # Binary logis to get correct index
         return engine.subsurface(self.modes[grid_name], (idx * TILEWIDTH, 0, TILEWIDTH, TILEHEIGHT))
 

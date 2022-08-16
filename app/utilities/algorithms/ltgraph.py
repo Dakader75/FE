@@ -160,6 +160,12 @@ class LTGraph(Generic[V, D, E]):
         # usually we want to regenerate all paths after adding nodes
         self._path_dict.clear()
 
+    def __contains__(self, value: V) -> bool:
+        if value in self.vertices:
+            return True
+        else:
+            return False
+
     def __getitem__(self, value: V) -> LTVertex[V, D, E]:
         return self.vertices[value]
 

@@ -1,0 +1,79 @@
+[
+    {
+        "nid": "Medusa",
+        "name": "Medusa",
+        "desc": "Reduces foe's current HP to 1. -20 Spd penalty. HP Cost: 7.",
+        "icon_nid": "Dark",
+        "icon_index": [
+            0,
+            3
+        ],
+        "components": [
+            [
+                "target_enemy",
+                null
+            ],
+            [
+                "level_exp",
+                null
+            ],
+            [
+                "hit",
+                70
+            ],
+            [
+                "weapon_type",
+                "Dark"
+            ],
+            [
+                "weapon_rank",
+                "E"
+            ],
+            [
+                "magic",
+                null
+            ],
+            [
+                "min_range",
+                1
+            ],
+            [
+                "max_range",
+                5
+            ],
+            [
+                "siege_weapon",
+                null
+            ],
+            [
+                "status_on_hit",
+                "Canto"
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        -20
+                    ]
+                ]
+            ],
+            [
+                "hp_cost",
+                7
+            ],
+            [
+                "map_hit_sub_blend",
+                [
+                    255,
+                    255,
+                    255
+                ]
+            ],
+            [
+                "alternate_accuracy_formula",
+                "MAGIC_HIT"
+            ]
+        ]
+    }
+]

@@ -13,13 +13,15 @@ from app.editor import timer
 
 from app.extensions.custom_gui import PropertyBox, ComboBox, Dialog, RightClickListView
 from app.editor.base_database_gui import DragDropCollectionModel
-from app.editor.custom_widgets import UnitBox, ClassBox, FactionBox, AIBox, ObjBox
+from app.editor.custom_widgets import UnitBox, ClassBox, FactionBox, AIBox, ObjBox, RoamAIBox
 from app.editor.class_editor import class_model
 from app.editor.item_editor import item_model
 from app.editor.unit_editor import unit_tab
 from app.editor.faction_editor import faction_model
 from app.editor.stat_widget import StatAverageDialog, GenericStatAveragesModel
 from app.editor.item_list_widget import ItemListWidget
+from app.editor.event_editor.event_inspector import EventInspectorEngine
+from app.events.event_commands import ChangeRoaming
 
 
 class UnitPainterMenu(QWidget):
@@ -155,6 +157,7 @@ class UnitPainterMenu(QWidget):
             old_unit_nid = unit.nid
             old_unit_team = unit.team
             old_unit_ai = unit.ai
+            old_unit_roam_ai = unit.roam_ai
             old_unit_ai_group = unit.ai_group
             edited_unit, ok = LoadUnitDialog.get_unit(self, unit)
             if ok:
@@ -164,6 +167,7 @@ class UnitPainterMenu(QWidget):
                 unit.prefab = DB.units.get(unit.nid)
                 unit.team = old_unit_team
                 unit.ai = old_unit_ai
+                unit.roam_ai = old_unit_roam_ai
                 unit.ai_group = old_unit_ai_group
 
 
@@ -224,9 +228,12 @@ class AllUnitModel(DragDropCollectionModel):
         super().delete(idx)
 
     def new(self, idx):
-        unit = self._data[idx]
-        if unit.generic:
-            ok = self.window.create_generic(unit)
+        if len(self._data):
+            unit = self._data[idx]
+            if unit.generic:
+                ok = self.window.create_generic(unit)
+            else:
+                ok = self.window.load_unit()
         else:
             ok = self.window.load_unit()
         if ok:
@@ -306,10 +313,10 @@ def valid_partners(units, unit) -> list:
         return []
     # Must be same team and not on the board and not a traveler unless your my traveler
     partners = {u.starting_traveler for u in units}
-    return [u for u in units if 
-            u.team == unit.team 
+    return [u for u in units if
+            u.team == unit.team
             and not u.starting_position
-            and (unit.starting_traveler == u.nid 
+            and (unit.starting_traveler == u.nid
                  or u.nid not in partners)]
 
 def build_traveler_box(self):
@@ -341,15 +348,19 @@ class LoadUnitDialog(Dialog):
         self.window = parent
         self.view = None
 
+        self.event_inspector = EventInspectorEngine(DB.events)
+
         layout = QVBoxLayout()
         self.setLayout(layout)
 
         if current:
             self.current = current
+            self.is_new_unit = False
         else:
             assert len(DB.units) > 0 and len(DB.ai) > 0
             nid = DB.units[0].nid
             self.current = UniqueUnit(nid, 'player', DB.ai[0].nid)
+            self.is_new_unit = True
 
         self.unit_box = UnitBox(self, button=True)
         self.unit_box.edit.setValue(self.current.nid)
@@ -377,6 +388,16 @@ class LoadUnitDialog(Dialog):
 
         ai_layout = QHBoxLayout()
         ai_layout.addWidget(self.ai_box)
+
+        self.roam_ai_box = RoamAIBox(self)
+        self.roam_ai_box.edit.setValue(self.current.roam_ai)
+        self.roam_ai_box.edit.activated.connect(self.roam_ai_changed)
+        self.roam_ai_box.hide()
+
+        if self.event_inspector.find_all_calls_of_command(ChangeRoaming(), self.window.current_level.nid) or self.window.current_level.roam:
+            self.roam_ai_box.show()
+            ai_layout.addWidget(self.roam_ai_box)
+
         ai_layout.addWidget(self.ai_group_box)
         layout.addLayout(ai_layout)
 
@@ -419,6 +440,9 @@ class LoadUnitDialog(Dialog):
         text = partners[idx].nid
         self.current.starting_traveler = text
 
+    def roam_ai_changed(self, val):
+        self.current.roam_ai = self.roam_ai_box.edit.currentText()
+
     def access_units(self):
         unit, ok = unit_tab.get(self.current.nid)
         if ok:
@@ -428,15 +452,17 @@ class LoadUnitDialog(Dialog):
         old_nid = self.current.nid
         self.current.nid = nid
         self.current.prefab = DB.units.get(nid)
-        # Swap level units
-        self.window.current_level.units.update_nid(self.current, self.current.nid)
-        # Swap level unit groups
-        for unit_group in self.window.current_level.unit_groups:
-            unit_group.swap(old_nid, self.current.nid)
-        # Swap travelers
-        for unit in self.window.current_level.units:
-            if unit.starting_traveler == old_nid:
-                unit.starting_traveler = self.current.nid
+
+        if not self.is_new_unit:
+            # Swap level units
+            self.window.current_level.units.update_nid(self.current, self.current.nid)
+            # Swap level unit groups
+            for unit_group in self.window.current_level.unit_groups:
+                unit_group.swap(old_nid, self.current.nid)
+            # Swap travelers
+            for unit in self.window.current_level.units:
+                if old_nid and unit.starting_traveler == old_nid:
+                    unit.starting_traveler = self.current.nid
 
     # def set_current(self, current):
     #     self.current = current
@@ -460,6 +486,8 @@ class GenericUnitDialog(Dialog):
         super().__init__(parent)
         self.setWindowTitle("Create Generic Unit")
         self.window = parent
+
+        self.event_inspector = EventInspectorEngine(DB.events)
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -530,6 +558,15 @@ class GenericUnitDialog(Dialog):
 
         ai_layout = QHBoxLayout()
         ai_layout.addWidget(self.ai_box)
+
+        self.roam_ai_box = RoamAIBox(self)
+        self.roam_ai_box.edit.activated.connect(self.roam_ai_changed)
+        self.roam_ai_box.hide()
+
+        if self.event_inspector.find_all_calls_of_command(ChangeRoaming(), self.window.current_level.nid) or self.window.current_level.roam:
+            self.roam_ai_box.show()
+            ai_layout.addWidget(self.roam_ai_box)
+
         ai_layout.addWidget(self.ai_group_box)
         layout.addLayout(ai_layout)
 
@@ -567,7 +604,7 @@ class GenericUnitDialog(Dialog):
         other_nids = [d.nid for d in self._data.values()
                       if d is not self.current]
         other_nids += DB.units.keys()  # Can't use these either
-        if self.current.nid in other_nids:
+        if not self.current.nid or self.current.nid in other_nids:
             QMessageBox.warning(self.window, 'Warning',
                                 'Unit ID %s already in use' % self.current.nid)
             new_nid = str_utils.get_next_generic_nid("101", other_nids)
@@ -581,7 +618,7 @@ class GenericUnitDialog(Dialog):
             unit_group.swap(old_nid, self.current.nid)
         # Swap travelers
         for unit in self.window.current_level.units:
-            if unit.starting_traveler == old_nid:
+            if old_nid and unit.starting_traveler == old_nid:
                 unit.starting_traveler = self.current.nid
 
     def team_changed(self, val):
@@ -608,13 +645,13 @@ class GenericUnitDialog(Dialog):
 
     def faction_changed(self, index):
         faction_nid = self.faction_box.edit.currentText()
-        faction = DB.factions.get(faction_nid)
         self.current.faction = faction_nid
-        self.current.name = faction.name
-        self.current.desc = faction.desc
 
     def ai_changed(self, val):
         self.current.ai = self.ai_box.edit.currentText()
+
+    def roam_ai_changed(self, val):
+        self.current.roam_ai = self.roam_ai_box.edit.currentText()
 
     def ai_group_changed(self, text):
         self.current.ai_group = text
@@ -678,6 +715,7 @@ class GenericUnitDialog(Dialog):
             self.variant_box.edit.clear()
         self.faction_box.edit.setValue(current.faction)
         self.ai_box.edit.setValue(current.ai)
+        self.roam_ai_box.edit.setValue(current.roam_ai)
         if current.ai_group:
             self.ai_group_box.edit.setText(current.ai_group)
         else:

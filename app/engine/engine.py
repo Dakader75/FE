@@ -16,6 +16,8 @@ constants = {'current_time': 0,
              'standalone': True,
              'running': True}
 
+fast_quit = False
+
 # === engine functions ===
 def init():
     pygame.mixer.pre_init(44100, -16, 2, 128 * 2**cf.SETTINGS['sound_buffer_size'])
@@ -33,7 +35,12 @@ def set_title(text):
     pygame.display.set_caption(text)
 
 def build_display(size):
-    return pygame.display.set_mode(size)
+    try:
+        return pygame.display.set_mode(size, pygame.FULLSCREEN if cf.SETTINGS['fullscreen'] else 0)
+    except pygame.error as e:
+        logging.exception(e)
+        logging.error("Your screen is probably too small to activate fullscreen with this resolution. Close the engine and editor. Go to your saves/config.ini file and change the screensize variable to 1. Then try again.")
+        return pygame.display.set_mode(size)
 
 def push_display(surf, size, new_surf):
     pygame.transform.scale(surf, size, new_surf)
@@ -102,6 +109,9 @@ def create_surface(size, transparent=False) -> pygame.Surface:
         surf = surf.convert()
     return surf
 
+def create_simple_surface(size) -> pygame.Surface:
+    return pygame.Surface(size)
+
 def copy_surface(surf):
     return surf.copy()
 
@@ -110,10 +120,11 @@ def save_surface(surf, fn):
 
 def subsurface(surf, rect):
     x, y, width, height = rect
-    if surf and x >= 0 and y >= 0 and x + width <= surf.get_width() and y + height <= surf.get_height():
-        return surf.subsurface(x, y, width, height)
-    else:
-        return surf
+    twidth = min(surf.get_width() - x, width)
+    theight = min(surf.get_height() - y, height)
+    tx = max(0, x)
+    ty = max(0, y)
+    return surf.subsurface(tx, ty, twidth, theight)
 
 def image_load(fn, convert=False, convert_alpha=False):
     image = pygame.image.load(fn)
@@ -167,6 +178,9 @@ def set_colorkey(surf, color, rleaccel=True):
 def make_pixel_array(surf):
     return pygame.PixelArray(surf)
 
+def draw_line(surf, color, start, end, width=1):
+    return pygame.draw.line(surf, color, start, end, width)
+
 # === transform functions ===
 def flip_horiz(surf):
     return pygame.transform.flip(surf, 1, 0)
@@ -201,6 +215,9 @@ events = []
 def get_events():
     global events
     events.clear()
+    if fast_quit:
+        terminate()
+        return pygame.QUIT
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()

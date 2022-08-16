@@ -1,0 +1,68 @@
+[
+    {
+        "name": "FightBoneBerkut",
+        "trigger": "combat_start",
+        "level_nid": "2",
+        "condition": "(unit.nid == \"Bone\" and unit2.nid == \"Berkut\") or (unit2.nid == \"Bone\" and unit.nid = \"Berkut\")",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Bone",
+                    "Right"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Berkut",
+                    "Left"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Bone",
+                    "The prince! I swear, there must be some misunderstanding."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Berkut",
+                    "Lord Aston, you are a traitor to Rigel.|You were involved in the issurection at Rigel Castle.|For this trespass, you will be executed.|Any final remarks?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Bone",
+                    "I'm not involved with any sort of rebellion.|I'm not a traitor!"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Berkut",
+                    "You had you're choice of final words, and yet you make them lies.|Pathetic, Lord Aston."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Bone",
+                    "You..."
+                ]
+            ],
+            [
+                "multi_remove_portrait",
+                [
+                    "Bone",
+                    "Berkut"
+                ]
+            ]
+        ],
+        "only_once": true,
+        "priority": 20
+    }
+]

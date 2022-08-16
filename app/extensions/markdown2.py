@@ -101,6 +101,7 @@ __version_info__ = (2, 4, 1)
 __version__ = '.'.join(map(str, __version_info__))
 __author__ = "Trent Mick"
 
+from functools import lru_cache
 import sys
 import re
 import logging
@@ -294,6 +295,7 @@ class Markdown(object):
         re.IGNORECASE | re.VERBOSE
     )
 
+    @lru_cache(32)
     def convert(self, text):
         """Convert the given text."""
         # Main function. The order in which other subs are called here is

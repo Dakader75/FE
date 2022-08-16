@@ -13,7 +13,7 @@ class FactionProperties(QWidget):
         super().__init__(parent)
         self.window = parent
         self._data = self.window._data
-    
+
         self.current = current
 
         top_section = QHBoxLayout()
@@ -32,7 +32,7 @@ class FactionProperties(QWidget):
         name_section.addWidget(self.nid_box)
 
         self.name_box = PropertyBox("Display Name", QLineEdit, self)
-        self.name_box.edit.setMaxLength(20)
+
         self.name_box.edit.textChanged.connect(self.name_changed)
         name_section.addWidget(self.name_box)
 

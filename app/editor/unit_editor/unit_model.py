@@ -19,7 +19,7 @@ def get_chibi(unit):
         return None
     if not res.pixmap:
         res.pixmap = QPixmap(res.full_path)
-    pixmap = res.pixmap.copy(96, 16, 32, 32)
+    pixmap = res.pixmap.copy(res.pixmap.width() - 32, 16, 32, 32)
     pixmap = QPixmap.fromImage(editor_utilities.convert_colorkey(pixmap.toImage()))
     return pixmap
 
@@ -99,7 +99,7 @@ class UnitModel(DragDropCollectionModel):
             for unit_group in level.unit_groups:
                 unit_group.swap(old_nid, new_nid)
             for unit in level.units:
-                if unit.starting_traveler == old_nid:
+                if old_nid and unit.starting_traveler == old_nid:
                     unit.starting_traveler = new_nid
         for party in DB.parties:
             if party.leader == old_nid:

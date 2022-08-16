@@ -14,4 +14,30 @@ class StatTypeModel(DragDropCollectionModel):
         return None
 
     def create_new(self):
-        return self._data.add_new_default(DB)
+        new_stat = self._data.add_new_default(DB)
+        nid = new_stat.nid
+        for klass in DB.classes:
+            for stat_list in klass.get_stat_lists():
+                if nid not in stat_list:
+                    stat_list[nid] = 0
+            klass.max_stats[nid] = new_stat.maximum
+        for unit in DB.units:
+            for stat_list in unit.get_stat_lists():
+                if nid not in stat_list:
+                    stat_list[nid] = 0
+        return new_stat
+
+    def delete(self, idx):
+        # check to make sure nothing else is using me!!!
+        stat = self._data[idx]
+        nid = stat.nid
+        for klass in DB.classes:
+            for stat_list in klass.get_stat_lists():
+                if nid in stat_list:
+                    stat_list.pop(nid)
+        for unit in DB.units:
+            for stat_list in unit.get_stat_lists():
+                if nid in stat_list:
+                    stat_list.pop(nid)
+        # Delete watchers
+        super().delete(idx)

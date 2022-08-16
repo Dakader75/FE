@@ -1,11 +1,17 @@
-from app.data.database import DB
+from __future__ import annotations
+import logging
+import math
+from typing import TYPE_CHECKING, List
 
-from app.utilities import utils
-from app.engine import item_system, skill_system
+from app.data.database import DB
+from app.engine import item_system, skill_system, text_funcs
 from app.engine.objects.item import ItemObject
 from app.engine.objects.skill import SkillObject
+from app.utilities import utils
 
-import logging
+if TYPE_CHECKING:
+    from app.engine.objects.unit import UnitObject
+    from app.utilities.typing import NID
 
 def is_magic(unit, item, distance=0) -> bool:
     if item.magic or (item.magic_at_range and distance > 1):
@@ -30,6 +36,15 @@ def can_use(unit, item) -> bool:
             return True
     return False
 
+def can_repair(unit, item) -> bool:
+    if item.uses and item.data['uses'] < item.data['starting_uses'] and \
+            not item_system.unrepairable(unit, item):
+        return True
+    return False
+
+def has_repair(unit) -> bool:
+    return any(can_repair(unit, item) for item in unit.items)
+
 def buy_price(unit, item):
     value = item_system.buy_price(unit, item)
     if value:
@@ -47,6 +62,14 @@ def sell_price(unit, item):
         return 0
     return int(value)
 
+def repair_price(unit, item):
+    repair_cost = 0
+    if item.uses:
+        charges_used = item.data['starting_uses'] - item.data['uses']
+        cost_per_charge = buy_price(unit, item) / item.data['uses']
+        repair_cost = math.ceil(charges_used * cost_per_charge)
+    return int(repair_cost)
+
 # def can_wield(unit, item) -> bool:
 #     weapon = item_system.is_weapon(unit, item)
 #     spell = item_system.is_weapon(unit, item)
@@ -58,7 +81,7 @@ def sell_price(unit, item):
 #             return False
 #     return True
 
-def create_item(unit, item_nid, droppable=False):
+def create_item(unit, item_nid, droppable=False, parent: ItemObject = None) -> ItemObject:
     item_prefab = DB.items.get(item_nid)
     if not item_prefab:
         logging.error("Couldn't find %s" % item_nid)
@@ -66,29 +89,23 @@ def create_item(unit, item_nid, droppable=False):
     item = ItemObject.from_prefab(item_prefab)
     if unit:
         item.owner_nid = unit.nid
-    item.droppable = droppable
     item_system.init(item)
-
-    def create_subitem(subitem_nid):
-        subitem_prefab = DB.items.get(subitem_nid)
-        subitem = ItemObject.from_prefab(subitem_prefab)
-        # Make self.item in components always point to parent item
-        for component in subitem.components:
-            component.item = item
-        if unit:
-            subitem.owner_nid = unit.nid
-        item_system.init(subitem)
-        item.subitem_uids.append(subitem.uid)
-        item.subitems.append(subitem)
-        subitem.parent_item = item
+    if parent: # sub item specific operations
+        for component in item.components:
+            component.item = parent
+        parent.subitem_uids.append(item.uid)
+        parent.subitems.append(item)
+        item.parent_item = parent
+    else: # main item specific operations
+        item.droppable = droppable
 
     if item.multi_item:
         for subitem_nid in item.multi_item.value:
-            create_subitem(subitem_nid)
+            create_item(unit, subitem_nid, parent=item)
 
     elif item.sequence_item:
         for subitem_nid in item.sequence_item.value:
-            create_subitem(subitem_nid)
+            create_item(unit, subitem_nid, parent=item)
 
     return item
 
@@ -101,7 +118,10 @@ def create_items(unit, item_nid_list: list) -> list:
             item_nid = val
             droppable = False
         item = create_item(unit, item_nid, droppable)
-        items.append(item)
+        if item:
+            items.append(item)
+        else:
+            logging.error("Cannot find item with nid %s" % item_nid)
     return items
 
 def get_all_items(unit) -> list:
@@ -111,11 +131,38 @@ def get_all_items(unit) -> list:
     items = []
     for item in unit.items:
         if item.multi_item:
-            for subitem in item.subitems:
-                items.append(subitem)
+            subitems = get_all_items_from_multi_item(unit, item)
+            items += subitems
         else:
             items.append(item)
     return items
+
+def is_weapon_recursive(unit, item) -> bool:
+    if item_system.is_weapon(unit, item):
+        return True
+    if item.multi_item:
+        if any([is_weapon_recursive(unit, sitem) for sitem in item.subitems]):
+            return True
+    return False
+
+def is_spell_recursive(unit, item) -> bool:
+    if item_system.is_spell(unit, item):
+        return True
+    if item.multi_item:
+        if any([is_spell_recursive(unit, sitem) for sitem in item.subitems]):
+            return True
+    return False
+
+def get_all_items_from_multi_item(unit, item) -> List[ItemObject]:
+    all_items = []
+    if item.multi_item:
+        for subitem in item.subitems:
+            if subitem.multi_item:
+                all_subitems = get_all_items_from_multi_item(unit, subitem)
+                all_items += all_subitems
+            else:
+                all_items.append(subitem)
+    return all_items
 
 def get_all_tradeable_items(unit) -> list:
     items = []
@@ -142,18 +189,20 @@ def inventory_full(unit, item) -> bool:
 
 def get_range(unit, item) -> set:
     min_range, max_range = 0, 0
-    for component in item.components:
+    all_components = item_system.get_all_components(unit, item)
+    for component in all_components:
         if component.defines('minimum_range'):
             min_range = component.minimum_range(unit, item)
             break
     if item._force_max_range is not None:
         max_range = item._force_max_range
     else:
-        for component in item.components:
+        for component in all_components:
             if component.defines('maximum_range'):
                 max_range = component.maximum_range(unit, item)
                 break
 
+    max_range = max(0, max_range)
     max_range += skill_system.modify_maximum_range(unit, item)
     limit_max = skill_system.limit_maximum_range(unit, item)
     max_range = utils.clamp(max_range, 0, limit_max)
@@ -170,6 +219,8 @@ def get_range_string(unit, item):
         max_range = item_system.maximum_range(None, item)
     if max_range >= 99:
         rng = '%d+' % min_range
+    elif max_range < 0:
+        rng = text_funcs.translate('Varies')
     elif min_range != max_range:
         rng = '%d-%d' % (min_range, max_range)
     else:
@@ -188,10 +239,13 @@ def create_skill(unit, skill_nid):
 
     def create_subskill(subskill_nid):
         subskill_prefab = DB.skills.get(subskill_nid)
+        if not subskill_prefab:
+            logging.error("Couldn't find skill %s" % skill_nid)
+            return None
         subskill = SkillObject.from_prefab(subskill_prefab)
         # Child skills are not owned by their parent skill unit
         # Since they are given to others
-        # if unit:  
+        # if unit:
         #     subskill.owner_nid = unit.nid
         skill_system.init(subskill)
         skill.subskill_uid = subskill.uid
@@ -211,3 +265,6 @@ def create_skills(unit, skill_nid_list: list) -> list:
         if skill:
             skills.append(skill)
     return skills
+
+def num_stacks(unit: UnitObject, skill_nid: NID) -> int:
+    return len([skill for skill in unit.skills if skill.nid == skill_nid])

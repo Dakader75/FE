@@ -1,7 +1,6 @@
 from app.engine.combat.solver import CombatPhaseSolver
 
 from app.engine import skill_system, item_system, static_random, action
-from app.engine.game_state import game
 from app.engine.combat.simple_combat import SimpleCombat
 
 from app.engine.objects.unit import UnitObject
@@ -14,7 +13,7 @@ class BaseCombat(SimpleCombat):
     """
 
     def __init__(self, attacker: UnitObject, main_item: ItemObject,
-                 main_target: UnitObject, script):
+                 main_target: UnitObject, script: list, total_rounds: int = 1):
         self.attacker = attacker
         self.defender = main_target
         self.main_item = main_item
@@ -25,7 +24,7 @@ class BaseCombat(SimpleCombat):
         self.state_machine = CombatPhaseSolver(
             self.attacker, self.main_item, [self.main_item],
             [self.defender], [[]], [self.defender.position],
-            self.defender, self.def_item, script)
+            self.defender, self.def_item, script, total_rounds)
 
         self.full_playback = []
         self.playback = []
@@ -74,6 +73,8 @@ class BaseCombat(SimpleCombat):
             skill_system.end_combat(self.full_playback, self.defender, self.def_item, self.attacker, 'defense')
             if self.def_item:
                 item_system.end_combat(self.full_playback, self.defender, self.def_item, self.attacker, 'defense')
+
+        skill_system.deactivate_all_combat_arts(self.attacker)
 
         skill_system.post_combat(self.full_playback, self.attacker, self.main_item, self.defender, 'attack')
         if self.attacker is not self.defender:

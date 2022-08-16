@@ -1,7 +1,7 @@
 from app.constants import WINWIDTH, WINHEIGHT
 from app.data.database import DB
 
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
 from app.engine.state import MapState
@@ -27,8 +27,8 @@ class VictoryState(MapState):
         self.stat_surf_target = self.stat_surf.get_height() + 4
         self.num_frame = 0
 
-        SOUNDTHREAD.lower()
-        SOUNDTHREAD.play_sfx('StageClear')
+        get_sound_thread().lower()
+        get_sound_thread().play_sfx('StageClear')
 
     def create_stat_surf(self):
         turns = str(game.turncount)
@@ -58,7 +58,7 @@ class VictoryState(MapState):
     def take_input(self, event):
         if self.state == 'allow_input' and event in ('SELECT', 'START', 'BACK'):
             self.state = 'leave'
-            SOUNDTHREAD.unmute()
+            get_sound_thread().unmute()
             self.bg.fade_out()
             game.state.back()
             # game.state.change('transition_pop')
