@@ -1,4 +1,9 @@
-Hello Ben. HIIIIIIIIIII
+Fire Emblem is serious business.
+
+Resources:
+
+A fanmade graphic repository for Fire Emblem GBA assets.
+https://github.com/Klokinator/FE-Repo
 
 TODO:
 
