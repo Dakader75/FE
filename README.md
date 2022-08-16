@@ -24,3 +24,5 @@ TODO:
 -Put Ben in the game
 
 -Make full heal functional
+
+To get started on the project, follow the instructions listed in README-LT.md.
