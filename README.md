@@ -21,8 +21,6 @@ TODO:
 
 -Make Nathan's Ultimate skill (Waddle Dee Army) functional
 
--Put Ben in the game
-
 -Make full heal functional
 
 To get started on the project, follow the instructions listed in README-LT.md.
