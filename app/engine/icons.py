@@ -9,6 +9,33 @@ from app.engine.fonts import FONT
 from app.engine import engine, skill_system, image_mods
 from app.engine.game_state import game
 
+def get_icon_by_name(name) -> engine.Surface:
+    image, index = None, None
+    for icon_sheet in RESOURCES.icons16:
+        if icon_sheet.get_index(name):
+            image = icon_sheet
+            index = icon_sheet.get_index(name)
+    if not image or not index:
+        return None
+    if not image.image:
+        image.image = engine.image_load(image.full_path)
+    x, y = index
+    image = engine.subsurface(image.image, (x * 16, y * 16, 16, 16))
+    image = image.convert()
+    engine.set_colorkey(image, COLORKEY, rleaccel=True)
+    return image
+
+def get_icon_by_nid(nid, x, y) -> engine.Surface:
+    image = RESOURCES.icons16.get(nid)
+    if not image:
+        return None
+    if not image.image:
+        image.image = engine.image_load(image.full_path)
+    image = engine.subsurface(image.image, (x * 16, y * 16, 16, 16))
+    image = image.convert()
+    engine.set_colorkey(image, COLORKEY, rleaccel=True)
+    return image
+
 def get_icon(item) -> engine.Surface:
     if not item:
         return None
@@ -32,10 +59,13 @@ def draw_item(surf, item, topleft, cooldown=False):
 
     return surf
 
-def draw_skill(surf, skill, topleft, compact=True, simple=False):
+def draw_skill(surf, skill, topleft, compact=True, simple=False, grey=False):
     image = get_icon(skill)
     if not image:
         return None
+
+    if grey:
+        image = image_mods.make_gray_colorkey(image)
 
     surf.blit(image, topleft)
     if simple:
@@ -54,6 +84,13 @@ def draw_skill(surf, skill, topleft, compact=True, simple=False):
         if text is not None:
             FONT['text-blue'].blit(text, surf, (topleft[0] + 16, topleft[1]))
 
+    return surf
+
+def draw_icon_by_alias(surf, icon_alias, topleft):
+    image = get_icon_by_name(icon_alias)
+    if not image:
+        return None
+    surf.blit(image, topleft)
     return surf
 
 def draw_weapon(surf, weapon_type, topleft, gray=False):
@@ -90,9 +127,10 @@ def draw_faction(surf, faction, topleft):
     surf.blit(image, topleft)
     return surf
 
-def get_portrait(unit):
+def get_portrait(unit) -> tuple:
     image = RESOURCES.portraits.get(unit.portrait_nid)
     if image:
+        offset = image.info_offset
         if not image.image:
             image.image = engine.image_load(image.full_path)
         image = engine.subsurface(image.image, (0, 0, 96, 80))
@@ -104,24 +142,28 @@ def get_portrait(unit):
         if not image.image:
             image.image = engine.image_load(image.full_path)
         image = engine.subsurface(image.image, (klass.icon_index[0] * 80, klass.icon_index[1] * 72, 80, 72))
+        offset = 0
 
     image = image.convert()
     engine.set_colorkey(image, COLORKEY, rleaccel=True)
 
-    return image
+    return image, offset
 
-def get_portrait_from_nid(portrait_nid):
+def get_portrait_from_nid(portrait_nid) -> tuple:
     image = RESOURCES.portraits.get(portrait_nid)
     if image:
+        offset = image.info_offset
         if not image.image:
             image.image = engine.image_load(image.full_path)
         image = engine.subsurface(image.image, (0, 0, 96, 80))
         image = image.convert()
         engine.set_colorkey(image, COLORKEY, rleaccel=True)
-    return image
+    else:
+        offset = 0
+    return image, offset
 
 def draw_portrait(surf, unit, topleft=None, bottomright=None):
-    image = get_portrait(unit)
+    image, _ = get_portrait(unit)
     if not image:
         return None
 

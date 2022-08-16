@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, \
     QMessageBox, QSpinBox, QHBoxLayout, QGroupBox, QRadioButton, \
     QVBoxLayout, QComboBox, QStackedWidget, QDoubleSpinBox, QCheckBox, \
-    QGridLayout
+    QGridLayout, QListWidget, QListWidgetItem, QPushButton
 from PyQt5.QtCore import Qt
 
 import app.data.ai as ai
 from app.data.database import DB
 
-from app.extensions.custom_gui import PropertyBox, ComboBox
+from app.extensions.custom_gui import PropertyBox, ComboBox, PropertyCheckBox
 from app.editor.custom_widgets import ClassBox, UnitBox, FactionBox, PartyBox
 from app.utilities import str_utils
 
@@ -153,7 +153,34 @@ class EventSpecification(QWidget):
         self.window.current.target_spec = event
 
     def set_current(self, target_spec):
-        self.box.setText(target_spec)
+        try:
+            self.box.setText(target_spec)
+        except: # spec isn't compatible
+            pass
+
+class WaitSpecification(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.window = parent
+
+        self.layout = QHBoxLayout()
+        self.box = QSpinBox()
+        self.box.setMinimumWidth(40)
+        self.box.setRange(0, 10000000)
+        self.box.valueChanged.connect(self.spec_changed)
+
+        self.layout.addWidget(self.box)
+        self.setLayout(self.layout)
+
+    def spec_changed(self, text):
+        time = self.box.value()
+        self.window.current.target_spec = time
+
+    def set_current(self, target_spec):
+        try:
+            self.box.setValue(target_spec)
+        except: # spec isn't compatible
+            pass
 
 class PositionSpecification(QWidget):
     def __init__(self, parent=None):
@@ -243,6 +270,8 @@ class BehaviourBox(QGroupBox):
                 target_spec = PositionSpecification(self)
             elif target == "Event":
                 target_spec = EventSpecification(self)
+            elif target == "Time":
+                target_spec = WaitSpecification(self)
             self.target_spec.addWidget(target_spec)
 
         self.view_range = ComboBox(self)
@@ -258,14 +287,62 @@ class BehaviourBox(QGroupBox):
         self.custom_view_range.setMaximum(255)
         self.custom_view_range.editingFinished.connect(self.check_view_range)
 
+        self.speed_box = PropertyBox("Roam Speed", QSpinBox, self)
+        self.speed_box.setToolTip("How fast the unit moves in Free Roam. Divided by 100 and multiplies the default speed")
+        self.speed_box.edit.setRange(0, 1000)
+        self.speed_box.edit.setAlignment(Qt.AlignRight)
+        self.speed_box.edit.valueChanged.connect(self.set_roam_speed)
+
+        self.proximity_box = PropertyBox("Desired Proximity", QSpinBox, self)
+        self.proximity_box.setToolTip("When within this distance of a target, move to the next behaviour.\nSet to -1 to never change behaviour.")
+        self.proximity_box.edit.setRange(-1, 255)
+        self.proximity_box.edit.setAlignment(Qt.AlignRight)
+        self.proximity_box.edit.valueChanged.connect(self.set_desired_proximity)
+
+        self.within_label = QLabel(" within ")
+
         self.layout.addWidget(self.action)
         self.layout.addWidget(self.target)
         self.layout.addWidget(self.target_spec)
-        self.layout.addWidget(QLabel(" within "))
-        self.layout.addWidget(self.view_range)
-        self.layout.addWidget(self.custom_view_range)
+
+        self.show_range()
+
+        self.construct_roam_info(False)
+
         self.custom_view_range.hide()
         self.setLayout(self.layout)
+
+    def show_range(self):
+        # self.target.value() != 'Time'
+        if isinstance(self.target_spec.currentWidget(), WaitSpecification):
+            self.within_label.setParent(None)
+            self.view_range.setParent(None)
+            self.custom_view_range.setParent(None)
+            self.layout.removeWidget(self.within_label)
+            self.layout.removeWidget(self.view_range)
+            self.layout.removeWidget(self.custom_view_range)
+        else:
+            self.layout.addWidget(self.within_label)
+            self.layout.addWidget(self.view_range)
+            self.layout.addWidget(self.custom_view_range)
+
+    def set_roam_speed(self, val):
+        self.current.roam_speed = int(val)
+
+    def set_desired_proximity(self, val):
+        self.current.desired_proximity = int(val)
+
+    def construct_roam_info(self, enable: bool):
+        if enable and self.current and self.current.action != "Wait":
+            self.speed_box.show()
+            self.proximity_box.show()
+            self.layout.addWidget(self.speed_box)
+            self.layout.addWidget(self.proximity_box)
+        else:
+            self.speed_box.hide()
+            self.proximity_box.hide()
+            self.layout.removeWidget(self.speed_box)
+            self.layout.removeWidget(self.proximity_box)
 
     def action_changed(self, index):
         action = self.action.currentText().replace(' ', '_')
@@ -273,7 +350,10 @@ class BehaviourBox(QGroupBox):
 
         if self.current.action in ('Move_to', 'Move_away_from'):
             self.target.setEnabled(True)
-            self.target.setValue(self.current.target)
+            if self.current.target != "Time":
+                self.target.setValue(self.current.target)
+            else:
+                self.target.setValue("None")
             target_spec = self.target_spec.currentWidget()
             target_spec.set_current(self.current.target_spec)
         elif self.current.action == 'None':
@@ -294,6 +374,13 @@ class BehaviourBox(QGroupBox):
             self.target.setValue('Event')
             target_spec = self.target_spec.currentWidget()
             target_spec.set_current(self.current.target_spec)
+        elif self.current.action == 'Wait':
+            self.target.setEnabled(False)
+            self.target.setValue('Time')
+            target_spec = self.target_spec.currentWidget()
+            target_spec.set_current(self.current.target_spec)
+
+        self.show_range()
 
     def target_changed(self, index):
         target = self.target.currentText()
@@ -304,7 +391,7 @@ class BehaviourBox(QGroupBox):
 
     def check_view_range(self):
         cur_val = self.view_range.currentText()
-        if cur_val == 'Custom Integer':
+        if cur_val == 'Custom Integer' and self.view_range.isVisible():
             self.custom_view_range.show()
             self.current.view_range = int(self.custom_view_range.value())
         else:
@@ -316,6 +403,11 @@ class BehaviourBox(QGroupBox):
         action = behaviour.action.replace('_', ' ')
         self.action.setValue(action)
         self.action_changed(None)
+
+        if self.speed_box:
+            self.speed_box.edit.setValue(behaviour.roam_speed)
+        if self.proximity_box:
+            self.proximity_box.edit.setValue(behaviour.desired_proximity)
 
         if behaviour.view_range < 0:
             correct_index = -behaviour.view_range - 1
@@ -334,19 +426,19 @@ class AIProperties(QWidget):
 
         self.current = current
 
-        top_section = QHBoxLayout()
+        self.top_section = QHBoxLayout()
 
         self.nid_box = PropertyBox("Unique ID", QLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
-        top_section.addWidget(self.nid_box)
+        self.top_section.addWidget(self.nid_box)
 
         self.priority_box = PropertyBox("Priority", QSpinBox, self)
         self.priority_box.setToolTip("Higher priority AIs move first")
         self.priority_box.edit.setRange(0, 255)
         self.priority_box.edit.setAlignment(Qt.AlignRight)
         self.priority_box.edit.valueChanged.connect(self.priority_changed)
-        top_section.addWidget(self.priority_box)
+        self.top_section.addWidget(self.priority_box)
 
         self.offense_bias_box = PropertyBox("Offense Bias", QDoubleSpinBox, self)
         self.offense_bias_box.setToolTip("Higher offense AIs weigh damage dealt over their own survival")
@@ -354,26 +446,43 @@ class AIProperties(QWidget):
         self.offense_bias_box.edit.setSingleStep(0.2)
         self.offense_bias_box.edit.setAlignment(Qt.AlignRight)
         self.offense_bias_box.edit.valueChanged.connect(self.offense_bias_changed)
-        top_section.addWidget(self.offense_bias_box)
+        self.top_section.addWidget(self.offense_bias_box)
+
+        self.roam_ai_box = PropertyCheckBox("Roam AI", QCheckBox, self)
+        self.roam_ai_box.edit.stateChanged.connect(self.roam_ai)
+        self.roam_ai_box.setToolTip("Is this AI for Free Roam or normal gameplay?")
+        self.top_section.addWidget(self.roam_ai_box)
+
+        self.add_button = QPushButton("Add Behaviour", self)
+        self.add_button.clicked.connect(self.add_behaviour)
+        self.top_section.addWidget(self.add_button)
+
+        self.remove_button = QPushButton("Remove Behaviour", self)
+        self.remove_button.clicked.connect(self.pop_behaviour)
+        self.top_section.addWidget(self.remove_button)
 
         main_section = QVBoxLayout()
 
-        self.behaviour1 = BehaviourBox(self)
-        self.behaviour1.setTitle("Behaviour 1")
-        self.behaviour2 = BehaviourBox(self)
-        self.behaviour2.setTitle("Behaviour 2")
-        self.behaviour3 = BehaviourBox(self)
-        self.behaviour3.setTitle("Behaviour 3")
-        self.behaviour_boxes = [self.behaviour1, self.behaviour2, self.behaviour3]
+        self.behaviour_boxes = []
+        self.behaviour_list = QListWidget()
 
-        main_section.addWidget(self.behaviour1)
-        main_section.addWidget(self.behaviour2)
-        main_section.addWidget(self.behaviour3)
+        main_section.addWidget(self.behaviour_list)
 
         total_section = QVBoxLayout()
-        total_section.addLayout(top_section)
+        total_section.addLayout(self.top_section)
         total_section.addLayout(main_section)
         self.setLayout(total_section)
+
+        self.construct_roam_info()
+
+    def construct_roam_info(self):
+        if self.current:
+            enable = False
+            if self.current.roam_ai:
+                enable = True
+
+            for b in self.behaviour_boxes:
+                b.construct_roam_info(enable)
 
     def nid_changed(self, text):
         self.current.nid = text
@@ -387,7 +496,7 @@ class AIProperties(QWidget):
             self.current.nid = str_utils.get_next_name(self.current.nid, other_nids)
         self.model.on_nid_changed(self._data.find_key(self.current), self.current.nid)
         self._data.update_nid(self.current, self.current.nid)
-        self.window.update_list()   
+        self.window.update_list()
 
     def priority_changed(self, val):
         self.current.priority = int(val)
@@ -395,10 +504,51 @@ class AIProperties(QWidget):
     def offense_bias_changed(self, val):
         self.current.offense_bias = float(val)
 
+    def pop_behaviour(self, checked=False, set_current=True):
+        idx = len(self.behaviour_boxes)
+        self.behaviour_list.takeItem(idx - 1)
+        self.behaviour_boxes.pop()
+
+        if self.current and set_current:
+            self.current.pop_behaviour()
+
+    def roam_ai(self, state):
+        self.current.roam_ai = bool(state)
+        self.construct_roam_info()
+
+    def add_behaviour(self, checked=False, set_current=True):
+        item = QListWidgetItem(self.behaviour_list)
+        self.behaviour_list.addItem(item)
+
+        idx = len(self.behaviour_boxes) + 1
+
+        behaviour_box = BehaviourBox(self)
+        behaviour_box.setTitle("Behaviour %d" % idx)
+        item.setSizeHint(behaviour_box.minimumSizeHint())
+
+        self.behaviour_list.setItemWidget(item, behaviour_box)
+        self.behaviour_boxes.append(behaviour_box)
+
+        self.construct_roam_info()
+
+        if self.current and set_current:
+            self.current.add_default()
+            behaviour_box.set_current(self.current.behaviours[-1])
+
     def set_current(self, current):
         self.current = current
         self.nid_box.edit.setText(current.nid)
         self.priority_box.edit.setValue(current.priority)
         self.offense_bias_box.edit.setValue(current.offense_bias)
+        self.roam_ai_box.edit.setChecked(bool(current.roam_ai))
+        num_behaviours = len(current.behaviours)
+        # Remove all after num behaviours
+        while len(self.behaviour_boxes) > num_behaviours:
+            self.pop_behaviour(set_current=False)
+        while len(self.behaviour_boxes) < num_behaviours:
+            self.add_behaviour(set_current=False)
+        # Now set the rest to this
         for idx, behaviour in enumerate(current.behaviours):
             self.behaviour_boxes[idx].set_current(behaviour)
+
+        self.construct_roam_info()

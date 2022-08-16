@@ -1,3 +1,6 @@
+from typing import List, Tuple
+from app.engine.graphics.text.text_renderer import render_text, rendered_text_width
+from app.engine.objects.unit import UnitObject
 from dataclasses import dataclass
 
 from app.constants import WINWIDTH, WINHEIGHT
@@ -7,24 +10,24 @@ from app.resources.resources import RESOURCES
 from app.data.database import DB
 
 from app.engine.sprites import SPRITES
-from app.engine.fonts import FONT
-from app.engine.sound import SOUNDTHREAD
-from app.engine.input_manager import INPUT
+from app.engine.sound import get_sound_thread
+from app.engine.input_manager import get_input_manager
 from app.engine.state import State
 from app.engine import engine, background, menu_options, help_menu, gui, \
     icons, image_mods, item_funcs, equations, \
     combat_calcs, menus, skill_system, text_funcs
 from app.engine.game_state import game
 from app.engine.fluid_scroll import FluidScroll
+from app.utilities.enums import Alignments
 
 def handle_info():
     if game.cursor.get_hover():
-        SOUNDTHREAD.play_sfx('Select 1')
+        get_sound_thread().play_sfx('Select 1')
         game.memory['next_state'] = 'info_menu'
         game.memory['current_unit'] = game.cursor.get_hover()
         game.state.change('transition_to')
     else:
-        SOUNDTHREAD.play_sfx('Select 3')
+        get_sound_thread().play_sfx('Select 3')
         game.boundary.toggle_all_enemy_attacks()
 
 def handle_aux():
@@ -48,7 +51,7 @@ def handle_aux():
             idx = (idx + 1) % len(avail_units)
             new_pos = avail_units[idx].position
             game.memory['aux_unit'] = cur_unit
-            SOUNDTHREAD.play_sfx('Select 4')
+            get_sound_thread().play_sfx('Select 4')
             game.cursor.set_pos(new_pos)
 
 @dataclass
@@ -62,6 +65,8 @@ class BoundingBox():
 info_states = ('personal_data', 'equipment', 'support_skills', 'notes')
 
 class InfoGraph():
+    draw_all_bbs = False
+
     def __init__(self):
         self.registry = {state: [] for state in info_states}
         self.registry.update({'growths': []})
@@ -123,23 +128,18 @@ class InfoGraph():
             closest_box = None
             max_distance = 1e6
             # First try to find a close box by moving in the right direction
+            horiz_penalty, vert_penalty = 1, 1
+            if horiz:
+                vert_penalty = 10
+            else:
+                horiz_penalty = 10
             for bb in boxes:
-                if horiz:
-                    a, b = self.current_bb.aabb[1], self.current_bb.aabb[1] + self.current_bb.aabb[3]
-                    bb_center = (bb.aabb[0] + bb.aabb[2]/2, bb.aabb[1] + bb.aabb[3]/2)
-                    if a < bb_center[1] < b:
-                        distance = (center_point[0] - bb_center[0])**2 + (center_point[1] - bb_center[1])**2
-                        if distance < max_distance:
-                            max_distance = distance
-                            closest_box = bb
-                else:
-                    a, b = self.current_bb.aabb[0], self.current_bb.aabb[0] + self.current_bb.aabb[2]
-                    bb_center = (bb.aabb[0] + bb.aabb[2]/2, bb.aabb[1] + bb.aabb[3]/2)
-                    if a < bb_center[0] < b:
-                        distance = (center_point[0] - bb_center[0])**2 + (center_point[1] - bb_center[1])**2
-                        if distance < max_distance:
-                            max_distance = distance
-                            closest_box = bb
+                curr_topleft = self.current_bb.aabb[:2]
+                other_topleft = bb.aabb[:2]
+                distance = horiz_penalty * (curr_topleft[0] - other_topleft[0])**2 + vert_penalty * (curr_topleft[1] - other_topleft[1])**2
+                if distance < max_distance:
+                    max_distance = distance
+                    closest_box = bb
             # Find the closest box from boxes by comparing center points
             if not closest_box:
                 for bb in boxes:
@@ -174,19 +174,21 @@ class InfoGraph():
                 self.current_bb = bb
 
     def draw(self, surf):
-        # for bb in self.registry[self.current_state]:
-        #     s = engine.create_surface((bb.aabb[2], bb.aabb[3]), transparent=True)
-        #     engine.fill(s, (10 * bb.idx, 10 * bb.idx, 0, 128))
-        #     surf.blit(s, (bb.aabb[0], bb.aabb[1]))
+        if self.draw_all_bbs:
+            for bb in self.registry[self.current_state]:
+                s = engine.create_surface((bb.aabb[2], bb.aabb[3]), transparent=True)
+                engine.fill(s, (10 * bb.idx, 10 * bb.idx, 0, 128))
+                surf.blit(s, (bb.aabb[0], bb.aabb[1]))
         if self.current_bb:
             # right = self.current_bb.aabb[0] >= int(0.75 * WINWIDTH)
             right = False
             pos = (max(0, self.current_bb.aabb[0] - 32), self.current_bb.aabb[1] + 13)
-            self.current_bb.help_box.draw(surf, pos, right)
 
             cursor_pos = (max(0, self.current_bb.aabb[0] - 4), self.current_bb.aabb[1])
             self.cursor.update()
             self.cursor.draw(surf, *cursor_pos)
+
+            self.current_bb.help_box.draw(surf, pos, right)
 
 def build_groove(surf, topleft, width, fill):
     bg = SPRITES.get('groove_back')
@@ -226,7 +228,7 @@ class InfoMenuState(State):
         self.create_background()
 
         # Unit to be displayed
-        self.unit = game.memory.get('current_unit')
+        self.unit: UnitObject = game.memory.get('current_unit')
         self.scroll_units = game.memory.get('scroll_units')
         if self.scroll_units is None:
             self.scroll_units = [unit for unit in game.units if not unit.dead and unit.team == self.unit.team and unit.party == self.unit.party]
@@ -270,15 +272,15 @@ class InfoMenuState(State):
         self.info_graph.clear()
         self.portrait_surf = None
 
-        self.personal_data_surf = None
-        self.growths_surf = None
-        self.wexp_surf = None
-        self.equipment_surf = None
-        self.support_surf = None
-        self.skill_surf = None
-        self.class_skill_surf = None
-        self.fatigue_surf = None
-        self.notes_surf = None
+        self.personal_data_surf: engine.Surface = None
+        self.growths_surf: engine.Surface = None
+        self.wexp_surf: engine.Surface = None
+        self.equipment_surf: engine.Surface = None
+        self.support_surf: engine.Surface = None
+        self.skill_surf: engine.Surface = None
+        self.class_skill_surf: engine.Surface = None
+        self.fatigue_surf: engine.Surface = None
+        self.notes_surf: engine.Surface = None
 
     def switch_logo(self, name):
         if name == 'personal_data':
@@ -297,7 +299,7 @@ class InfoMenuState(State):
             self.logo = gui.Logo(image, (164, 10))
 
     def back(self):
-        SOUNDTHREAD.play_sfx('Select 4')
+        get_sound_thread().play_sfx('Select 4')
         game.memory['info_menu_state'] = self.state
         game.memory['current_unit'] = self.unit
         if self.unit.position:
@@ -311,33 +313,33 @@ class InfoMenuState(State):
         self.handle_mouse()
         if self.info_flag:
             if event == 'INFO' or event == 'BACK':
-                SOUNDTHREAD.play_sfx('Info Out')
+                get_sound_thread().play_sfx('Info Out')
                 self.info_graph.set_transition_out()
                 self.info_flag = False
                 return
 
             if 'RIGHT' in directions:
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
                 self.info_graph.move_right()
             elif 'LEFT' in directions:
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
                 self.info_graph.move_left()
             elif 'UP' in directions:
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
                 self.info_graph.move_up()
             elif 'DOWN' in directions:
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
                 self.info_graph.move_down()
 
         elif not self.transition:  # Only takes input when not transitioning
 
             if event == 'INFO':
-                SOUNDTHREAD.play_sfx('Info In')
+                get_sound_thread().play_sfx('Info In')
                 self.info_graph.set_transition_in()
                 self.info_flag = True
             elif event == 'AUX':
                 if self.state == 'personal_data' and self.unit.team == 'player' and DB.constants.value('growth_info'):
-                    SOUNDTHREAD.play_sfx('Select 3')
+                    get_sound_thread().play_sfx('Select 3')
                     self.growth_flag = not self.growth_flag
                     if self.growth_flag:
                         self.info_graph.set_current_state('growths')
@@ -350,7 +352,7 @@ class InfoMenuState(State):
                     self.back()
                     return
             elif event == 'SELECT':
-                mouse_position = INPUT.get_mouse_position()
+                mouse_position = get_input_manager().get_mouse_position()
                 if mouse_position:
                     mouse_x, mouse_y = mouse_position
                     if mouse_x <= 16:
@@ -375,7 +377,7 @@ class InfoMenuState(State):
                 self.move_up()
 
     def move_left(self):
-        SOUNDTHREAD.play_sfx('Status_Page_Change')
+        get_sound_thread().play_sfx('Status_Page_Change')
         index = info_states.index(self.state)
         new_index = (index - 1) % len(info_states)
         self.next_state = info_states[new_index]
@@ -387,7 +389,7 @@ class InfoMenuState(State):
         self.switch_logo(self.next_state)
 
     def move_right(self):
-        SOUNDTHREAD.play_sfx('Status_Page_Change')
+        get_sound_thread().play_sfx('Status_Page_Change')
         index = info_states.index(self.state)
         new_index = (index + 1) % len(info_states)
         self.next_state = info_states[new_index]
@@ -399,7 +401,7 @@ class InfoMenuState(State):
         self.switch_logo(self.next_state)
 
     def move_down(self):
-        SOUNDTHREAD.play_sfx('Status_Character')
+        get_sound_thread().play_sfx('Status_Character')
         if self.scroll_units:
             if self.rescuer:
                 new_index = self.scroll_units.index(self.rescuer)
@@ -414,7 +416,7 @@ class InfoMenuState(State):
             self.transition = 'DOWN'
 
     def move_up(self):
-        SOUNDTHREAD.play_sfx('Status_Character')
+        get_sound_thread().play_sfx('Status_Character')
         if self.scroll_units:
             if self.rescuer:
                 new_index = self.scroll_units.index(self.rescuer)
@@ -429,7 +431,7 @@ class InfoMenuState(State):
             self.transition = 'UP'
 
     def move_traveler(self):
-        SOUNDTHREAD.play_sfx('Status_Character')
+        get_sound_thread().play_sfx('Status_Character')
         self.rescuer = self.unit
         self.next_unit = game.get_unit(self.unit.traveler)
         if self.state == 'notes' and not (DB.constants.value('unit_notes') and self.next_unit.notes):
@@ -438,7 +440,7 @@ class InfoMenuState(State):
         self.transition = 'DOWN'
 
     def handle_mouse(self):
-        mouse_position = INPUT.get_mouse_position()
+        mouse_position = get_input_manager().get_mouse_position()
         if not mouse_position:
             return
         if self.info_flag:
@@ -531,6 +533,9 @@ class InfoMenuState(State):
     def draw(self, surf):
         if self.bg:
             self.bg.draw(surf)
+        else:
+            # info menu shouldn't be transparent
+            surf.blit(SPRITES.get('bg_black'), (0, 0))
 
         # Image flashy thing at the top of the InfoMenu
         num_frames = 8
@@ -574,25 +579,25 @@ class InfoMenuState(State):
         surf = engine.create_surface((96, WINHEIGHT), transparent=True)
         surf.blit(SPRITES.get('info_unit'), (8, 122))
 
-        im = icons.get_portrait(self.unit)
+        im, offset = icons.get_portrait(self.unit)
         if im:
             x_pos = (im.get_width() - 80)//2
-            portrait_surf = engine.subsurface(im, (x_pos, 0, 80, 72))
+            portrait_surf = engine.subsurface(im, (x_pos, offset, 80, 72))
             surf.blit(portrait_surf, (8, 8))
 
-        FONT['text-white'].blit_center(self.unit.name, surf, (48, 80))
+        render_text(surf, ['text'], [self.unit.name], ['white'], (48, 80), Alignments.CENTER)
         self.info_graph.register((24, 80, 52, 24), self.unit.desc, 'all')
         class_obj = DB.classes.get(self.unit.klass)
-        FONT['text-white'].blit(class_obj.name, surf, (8, 104))
+        render_text(surf, ['text'], [class_obj.name], ['white'], (8, 104))
         self.info_graph.register((8, 104, 72, 16), class_obj.desc, 'all')
-        FONT['text-blue'].blit_right(str(self.unit.level), surf, (39, 120))
+        render_text(surf, ['text'], [str(self.unit.level)], ['blue'], (39, 120), Alignments.RIGHT)
         self.info_graph.register((8, 120, 30, 16), 'Level_desc', 'all')
-        FONT['text-blue'].blit_right(str(self.unit.exp), surf, (63, 120))
+        render_text(surf, ['text'], [str(self.unit.exp)], ['blue'], (63, 120), Alignments.RIGHT)
         self.info_graph.register((38, 120, 30, 16), 'Exp_desc', 'all')
-        FONT['text-blue'].blit_right(str(self.unit.get_hp()), surf, (39, 136))
+        render_text(surf, ['text'], [str(self.unit.get_hp())], ['blue'], (39, 136), Alignments.RIGHT)
         self.info_graph.register((8, 136, 72, 16), 'HP_desc', 'all')
         max_hp = equations.parser.hitpoints(self.unit)
-        FONT['text-blue'].blit_right(str(max_hp), surf, (63, 136))
+        render_text(surf, ['text'], [str(max_hp)], ['blue'], (63, 136), Alignments.RIGHT)
         # Blit the white status platform
         surf.blit(SPRITES.get('status_platform'), (66, 131))
         # Blit affinity
@@ -615,8 +620,13 @@ class InfoMenuState(State):
         if self.logo:
             self.logo.update()
             self.logo.draw(top_surf)
-        page = str(info_states.index(self.state) + 1) + '/' + str(len(info_states))
-        FONT['small-white'].blit_right(page, top_surf, (235, 12))
+        # Blit page numbers
+        if DB.constants.value('unit_notes') and self.unit.notes:
+            num_states = len(info_states)
+        else:
+            num_states = len(info_states) - 1
+        page = str(info_states.index(self.state) + 1) + '/' + str(num_states)
+        render_text(top_surf, ['small'], [page], [], (235, 12), Alignments.RIGHT)
 
         self.draw_top_arrows(top_surf)
 
@@ -695,13 +705,13 @@ class InfoMenuState(State):
                 highest_stat = DB.stats.get(stat_nid).maximum
                 max_stat = max_stats.get(stat_nid, 30)
                 if max_stat > 0:
-                    total_length = int(max_stat / highest_stat * 44)
+                    total_length = int(max_stat / highest_stat * 42)
                     frac = utils.clamp(self.unit.stats.get(stat_nid) / max_stat, 0, 1)
                     build_groove(surf, (27, 16 * idx + 32), total_length, frac)
                 icons.draw_stat(surf, stat_nid, self.unit, (47, 16 * idx + 24))
             # Name
             name = DB.stats.get(stat_nid).name
-            FONT['text-yellow'].blit(name, surf, (8, 16 * idx + 24))
+            render_text(surf, ['text'], [name], ['yellow'], (8, 16 * idx + 24))
             base_value = self.unit.stats.get(stat_nid, 0)
             contribution = self.unit.stat_contribution(stat_nid)
             contribution['Base Value'] = base_value
@@ -715,7 +725,7 @@ class InfoMenuState(State):
                 icons.draw_stat(surf, stat_nid, self.unit, (111, 16 * idx + 24))
             # Name
             name = DB.stats.get(stat_nid).name
-            FONT['text-yellow'].blit(name, surf, (72, 16 * idx + 24))
+            render_text(surf, ['text'], [name], ['yellow'], (72, 16 * idx + 24))
             base_value = self.unit.stats.get(stat_nid, 0)
             contribution = self.unit.stat_contribution(stat_nid)
             contribution['Base Value'] = base_value
@@ -735,20 +745,20 @@ class InfoMenuState(State):
             if stat == 'TRV':
                 if self.unit.traveler:
                     trav = game.get_unit(self.unit.traveler)
-                    FONT['text-blue'].blit(trav.name, surf, (96, 16 * true_idx + 24))
+                    render_text(surf, ['text'], [trav.name], ['blue'], (96, 16 * true_idx + 24))
                 else:
-                    FONT['text-blue'].blit('--', surf, (96, 16 * true_idx + 24))
-                FONT['text-yellow'].blit('Trv', surf, (72, 16 * true_idx + 24))
+                    render_text(surf, ['text'], ['--'], ['blue'], (96, 16 * true_idx + 24))
+                render_text(surf, ['text'], ['Trv'], ['yellow'], (72, 16 * true_idx + 24))
                 self.info_graph.register((96 + 72, 16 * true_idx + 24, 64, 16), 'Trv_desc', state)
 
             elif stat == 'AID':
                 if growths:
                     icons.draw_growth(surf, 'HP', self.unit, (111, 16 * true_idx + 24))
-                    FONT['text-yellow'].blit('HP', surf, (72, 16 * true_idx + 24))
+                    render_text(surf, ['text'], ['HP'], ['yellow'], (72, 16 * true_idx + 24))
                     self.info_graph.register((96 + 72, 16 * true_idx + 24, 64, 16), 'HP_desc', state)
                 else:
                     aid = equations.parser.rescue_aid(self.unit)
-                    FONT['text-blue'].blit_right(str(aid), surf, (111, 16 * true_idx + 24))
+                    render_text(surf, ['text'], [str(aid)], ['blue'], (111, 16 * true_idx + 24), Alignments.RIGHT)
 
                     # Mount Symbols
                     if 'Dragon' in self.unit.tags:
@@ -760,29 +770,29 @@ class InfoMenuState(State):
                     else:
                         aid_surf = engine.subsurface(SPRITES.get('aid_icons'), (0, 0, 16, 16))
                     surf.blit(aid_surf, (112, 16 * true_idx + 24))
-                    FONT['text-yellow'].blit('Aid', surf, (72, 16 * true_idx + 24))
+                    render_text(surf, ['text'], ['Aid'], ['yellow'], (72, 16 * true_idx + 24))
                     self.info_graph.register((96 + 72, 16 * true_idx + 24, 64, 16), 'Aid_desc', state)
 
             elif stat == 'RAT':
                 rat = str(equations.parser.rating(self.unit))
-                FONT['text-blue'].blit_right(rat, surf, (111, 16 * true_idx + 24))
-                FONT['text-yellow'].blit('Rat', surf, (72, 16 * true_idx + 24))
+                render_text(surf, ['text'], [rat], ['blue'], (111, 16 * true_idx + 24), Alignments.RIGHT)
+                render_text(surf, ['text'], ['Rat'], ['yellow'], (72, 16 * true_idx + 24))
                 self.info_graph.register((96 + 72, 16 * true_idx + 24, 64, 16), 'Rating_desc', state)
 
             elif stat == 'MANA':
                 mana = str(self.unit.current_mana)
-                FONT['text-blue'].blit_right(mana, surf, (111, 16 * true_idx + 24))
-                FONT['text-yellow'].blit(text_funcs.translate('MANA'), surf, (72, 16 * true_idx + 24))
+                render_text(surf, ['text'], [mana], ['blue'], (111, 16 * true_idx + 24), Alignments.RIGHT)
+                render_text(surf, ['text'], [text_funcs.translate('MANA')], ['yellow'], (72, 16 * true_idx + 24))
                 self.info_graph.register((96 + 72, 16 * true_idx + 24, 64, 16), 'MANA_desc', state)
 
             elif stat == 'GAUGE':
                 gge = str(self.unit.get_guard_gauge()) + '/' + str(self.unit.get_max_guard_gauge())
-                FONT['text-blue'].blit_right(gge, surf, (111, 16 * true_idx + 24))
-                FONT['text-yellow'].blit(text_funcs.translate('GAUGE'), surf, (72, 16 * true_idx + 24))
+                render_text(surf, ['text'], [gge], ['blue'], (111, 16 * true_idx + 24), Alignments.RIGHT)
+                render_text(surf, ['text'], [text_funcs.translate('GAUGE')], ['yellow'], (72, 16 * true_idx + 24))
                 self.info_graph.register((96 + 72, 16 * true_idx + 24, 64, 16), 'GAUGE_desc', state)
 
             if DB.constants.value('lead'):
-                FONT['text-yellow'].blit('Lead', surf, (72, 120))
+                render_text(surf, ['text'], ['Lead'], ['yellow'], (72, 120))
                 self.info_graph.register((96 + 72, 120, 64, 16), 'Lead_desc', state)
 
                 if growths:
@@ -801,16 +811,22 @@ class InfoMenuState(State):
         surf.blit(self.growths_surf, (96, 0))
 
     def create_wexp_surf(self):
-        surf = engine.create_surface((WINWIDTH - 96, 24), transparent=True)
-
-        how_many = len([wexp for wexp in self.unit.wexp.values() if wexp > 0])
-        x_pos = (WINWIDTH - 102) // max(how_many, 2)
-
         class_obj = DB.classes.get(self.unit.klass)
+        wexp_to_draw: List[Tuple[str, int]] = []
+        for weapon, wexp in self.unit.wexp.items():
+            if wexp > 0 and (class_obj.wexp_gain.get(weapon).usable or skill_system.wexp_usable_skill(self.unit, weapon)) \
+            and not skill_system.wexp_unusable_skill(self.unit, weapon):
+                wexp_to_draw.append((weapon, wexp))
+        width = (WINWIDTH - 102) // 2
+        height = 16 * 2 + 4
+
+        surf = engine.create_surface((WINWIDTH - 96, height), transparent=True)
+        if not wexp_to_draw:
+            return surf
         counter = 0
-        for idx, weapon in enumerate(self.unit.wexp.keys()):
-            value = self.unit.wexp[weapon]
-            if value > 0 and (class_obj.wexp_gain.get(weapon).usable or skill_system.wexp_usable_skill(self.unit, weapon)):
+        for y in range(0, 32, 16):
+            for x in range(0, 2):
+                weapon, value = wexp_to_draw[counter]
                 weapon_rank = DB.weapon_ranks.get_rank_from_wexp(value)
                 next_weapon_rank = DB.weapon_ranks.get_next_rank_from_wexp(value)
                 if not weapon_rank:
@@ -819,17 +835,21 @@ class InfoMenuState(State):
                     perc = 1
                 else:
                     perc = (value - weapon_rank.requirement) / (next_weapon_rank.requirement - weapon_rank.requirement)
-                offset = 8 + counter * x_pos
-                counter += 1
+                offset = 8 + x * width
 
-                icons.draw_weapon(surf, weapon, (offset, 4))
+                icons.draw_weapon(surf, weapon, (offset, 4 + y))
 
                 # Build groove
-                build_groove(surf, (offset + 18, 10), x_pos - 24, perc)
+                build_groove(surf, (offset + 18, 10 + y), width - 24, perc)
                 # Add text
-                pos = (offset + 7 + x_pos//2, 4)
-                FONT['text-blue'].blit_center(weapon_rank.nid, surf, pos)
-                self.info_graph.register((96 + pos[0] - x_pos//2 - 8, 24 + pos[1], x_pos, 16), "%s mastery level: %d" % (DB.weapons.get(weapon).name, value), 'support_skills', first=(idx==0))
+                pos = (offset + 7 + width//2, 4 + y)
+                render_text(surf, ['text'], [weapon_rank.nid], ['blue'], pos, Alignments.CENTER)
+                self.info_graph.register((96 + pos[0] - width//2 - 8, 24 + pos[1], width, 16), "%s mastery level: %d" % (DB.weapons.get(weapon).name, value), 'support_skills', first=(counter==0))
+                counter += 1
+                if counter >= len(wexp_to_draw):
+                    break
+            if counter >= len(wexp_to_draw):
+                break
 
         return surf
 
@@ -885,19 +905,19 @@ class InfoMenuState(State):
         surf.blit(battle_surf, (left, top))
         # Populate battle info
         surf.blit(SPRITES.get('equipment_logo'), (14, top + 4))
-        FONT['text-yellow'].blit('Rng', surf, (78, top))
+        render_text(surf, ['text'], ['Rng'], ['yellow'], (78, top))
         self.info_graph.register((96 + 78, top, 56, 16), 'Rng_desc', 'equipment')
-        FONT['text-yellow'].blit('Atk', surf, (22, top + 16))
+        render_text(surf, ['text'], ['Atk'], ['yellow'], (22, top + 16))
         self.info_graph.register((96 + 14, top + 16, 64, 16), 'Atk_desc', 'equipment')
-        FONT['text-yellow'].blit('Hit', surf, (22, top + 32))
+        render_text(surf, ['text'], ['Hit'], ['yellow'], (22, top + 32))
         self.info_graph.register((96 + 14, top + 32, 64, 16), 'Hit_desc', 'equipment')
         if DB.constants.value('crit'):
-            FONT['text-yellow'].blit('Crit', surf, (78, top + 16))
+            render_text(surf, ['text'], ['Crit'], ['yellow'], (78, top + 16))
             self.info_graph.register((96 + 78, top + 16, 56, 16), 'Crit_desc', 'equipment')
         else:
-            FONT['text-yellow'].blit('AS', surf, (78, top + 16))
+            render_text(surf, ['text'], ['AS'], ['yellow'], (78, top + 16))
             self.info_graph.register((96 + 78, top + 16, 56, 16), 'AS_desc', 'equipment')
-        FONT['text-yellow'].blit('Avoid', surf, (78, top + 32))
+        render_text(surf, ['text'], ['Avoid'], ['yellow'], (78, top + 32))
         self.info_graph.register((96 + 78, top + 32, 56, 16), 'Avoid_desc', 'equipment')
 
         if weapon:
@@ -914,14 +934,14 @@ class InfoMenuState(State):
 
         avo = str(combat_calcs.avoid(self.unit, weapon))
         attack_speed = str(combat_calcs.attack_speed(self.unit, weapon))
-        FONT['text-blue'].blit_right(rng, surf, (127, top))
-        FONT['text-blue'].blit_right(dam, surf, (71, top + 16))
-        FONT['text-blue'].blit_right(acc, surf, (71, top + 32))
+        render_text(surf, ['text'], [rng], ['blue'], (127, top), Alignments.RIGHT)
+        render_text(surf, ['text'], [dam], ['blue'], (71, top + 16), Alignments.RIGHT)
+        render_text(surf, ['text'], [acc], ['blue'], (71, top + 32), Alignments.RIGHT)
         if DB.constants.value('crit'):
-            FONT['text-blue'].blit_right(crt, surf, (127, top + 16))
+            render_text(surf, ['text'], [crt], ['blue'], (127, top + 16), Alignments.RIGHT)
         else:
-            FONT['text-blue'].blit_right(attack_speed, surf, (127, top + 16))
-        FONT['text-blue'].blit_right(avo, surf, (127, top + 32))
+            render_text(surf, ['text'], [attack_speed], ['blue'], (127, top + 16), Alignments.RIGHT)
+        render_text(surf, ['text'], [avo], ['blue'], (127, top + 32), Alignments.RIGHT)
 
         return surf
 
@@ -930,11 +950,21 @@ class InfoMenuState(State):
 
     def create_skill_surf(self):
         surf = engine.create_surface((WINWIDTH - 96, 24), transparent=True)
-        skills = [skill for skill in self.unit.skills if not (skill.class_skill or skill.hidden)][:6]
-
-        for idx, skill in enumerate(skills):
+        skills = [skill for skill in self.unit.skills if not (skill.class_skill or skill_system.hidden(skill, self.unit))]
+        # stacked skills appear multiple times, but should be drawn only once
+        skill_counter = {}
+        unique_skills = list()
+        for skill in skills:
+            if skill.nid not in skill_counter:
+                skill_counter[skill.nid] = 1
+                unique_skills.append(skill)
+            else:
+                skill_counter[skill.nid] += 1
+        for idx, skill in enumerate(unique_skills[:6]):
             left_pos = idx * 24
-            icons.draw_skill(surf, skill, (left_pos + 8, 4), compact=False)
+            icons.draw_skill(surf, skill, (left_pos + 8, 4), compact=False, grey=skill_system.is_grey(skill, self.unit))
+            if skill_counter[skill.nid] > 1:
+                render_text(surf, ['small'], [str(skill_counter[skill.nid])], ['white'], (left_pos + 20 - 4 * len(str(skill_counter[skill.nid])), 6))
             if skill.data.get('total_charge'):
                 charge = ' %d / %d' % (skill.data['charge'], skill.data['total_charge'])
             else:
@@ -948,11 +978,11 @@ class InfoMenuState(State):
 
     def create_class_skill_surf(self):
         surf = engine.create_surface((WINWIDTH - 96, 24), transparent=True)
-        class_skills = [skill for skill in self.unit.skills if skill.class_skill and not skill.hidden][:6]
+        class_skills = [skill for skill in self.unit.skills if skill.class_skill and not skill_system.hidden(skill, self.unit)][:6]
 
         for idx, skill in enumerate(class_skills):
             left_pos = idx * 24
-            icons.draw_skill(surf, skill, (left_pos + 8, 4))
+            icons.draw_skill(surf, skill, (left_pos + 8, 4), grey=skill_system.is_grey(skill, self.unit))
             if skill.data.get('total_charge'):
                 charge = ' (%d/%d)' % (skill.data['charge'], skill.data['total_charge'])
             else:
@@ -967,6 +997,7 @@ class InfoMenuState(State):
 
     def create_support_surf(self):
         surf = engine.create_surface((WINWIDTH - 96, WINHEIGHT), transparent=True)
+        width = (WINWIDTH - 102) // 2
 
         if game.game_vars.get('_supports'):
             pairs = game.supports.get_pairs(self.unit.nid)
@@ -974,8 +1005,11 @@ class InfoMenuState(State):
         else:
             pairs = []
 
-        top = 48
+        pairs = pairs[:6] # max six supports displayed
+
+        top = self.wexp_surf.get_height() + 24
         for idx, pair in enumerate(pairs):
+            x, y = (idx) % 2, idx // 2
             other_unit = None
             if pair.unit1 == self.unit.nid:
                 other_unit = game.get_unit(pair.unit2)
@@ -985,11 +1019,11 @@ class InfoMenuState(State):
                 continue
             affinity = DB.affinities.get(other_unit.affinity)
             if affinity:
-                icons.draw_item(surf, affinity, (16, idx * 16 + top))
-                self.info_graph.register((112, idx * 16 + top, WINWIDTH - 120, 16), affinity.desc, 'support_skills')
-            FONT['text-white'].blit(other_unit.name, surf, (36, idx * 16 + top))
+                icons.draw_item(surf, affinity, (x * width + 8, y * 16 + top))
+                self.info_graph.register((96 + x * width + 8, y * 16 + top, WINWIDTH - 120, 16), affinity.desc, 'support_skills')
+            render_text(surf, ['narrow'], [other_unit.name], [], (x * width + 22, y * 16 + top))
             highest_rank = pair.unlocked_ranks[-1]
-            FONT['text-yellow'].blit_right(highest_rank, surf, (surf.get_width() - 24, idx * 16 + top))
+            render_text(surf, ['text'], [highest_rank], ['yellow'], (x * width + surf.get_width()/2 - 2, y * 16 + top), Alignments.RIGHT)
         return surf
 
     def draw_support_surf(self, surf):
@@ -1002,11 +1036,11 @@ class InfoMenuState(State):
         build_groove(surf, (27, WINHEIGHT - 9), 88, utils.clamp(fatigue / max_fatigue, 0, 1))
         x_pos = 27 + 88 // 2
         text = str(fatigue) + '/' + str(max_fatigue)
-        x_pos -= FONT['text-blue'].width(text)//2
-        FONT['text-blue'].blit(text, surf, (x_pos, WINHEIGHT - 17))
+        x_pos -= rendered_text_width(['text'], [text])//2
+        render_text(surf, ['text'], [text], ['blue'], (x_pos, WINHEIGHT - 17))
         if fatigue >= max_fatigue:
-            FONT['text-red'].blit(str(fatigue), surf, (x_pos, WINHEIGHT - 17))
-        FONT['text-yellow'].blit(text_funcs.translate('Ftg'), surf, (8, WINHEIGHT - 17))
+            render_text(surf, ['text'], [str(fatigue)], ['red'], (x_pos, WINHEIGHT - 17))
+        render_text(surf, ['text'], [text_funcs.translate('Ftg')], ['yellow'], (8, WINHEIGHT - 17))
 
         return surf
 
@@ -1016,7 +1050,6 @@ class InfoMenuState(State):
     def create_notes_surf(self):
         # Menu background
         menu_surf = engine.create_surface((WINWIDTH - 96, WINHEIGHT), transparent=True)
-        font = FONT['text-white']
 
         my_notes = self.unit.notes
 
@@ -1026,11 +1059,11 @@ class InfoMenuState(State):
             for idx, note in enumerate(my_notes):
                 category = note[0]
                 entries = note[1].split(',')
-                FONT['text-blue'].blit(category, menu_surf, (10, total_height))
+                render_text(menu_surf, ['text'], [category], ['blue'], (10, total_height))
                 for entry in entries:
-                    category_length = font.size(category)[0]
+                    category_length = rendered_text_width(['text'], [category])
                     left_pos = 64 if category_length <= 64 else (category_length + 8)
-                    font.blit(entry, menu_surf, (left_pos, total_height))
+                    render_text(menu_surf, ['text'], [entry], [], (left_pos, total_height))
                     total_height += 16
                 self.info_graph.register((96, 16 * help_offset + 24, 64, 16), '%s_desc' % category, 'notes', first=(idx == 0))
                 help_offset += len(entries)

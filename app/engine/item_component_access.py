@@ -1,16 +1,33 @@
+from functools import lru_cache
 from app.utilities.data import Data
 from app.data.components import Type
-from app.data.item_components import ItemComponent, tags
+from app.data.item_components import ItemComponent, ItemTags
 
-def get_item_components():
+@lru_cache(1)
+def get_cached_item_components(proj_dir: str):
     # Necessary for get_item_components to find all the
     # item components defined in item_components folder
     from app.engine import item_components
 
+    from app.engine import custom_component_access
+    if custom_component_access.get_components():
+        # Necessary for get_item_components to find the item component subclasses
+        # defined here
+        import custom_components
+    # else:
+        # custom_component_access.clean()
+
     subclasses = ItemComponent.__subclasses__()
     # Sort by tag
-    subclasses = sorted(subclasses, key=lambda x: tags.index(x.tag) if x.tag in tags else 100)
+    subclasses = sorted(subclasses, key=lambda x: list(ItemTags).index(x.tag) if x.tag in list(ItemTags) else 100)
     return Data(subclasses)
+
+def get_item_components():
+    from app.data.database import DB
+    return get_cached_item_components(DB.current_proj_dir)
+
+def get_item_tags():
+    return list(ItemTags)
 
 def get_component(nid):
     _item_components = get_item_components()

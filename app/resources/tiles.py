@@ -1,15 +1,20 @@
-import os, shutil
+import json
+import logging
+import os
+import re
+import shutil
+from typing import Dict
 
-from app.constants import TILEWIDTH, TILEHEIGHT, TILEX, TILEY, AUTOTILE_FRAMES
-
-from app.utilities.data import Data, Prefab
+from app.constants import AUTOTILE_FRAMES, TILEHEIGHT, TILEWIDTH, TILEX, TILEY
 from app.resources.base_catalog import ManifestCatalog
 from app.utilities import str_utils
+from app.utilities.data import Data, Prefab
+
 
 class TileMapPrefab(Prefab):
     def __init__(self, nid):
         self.nid = nid
-        self.width, self.height = TILEX, TILEY
+        self.width, self.height = int(TILEX), int(TILEY)
         self.autotile_fps = 29
         self.layers = Data()
         self.layers.append(LayerGrid('base', self))
@@ -20,7 +25,7 @@ class TileMapPrefab(Prefab):
         self.image = None  # Icon used for drawing in resource editor
 
     def clear(self):
-        self.width, self.height = TILEX, TILEY
+        self.width, self.height = int(TILEX), int(TILEY)
         self.layers.clear()
         self.layers.append(LayerGrid('base', self))
 
@@ -270,10 +275,56 @@ class TileMapCatalog(ManifestCatalog[TileMapPrefab]):
     title = 'tilemaps'
 
     def load(self, loc):
-        tilemap_dict = self.read_manifest(os.path.join(loc, self.manifest))
-        for s_dict in tilemap_dict:
-            new_tilemap = TileMapPrefab.restore(s_dict)
-            self.append(new_tilemap)
+        single_loc = os.path.join(loc, self.manifest)
+        multi_loc = os.path.join(loc, 'tilemap_data')
+        if not os.path.exists(multi_loc): # old tilemap.json
+            if not os.path.exists(single_loc):
+                return
+            tilemap_dict = self.read_manifest(single_loc)
+            for s_dict in tilemap_dict:
+                new_tilemap = TileMapPrefab.restore(s_dict)
+                self.append(new_tilemap)
+        else:   # new distributed saving
+            data_fnames = os.listdir(multi_loc)
+            save_data = []
+            for fname in data_fnames:
+                if not fname.endswith('.json'):
+                    continue
+                save_loc = os.path.join(multi_loc, fname)
+                logging.info("Deserializing %s from %s" % ('tilemap data', save_loc))
+                with open(save_loc) as load_file:
+                    for data in json.load(load_file):
+                        data['fname'] = os.path.basename(fname)
+                        save_data.append(data)
+            if '.orderkeys' in data_fnames: # using order key file
+                with open(os.path.join(multi_loc, '.orderkeys')) as load_file:
+                    orderkeys = json.load(load_file)
+                    save_data = sorted(save_data, key=lambda data: orderkeys.get(data['fname'], 999999))
+            else: # using order keys per object
+                save_data = sorted(save_data, key=lambda obj: obj['_orderkey'])
+            for s_dict in save_data:
+                new_tilemap = TileMapPrefab.restore(s_dict)
+                self.append(new_tilemap)
+
+    def dump(self, loc):
+        saves = [datum.save() for datum in self]
+        save_dir = os.path.join(loc, 'tilemap_data')
+        if os.path.exists(save_dir):
+            shutil.rmtree(save_dir)
+        os.mkdir(save_dir)
+        orderkeys: Dict[str, int] = {}
+        for idx, save in enumerate(saves):
+            # ordering
+            nid = save['nid']
+            nid = re.sub(r'[\\/*?:"<>|]',"", nid)
+            nid = nid.replace(' ', '_')
+            fname = nid + '.json'
+            orderkeys[fname] = idx
+            save_loc = os.path.join(save_dir, nid + '.json')
+            with open(save_loc, 'w') as serialize_file:
+                json.dump([save], serialize_file, indent=4)
+        with open(os.path.join(save_dir, '.orderkeys'), 'w') as orderkey_file:
+            json.dump(orderkeys, orderkey_file, indent=4)
 
     def save(self, loc):
         # No need to finagle with full paths

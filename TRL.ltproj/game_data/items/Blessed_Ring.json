@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Blessed Ring",
+        "name": "Blessed Ring",
+        "desc": "A ring with unique properties. Restores 50% of HP every turn.",
+        "icon_nid": "Boosters",
+        "icon_index": [
+            0,
+            8
+        ],
+        "components": [
+            [
+                "equippable_accessory",
+                null
+            ],
+            [
+                "status_on_equip",
+                "Canto"
+            ]
+        ]
+    }
+]

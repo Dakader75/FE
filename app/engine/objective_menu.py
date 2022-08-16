@@ -1,9 +1,11 @@
+import logging
+from app.engine.text_evaluator import TextEvaluator
 import datetime
 from app.constants import WINWIDTH
 
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.state import State
 from app.engine import engine, background, base_surf, text_funcs, evaluate
 from app.engine.game_state import game
@@ -53,7 +55,7 @@ class ObjectiveMenuState(State):
         turn_count_size = FONT['text-blue'].width(str(game.turncount)) + 1, FONT['text-blue'].height
         turn_count_surf = engine.create_surface(turn_count_size, transparent=True)
         FONT['text-blue'].blit(str(game.turncount), turn_count_surf, (0, 0))
-        surfaces.append((turn_count_surf, (WINWIDTH//3 - 16 - turn_count_surf.get_width(), 38)))                    
+        surfaces.append((turn_count_surf, (WINWIDTH//3 - 16 - turn_count_surf.get_width(), 38)))
         # MoneySurf
         money = str(game.get_money())
         money_size = FONT['text-blue'].width(money) + 1, FONT['text-blue'].height
@@ -63,10 +65,14 @@ class ObjectiveMenuState(State):
 
         # Get win and loss conditions
         win_con = game.level.objective['win']
-        win_lines = evaluate.eval_string(win_con).split(',') 
+        text_parser = TextEvaluator(logging.getLogger(), game)
+        win_lines = text_parser._evaluate_all(win_con).split(',')
+        win_lines = [w.replace('{comma}', ',') for w in win_lines]
 
         loss_con = game.level.objective['loss']
-        loss_lines = evaluate.eval_string(loss_con).split(',')
+        text_parser = TextEvaluator(logging.getLogger(), game)
+        loss_lines = text_parser._evaluate_all(loss_con).split(',')
+        loss_lines = [line.replace('{comma}', ',') for line in loss_lines]
 
         hold_surf = base_surf.create_base_surf(WINWIDTH - 16, 40 + 16*len(win_lines) + 16 * len(loss_lines))
         shimmer = SPRITES.get('menu_shimmer2')
@@ -78,14 +84,14 @@ class ObjectiveMenuState(State):
         FONT['text-yellow'].blit(text_funcs.translate('Win Conditions'), hold_surf, (4, 4))
 
         for idx, win_con in enumerate(win_lines):
-            FONT['text-white'].blit(win_con, hold_surf, (8, 20 + 16*idx))
+            FONT['text'].blit(win_con, hold_surf, (8, 20 + 16*idx))
 
         hold_surf.blit(SPRITES.get('lowlight'), (2, 28 + 16*len(win_lines)))
 
         FONT['text-yellow'].blit(text_funcs.translate('Loss Conditions'), hold_surf, (4, 20 + 16*len(win_lines)))
 
         for idx, loss_con in enumerate(loss_lines):
-            FONT['text-white'].blit(loss_con, hold_surf, (8, 36 + 16*len(win_lines) + idx*16))
+            FONT['text'].blit(loss_con, hold_surf, (8, 36 + 16*len(win_lines) + idx*16))
 
         surfaces.append((hold_surf, (8, 34 + back_surf.get_height() + 2)))
 
@@ -93,12 +99,12 @@ class ObjectiveMenuState(State):
         seed_surf = engine.create_surface((28, 16), transparent=True)
         FONT['text-numbers'].blit_center(seed, seed_surf, (14, 0))
         surfaces.append((seed_surf, (WINWIDTH - 28, 4)))
-            
+
         return surfaces
 
     def take_input(self, event):
         if event == 'BACK':
-            SOUNDTHREAD.play_sfx('Select 4')
+            get_sound_thread().play_sfx('Select 4')
             game.state.change('transition_pop')
 
     def draw(self, surf):

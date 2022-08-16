@@ -8,8 +8,8 @@ import logging
 
 def get_leveling_method(unit, custom_method=None) -> str:
     if custom_method:
-        method = custom_method
-    if unit.team == 'player':
+        method = custom_method.capitalize()
+    elif unit.team == 'player':
         method = game.current_mode.growths
     else:
         method = DB.constants.value('enemy_leveling')
@@ -17,156 +17,207 @@ def get_leveling_method(unit, custom_method=None) -> str:
             method = game.current_mode.growths
     return method
 
-def get_next_level_up(unit, custom_method=None) -> dict:
-    method = get_leveling_method(unit, custom_method)
-
-    stat_changes = {nid: 0 for nid in DB.stats.keys()}
+def growth_rate(unit, nid) -> int:
     klass = DB.classes.get(unit.klass)
     difficulty_growth_bonus = game.mode.get_growth_bonus(unit)
-    if method == 'BEXP':
-        _rd_bexp_levelup(unit, unit.get_internal_level(), klass, stat_changes)
-    else:
-        level = unit.get_internal_level()
-        rng = static_random.get_levelup(unit.nid, level)
-        for nid in DB.stats.keys():
-            growth = unit.growths[nid] + unit.growth_bonus(nid) + klass.growth_bonus.get(nid, 0) + difficulty_growth_bonus.get(nid, 0)
+    growth = unit.growths[nid] + unit.growth_bonus(nid) + klass.growth_bonus.get(nid, 0) + difficulty_growth_bonus.get(nid, 0)
+    return growth
 
-            if method == GrowthOption.FIXED:
-                if growth > 0:
-                    stat_changes[nid] = (unit.growth_points[nid] + growth) // 100
-                    unit.growth_points[nid] = (unit.growth_points[nid] + growth) % 100
-                elif growth < 0:
-                    stat_changes[nid] = (-unit.growth_points[nid] + growth) // 100
-                    unit.growth_points[nid] = (unit.growth_points[nid] - growth) % 100
+def difficulty_growth_rate(unit, nid) -> int:
+    difficulty_growth_bonus = game.mode.get_growth_bonus(unit)
+    return difficulty_growth_bonus.get(nid, 0)
 
-            elif method == GrowthOption.RANDOM:
-                stat_changes[nid] += _random_levelup(rng, unit, level, growth)
-            elif method == GrowthOption.DYNAMIC:
-                _dynamic_levelup(rng, unit, level, stat_changes, unit.growth_points, nid, growth)
+def _fixed_levelup(unit, level, get_growth_rate=growth_rate) -> dict:
+    stat_changes = {nid: 0 for nid in DB.stats.keys()}
 
-            stat_changes[nid] = utils.clamp(stat_changes[nid], -unit.stats[nid], klass.max_stats.get(nid, 30) - unit.stats[nid])
+    for nid in DB.stats.keys():
+        growth = get_growth_rate(unit, nid)
+        if growth > 0:
+            stat_changes[nid] += growth // 100
+            growth %= 100
+            growth_inc = (50 + growth * level) % 100
+            if growth_inc < growth:
+                stat_changes[nid] += 1
+        elif growth < 0 and DB.constants.value('negative_growths'):
+            stat_changes[nid] += growth // 100
+            growth = -(abs(growth) % 100)
+            growth_inc = (50 + growth * level) % 100
+            if growth_inc > 100 - growth or growth_inc == 0:
+                stat_changes[nid] -= 1
+            
+    return stat_changes
+
+def _random_levelup(unit, level) -> dict:
+    rng = static_random.get_levelup(unit.nid, level)
+    stat_changes = {nid: 0 for nid in DB.stats.keys()}
+
+    for nid in DB.stats.keys():
+        growth = growth_rate(unit, nid)
+        counter = 0
+        if growth > 0:
+            while growth > 0:
+                counter += 1 if rng.randint(0, 99) < growth else 0
+                growth -= 100
+        elif growth < 0 and DB.constants.value('negative_growths'):
+            growth = -growth
+            while growth > 0:
+                counter -= 1 if rng.randint(0, 99) < growth else 0
+                growth -= 100
+        stat_changes[nid] += counter
+    return stat_changes
+
+def _dynamic_levelup(unit, level) -> dict:
+    """
+    Does not support leveling down 100% because it keeps state
+    """
+    variance = 10
+    rng = static_random.get_levelup(unit.nid, level)
+    stat_changes = {nid: 0 for nid in DB.stats.keys()}
+
+    for nid in DB.stats.keys():
+        growth = growth_rate(unit, nid)
+        if growth > 0:
+            start_growth = growth + unit.growth_points[nid]
+            if start_growth <= 0:
+                unit.growth_points[nid] += growth / 5.
+            else:
+                free_stat_ups = growth // 100
+                stat_changes[nid] += free_stat_ups
+                new_growth = growth % 100
+                start_growth = new_growth + unit.growth_points[nid]
+                if rng.randint(0, 99) < int(start_growth):
+                    stat_changes[nid] += 1
+                    unit.growth_points[nid] -= (100 - new_growth) / variance
+                else:
+                    unit.growth_points[nid] += new_growth / variance
+
+        elif growth < 0 and DB.constants.value('negative_growths'):
+            growth = -growth
+            start_growth = growth + unit.growth_points[nid]
+            if start_growth <= 0:
+                unit.growth_points[nid] += growth / 5.
+            else:
+                free_stat_downs = growth // 100
+                stat_changes[nid] -= free_stat_downs
+                new_growth = growth % 100
+                start_growth = new_growth + unit.growth_points[nid]
+                if rng.randint(0, 99) < int(start_growth):
+                    stat_changes[nid] -= 1
+                    unit.growth_points[nid] -= (100 - new_growth) / variance
+                else:
+                    unit.growth_points[nid] += new_growth / variance
 
     return stat_changes
 
-def _random_levelup(rng, unit, level, growth_rate):
-    counter = 0
-    if growth_rate > 0:
-        while growth_rate > 0:
-            counter += 1 if rng.randint(0, 99) < growth_rate else 0
-            growth_rate -= 100
-    elif growth_rate < 0:
-        growth_rate = -growth_rate
-        while growth_rate > 0:
-            counter -= 1 if rng.randint(0, 99) < growth_rate else 0
-            growth_rate -= 100
-    return counter
+def _rd_bexp_levelup(unit, level):
+    """
+    Negative growth rates are ignored
+    Leveling down will not work when any stat is capped
+    """
+    num_choices = 3
+    rng = static_random.get_levelup(unit.nid, level)
+    stat_changes = {nid: 0 for nid in DB.stats.keys()}
 
-def _dynamic_levelup(rng, unit, level, stats, growth_points, growth_nid, growth_rate):
-    variance = 10
-    if growth_rate > 0:
-        start_growth = growth_rate + growth_points[growth_nid]
-        if start_growth <= 0:
-            growth_points[growth_nid] += growth_rate / 5.
-        else:
-            free_levels = growth_rate // 100
-            stats[growth_nid] += free_levels
-            new_growth = growth_rate % 100
-            start_growth = new_growth + growth_points[growth_nid]
-            if rng.randint(0, 99) < int(start_growth):
-                stats[growth_nid] += 1
-                growth_points[growth_nid] -= (100 - new_growth) / variance
-            else:
-                growth_points[growth_nid] += new_growth/variance
-    elif growth_rate < 0:
-        growth_rate = -growth_rate
-        start_growth = growth_rate + growth_points[growth_nid]
-        if start_growth <= 0:
-            growth_points[growth_nid] += growth_rate / 5.
-        else:
-            free_levels = growth_rate // 100
-            stats[growth_nid] -= free_levels
-            new_growth = growth_rate % 100
-            start_growth = new_growth + growth_points[growth_nid]
-            if rng.randint(0, 99) < int(start_growth):
-                stats[growth_nid] -= 1
-                growth_points[growth_nid] -= (100 - new_growth) / variance
-            else:
-                growth_points[growth_nid] += new_growth/variance
-
-def _rd_bexp_levelup(unit, level, klass, stat_changes):
+    klass = DB.classes.get(unit.klass)
     growths: list = []
-    for idx, stat in enumerate(DB.stats):
+    for stat in DB.stats:
         nid = stat.nid
-        difficulty_growth_bonus = game.mode.get_growth_bonus(unit)
-        growth = unit.growths[nid] + unit.growth_bonus(nid) + klass.growth_bonus.get(nid, 0) + difficulty_growth_bonus.get(nid, 0)
+        growth = growth_rate(unit, nid)
         if unit.stats[nid] < klass.max_stats.get(nid, 30) and unit.growths[nid] != 0:
             growths.append(max(growth, 0))
         else:  # Cannot increase this one at all
             growths.append(0)
-    rng = static_random.get_levelup(unit.nid, level)
-    num_choices = 3
 
-    for i in range(num_choices):
+    for _ in range(num_choices):
         if sum(growths) <= 0:
             break
-        choice = static_random.weighted_choice(growths, rng)
-        nid = [stat.nid for stat in DB.stats][choice]
+        choice_idx = static_random.weighted_choice(growths, rng)
+        nid = [stat.nid for stat in DB.stats][choice_idx]
         stat_changes[nid] += 1
-        growths[choice] = max(0, growths[choice] - 100)
+        growths[choice_idx] = max(0, growths[choice_idx] - 100)
         if unit.stats[nid] + stat_changes[nid] >= klass.max_stats.get(nid, 30):
-            growths[choice] = 0
+            growths[choice_idx] = 0
 
     return stat_changes
 
-def auto_level(unit, num_levels, starting_level=1, difficulty_growths=False):
+def get_next_level_up(unit, level, custom_method=None) -> dict:
+    """
+    Given a unit and a leveling method,
+    determines the unit's next level up stat changes
+    """
+    method = get_leveling_method(unit, custom_method)
+
+    stat_changes = {nid: 0 for nid in DB.stats.keys()}
+    if method == 'Bexp':
+        stat_changes = _rd_bexp_levelup(unit, level)
+    elif method == GrowthOption.FIXED:
+        stat_changes = _fixed_levelup(unit, level)
+    elif method == GrowthOption.RANDOM:
+        stat_changes = _random_levelup(unit, level)
+    elif method == GrowthOption.DYNAMIC:
+        stat_changes = _dynamic_levelup(unit, level)
+    else:
+        logging.error("Could not find level_up method matching %s", method)
+
+    klass = DB.classes.get(unit.klass)
+    for nid in DB.stats.keys():
+        stat_changes[nid] = utils.clamp(stat_changes[nid], -unit.stats[nid], klass.max_stats.get(nid, 30) - unit.stats[nid])
+    return stat_changes
+
+def auto_level(unit, num_levels: int, custom_method=None):
     """
     Primarily for generics
     """
-    method = get_leveling_method(unit)
-    difficulty_growth_bonus = game.mode.get_growth_bonus(unit)
+    total_stat_changes = {nid: 0 for nid in DB.stats.keys()}
+    
+    if num_levels > 0:
+        base_level = unit.get_internal_level()
+        for i in range(num_levels):
+            level = base_level + i
+            stat_changes = get_next_level_up(unit, level, custom_method)
+            # Add to total
+            for nid in total_stat_changes.keys():
+                total_stat_changes[nid] += stat_changes[nid]
 
-    if method == GrowthOption.FIXED:
-        for growth_nid, growth_value in unit.growths.items():
-            if difficulty_growths:
-                growth_sum = difficulty_growth_bonus.get(growth_nid, 0) * num_levels
-            else:
-                growth_sum = (growth_value + unit.growth_bonus(growth_nid) + difficulty_growth_bonus.get(growth_nid, 0)) * num_levels
-            if growth_value < 0:
-                unit.stats[growth_nid] += (growth_sum - unit.growth_points[growth_nid]) // 100
-                unit.growth_points[growth_nid] = -(growth_sum - unit.growth_points[growth_nid]) % 100
-            else:
-                unit.stats[growth_nid] += (growth_sum + unit.growth_points[growth_nid]) // 100
-                unit.growth_points[growth_nid] = (growth_sum + unit.growth_points[growth_nid]) % 100
+    elif num_levels < 0:
+        starting_level = unit.get_internal_level()
+        ending_level = starting_level + num_levels
+        for level in reversed(range(ending_level, starting_level)):
+            stat_changes = get_next_level_up(unit, level, custom_method)
+            # Add reversed stat_changes to total
+            for nid in total_stat_changes.keys():
+                total_stat_changes[nid] -= stat_changes[nid]
 
-    elif method == GrowthOption.RANDOM:
-        for n in range(num_levels):
-            level = starting_level + n
-            rng = static_random.get_levelup(unit.nid, level)
-            for growth_nid, growth_value in unit.growths.items():
-                if difficulty_growths:
-                    growth_rate = difficulty_growth_bonus.get(growth_nid, 0)
-                else:
-                    growth_rate = growth_value + unit.growth_bonus(growth_nid) + difficulty_growth_bonus.get(growth_nid, 0)
-                unit.stats[growth_nid] += _random_levelup(rng, unit, level, growth_rate)
-
-    elif method == GrowthOption.DYNAMIC:
-        for n in range(num_levels):
-            level = starting_level + n
-            rng = static_random.get_levelup(unit.nid, level)
-            for growth_nid, growth_value in unit.growths.items():
-                if difficulty_growths:
-                    growth_rate = difficulty_growth_bonus.get(growth_nid, 0)
-                else:
-                    growth_rate = growth_value + unit.growth_bonus(growth_nid) + difficulty_growth_bonus.get(growth_nid, 0)
-                _dynamic_levelup(rng, unit, level, unit.stats, unit.growth_points, growth_nid, growth_rate)
-
-    # Make sure we don't exceed max
     klass = DB.classes.get(unit.klass)
-    unit.stats = {k: utils.clamp(v, 0, klass.max_stats.get(k, 30)) for (k, v) in unit.stats.items()}
+    for nid in DB.stats.keys():
+        total_stat_changes[nid] = utils.clamp(total_stat_changes[nid], -unit.stats[nid], klass.max_stats.get(nid, 30) - unit.stats[nid])
+    
+    for nid in total_stat_changes.keys():
+        unit.stats[nid] += total_stat_changes[nid]
     unit.set_hp(1000)  # Go back to full hp
     unit.set_mana(1000)  # Go back to full mana
 
-def apply_stat_changes(unit, stat_changes: dict):
+def difficulty_auto_level(unit, num_levels: int):
+    total_stat_changes = {nid: 0 for nid in DB.stats.keys()}
+    if num_levels > 0:
+        level = unit.get_internal_level()
+        for i in range(num_levels):
+            stat_changes = _fixed_levelup(unit, level + i, difficulty_growth_rate)
+            # Add to total
+            for nid in total_stat_changes.keys():
+                total_stat_changes[nid] += stat_changes[nid]
+    # No reason to be less than 0
+    
+    klass = DB.classes.get(unit.klass)
+    for nid in DB.stats.keys():
+        total_stat_changes[nid] = utils.clamp(total_stat_changes[nid], -unit.stats[nid], klass.max_stats.get(nid, 30) - unit.stats[nid])
+
+    for nid in total_stat_changes.keys():
+        unit.stats[nid] += total_stat_changes[nid]
+    unit.set_hp(1000)  # Go back to full hp
+    unit.set_mana(1000)  # Go back to full mana
+    
+def apply_stat_changes(unit, stat_changes: dict, increase_current_stats: bool = True):
     """
     Assumes stat changes are valid!
     """
@@ -180,10 +231,19 @@ def apply_stat_changes(unit, stat_changes: dict):
     current_max_hp = unit.get_max_hp()
     current_max_mana = unit.get_max_mana()
 
-    if current_max_hp > old_max_hp:
-        unit.set_hp(current_max_hp - old_max_hp + unit.get_hp())
-    if current_max_mana > old_max_mana:
-        unit.set_mana(current_max_mana - old_max_mana + unit.get_mana())
+    if increase_current_stats:
+        if current_max_hp > old_max_hp:
+            unit.set_hp(current_max_hp - old_max_hp + unit.get_hp())
+        if current_max_mana > old_max_mana:
+            unit.set_mana(current_max_mana - old_max_mana + unit.get_mana())
+    if unit.get_hp() > current_max_hp:
+        unit.set_hp(current_max_hp)
+    if unit.get_mana() > current_max_mana:
+        unit.set_mana(current_max_mana)
+
+def apply_growth_changes(unit, growth_changes: dict):
+    for nid, value in growth_changes.items():
+        unit.growths[nid] += value
 
 def get_starting_skills(unit) -> list:
     # Class skills
@@ -278,3 +338,10 @@ def check_flanked(unit) -> bool:
     return False
 
 check_flanking = check_flanked
+
+def wait(unit):
+    from app.engine import action
+    if not unit.finished:  # Only wait if we aren't finished
+        # To prevent double-waiting
+        game.events.trigger('unit_wait', unit, position=unit.position, local_args={'region': game.get_region_under_pos(unit.position)})
+        action.do(action.Wait(unit))

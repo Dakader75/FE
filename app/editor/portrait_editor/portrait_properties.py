@@ -2,10 +2,10 @@ import logging
 import time, random
 import traceback
 
-from PyQt5.QtWidgets import QMessageBox, QWidget, QHBoxLayout, \
+from PyQt5.QtWidgets import QMessageBox, QWidget, QHBoxLayout, QSpinBox, \
     QVBoxLayout, QGridLayout, QPushButton, QSizePolicy, QFrame, QSplitter
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPixmap, QPainter, QIcon
+from PyQt5.QtGui import QPixmap, QPainter, QIcon, QPen
 
 from app.extensions.spinbox_xy import SpinBoxXY
 from app.extensions.custom_gui import PropertyBox
@@ -78,8 +78,12 @@ class PortraitProperties(QWidget):
         self.smiling_offset = PropertyBox("Smiling Offset", SpinBoxXY, self)
         self.smiling_offset.edit.setSingleStep(8)
         self.smiling_offset.edit.coordsChanged.connect(self.smiling_changed)
+        self.info_offset = PropertyBox("Info Menu Offset", QSpinBox, self)
+        self.info_offset.edit.setRange(0, 8)
+        self.info_offset.edit.valueChanged.connect(self.info_offset_changed)
         right_section.addWidget(self.blinking_offset)
         right_section.addWidget(self.smiling_offset)
+        right_section.addWidget(self.info_offset)
         self.auto_frame_button = QPushButton("Auto-guess Offsets")
         self.auto_frame_button.clicked.connect(self.auto_guess_offset)
         self.auto_colorkey_button = QPushButton("Automatically colorkey")
@@ -122,6 +126,7 @@ class PortraitProperties(QWidget):
         so = self.current.smiling_offset
         self.blinking_offset.edit.set_current(bo[0], bo[1])
         self.smiling_offset.edit.set_current(so[0], so[1])
+        self.info_offset.edit.setValue(self.current.info_offset)
 
         self.draw_portrait()
 
@@ -207,6 +212,9 @@ class PortraitProperties(QWidget):
             blink_image = blink_image.toImage()
             painter.drawImage(self.current.blinking_offset[0], self.current.blinking_offset[1], blink_image)
         painter.drawImage(self.current.smiling_offset[0], self.current.smiling_offset[1], mouth_image)
+        painter.setPen(QPen(Qt.black, 1, Qt.DashLine))
+        painter.setOpacity(0.75)
+        painter.drawRect(0, self.current.info_offset, 96, 72)
         painter.end()
 
         final_pix = QPixmap.fromImage(editor_utilities.convert_colorkey(main_portrait))
@@ -219,6 +227,9 @@ class PortraitProperties(QWidget):
 
     def smiling_changed(self, x, y):
         self.current.smiling_offset = [x, y]
+
+    def info_offset_changed(self, val):
+        self.current.info_offset = val
 
     def auto_guess_offset(self):
         portrait_model.auto_frame_portrait(self.current)

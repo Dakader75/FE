@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QGridLayout, QPushButton, QSlider, QLabel, QListView, \
     QWidget
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 
 from app.data.database import DB
 
@@ -8,6 +8,8 @@ from app.data.database import DB
 from app.editor.terrain_editor.terrain_model import TerrainModel
 
 class TerrainPainterMenu(QWidget):
+    alpha_updated = pyqtSignal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.map_editor = parent
@@ -21,6 +23,7 @@ class TerrainPainterMenu(QWidget):
         grid.addWidget(QLabel("Transparency"), 1, 0)
         grid.addWidget(self.alpha_slider, 1, 1)
         self.alpha_slider.valueChanged.connect(self.map_editor.update_view)
+        self.alpha_slider.valueChanged.connect(self.alpha_changed)
 
         self.list_view = QListView(self)
 
@@ -36,6 +39,9 @@ class TerrainPainterMenu(QWidget):
         # self.edit_button.clicked.connect(self.edit_terrain)
         grid.addWidget(self.reset_button, 4, 0, 1, 2)
         # grid.addWidget(self.edit_button, 4, 1)
+
+    def alpha_changed(self, alpha):
+        self.alpha_updated.emit(alpha)
 
     def on_visibility_changed(self, state):
         pass

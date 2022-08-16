@@ -603,5 +603,16 @@
             16,
             40
         ]
+    },
+    {
+        "nid": "pngtree-banana-yellow-fruit-png-image_3312896",
+        "blinking_offset": [
+            8,
+            48
+        ],
+        "smiling_offset": [
+            16,
+            56
+        ]
     }
 ]

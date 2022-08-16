@@ -72,3 +72,14 @@ class TransitionToState(TransitionOutState):
             game.state.back()
             game.state.change(game.memory['next_state'])
             return 'repeat'
+
+class TransitionToWithPopState(TransitionOutState):
+    name = 'transition_to_with_pop'
+    transparent = True
+
+    def update(self):
+        if engine.get_time() >= self.start_time + self.wait_time:
+            game.state.back()
+            game.state.back()
+            game.state.change(game.memory['next_state'])
+            return 'repeat'

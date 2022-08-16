@@ -1,17 +1,31 @@
+from enum import Enum
 from app.utilities.data import Prefab
 
-region_types = ['normal', 'status', 'event', 'formation']
+class RegionType(str, Enum):
+    NORMAL = 'normal'
+    STATUS = 'status'
+    EVENT = 'event'
+    FORMATION = 'formation'
+    TIME = 'time'
 
 class Region(Prefab):
     def __init__(self, nid):
         self.nid = nid
-        self.region_type = 'normal'
+        self.region_type = RegionType.NORMAL
         self.position = None
         self.size = [1, 1]
 
         self.sub_nid = None
         self.condition = 'True'
         self.only_once = False
+        self.interrupt_move = False
+
+    def restore_attr(self, name, value):
+        if name == 'region_type':
+            value = RegionType(value)
+        else:
+            value = super().save_attr(name, value)
+        return value
 
     @property
     def area(self):
@@ -25,21 +39,12 @@ class Region(Prefab):
             return x, y
         else:
             return None
-    
+
     def contains(self, pos: tuple) -> bool:
         x, y = pos
         if self.position:
             return self.position[0] <= x < self.position[0] + self.size[0] and \
                 self.position[1] <= y < self.position[1] + self.size[1]
-        else:
-            return False
-
-    def fuzzy_contains(self, pos: tuple) -> bool:
-        x, y = pos
-        fuzz = 0.4
-        if self.position:
-            return self.position[0] - fuzz <= x < self.position[0] + self.size[0] + fuzz and \
-                self.position[1] - fuzz <= y < self.position[1] + self.size[1] + fuzz
         else:
             return False
 

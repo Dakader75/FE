@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 class InterpolationType(Enum):
     LINEAR = 0
     LOGARITHMIC = 1
+    CUBIC = 2
 
 def animated(name: str):
     """Decorator that binds an animation to a function call. For example,

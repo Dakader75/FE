@@ -31,7 +31,7 @@ remove_background
     - Don't remove unit sprites
 
 # Event Commands
-add_event;Event;Position
+_add_event;Event;Position
 remove_event;Event;Position
 win_game
 lose_game

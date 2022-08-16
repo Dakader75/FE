@@ -20,7 +20,7 @@ for fn in files_to_change:
     print("Searching %s..." % fn)
     to_match = r'\d\d\d\d.\d\d.\d\d[a-z]'
     if not os.path.exists(fn):
-        print("%s don't exist!")
+        print("%s don't exist!" % fn)
         continue
     for line in fileinput.input(fn, inplace=True):
         match = re.search(to_match, line)

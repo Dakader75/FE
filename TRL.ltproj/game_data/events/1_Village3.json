@@ -1,0 +1,31 @@
+[
+    {
+        "name": "Village3",
+        "trigger": "Visit",
+        "level_nid": "1",
+        "condition": "region.nid == 'Village3'",
+        "commands": [
+            [
+                "show_layer",
+                [
+                    "Village3_close"
+                ]
+            ],
+            [
+                "give_item",
+                [
+                    "{unit}",
+                    "Iron Lance (Iron Lance)"
+                ]
+            ],
+            [
+                "has_traded",
+                [
+                    "{unit}"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

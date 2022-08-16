@@ -1,8 +1,43 @@
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.state import MapState
 from app.engine.game_state import game
 from app.engine import action, menus, item_system, item_funcs
 from app.engine.objects.item import ItemObject
+
+def check_trade(item1: ItemObject, item1_owner, item2: ItemObject, item2_owner) -> bool:
+    # Can't trade the same item to itself
+    if item1 is item2:
+        return False
+    # Can always trade within the same menu
+    if item1_owner is item2_owner:
+        return True
+    # Can't trade locked items
+    if isinstance(item1, ItemObject) and item_system.locked(item1_owner, item1):
+        return False
+    if isinstance(item2, ItemObject) and item_system.locked(item2_owner, item2):
+        return False
+    # If items are the same type, we are good
+    if isinstance(item1, ItemObject) and isinstance(item2, ItemObject) and \
+            item_system.is_accessory(item1_owner, item1) == item_system.is_accessory(item2_owner, item2):
+        return True
+
+    # Now check if the trade is bad
+    if isinstance(item1, ItemObject):
+        if item_system.is_accessory(item1_owner, item1):
+            if item2_owner and len(item2_owner.accessories) >= item_funcs.get_num_accessories(item2_owner):
+                return False
+        else:
+            if item2_owner and len(item2_owner.nonaccessories) >= item_funcs.get_num_items(item2_owner):
+                return False
+    if isinstance(item2, ItemObject):
+        if item_system.is_accessory(item2_owner, item2):
+            if item1_owner and len(item1_owner.accessories) >= item_funcs.get_num_accessories(item1_owner):
+                return False
+        else:
+            if item1_owner and len(item1_owner.nonaccessories) >= item_funcs.get_num_items(item1_owner):
+                return False
+
+    return True
 
 class TradeState(MapState):
     name = 'trade'
@@ -18,41 +53,6 @@ class TradeState(MapState):
 
         self.menu = menus.Trade(self.initiator, self.partner)
 
-    def check_trade(self, item1, item1_owner, item2, item2_owner) -> bool:
-        # Can't trade the same item to itself
-        if item1 is item2:
-            return False
-        # Can always trade within the same menu
-        if item1_owner is item2_owner:
-            return True
-        # Can't trade locked items
-        if isinstance(item1, ItemObject) and item_system.locked(item1_owner, item1):
-            return False
-        if isinstance(item2, ItemObject) and item_system.locked(item2_owner, item2):
-            return False
-        # If items are the same type, we are good
-        if isinstance(item1, ItemObject) and isinstance(item2, ItemObject) and \
-                item_system.is_accessory(item1_owner, item1) == item_system.is_accessory(item2_owner, item2):
-            return True
-
-        # Now check if the trade is bad
-        if isinstance(item1, ItemObject):
-            if item_system.is_accessory(item1_owner, item1):
-                if len(item2_owner.accessories) >= item_funcs.get_num_accessories(item2_owner):
-                    return False
-            else:
-                if len(item2_owner.nonaccessories) >= item_funcs.get_num_items(item2_owner):
-                    return False
-        if isinstance(item2, ItemObject):
-            if item_system.is_accessory(item2_owner, item2):
-                if len(item1_owner.accessories) >= item_funcs.get_num_accessories(item1_owner):
-                    return False
-            else:
-                if len(item1_owner.nonaccessories) >= item_funcs.get_num_items(item1_owner):
-                    return False
-
-        return True
-
     def do_trade(self) -> bool:
         item1 = self.menu.selected_option().get()
         item2 = self.menu.get_current_option().get()
@@ -66,9 +66,9 @@ class TradeState(MapState):
         else:
             self.item2_owner = self.partner
 
-        if not self.check_trade(item1, self.item1_owner, item2, self.item2_owner):
+        if not check_trade(item1, self.item1_owner, item2, self.item2_owner):
             self.menu.unset_selected_option()
-            SOUNDTHREAD.play_sfx('Error')
+            get_sound_thread().play_sfx('Error')
             return False
 
         if self.menu.other_hand[0] == 0:
@@ -98,20 +98,20 @@ class TradeState(MapState):
         self.menu.handle_mouse()
         if 'DOWN' in directions:
             if self.menu.move_down(first_push):
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
         elif 'UP' in directions:
             if self.menu.move_up(first_push):
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
 
         if event == 'RIGHT':
             if self.menu.move_right():
-                SOUNDTHREAD.play_sfx('TradeRight')
+                get_sound_thread().play_sfx('TradeRight')
         elif event == 'LEFT':
             if self.menu.move_left():
-                SOUNDTHREAD.play_sfx('TradeRight')
+                get_sound_thread().play_sfx('TradeRight')
 
         elif event == 'BACK':
-            SOUNDTHREAD.play_sfx('Select 4')
+            get_sound_thread().play_sfx('Select 4')
             if self.menu.selected_option():
                 self.menu.unset_selected_option()
             else:
@@ -120,11 +120,11 @@ class TradeState(MapState):
         elif event == 'SELECT':
             if self.menu.selected_option():
                 if self.do_trade():
-                    SOUNDTHREAD.play_sfx('Select 1')
+                    get_sound_thread().play_sfx('Select 1')
                 else:
-                    SOUNDTHREAD.play_sfx('Error')
+                    get_sound_thread().play_sfx('Error')
             else:
-                SOUNDTHREAD.play_sfx('Select 1')
+                get_sound_thread().play_sfx('Select 1')
                 self.menu.set_selected_option()
 
         elif event == 'INFO':

@@ -103,6 +103,7 @@ class PaletteMenu(QListWidget):
     def get_palette(self):
         if not self.combat_anim.palettes:
             return None
+        self.palette_nid_changed(self.current_idx)
         return self.combat_anim.palettes[self.current_idx][1]
 
     def get_palette_widget(self):

@@ -1,3 +1,4 @@
+from PyQt5 import QtGui
 from PyQt5.QtWidgets import QDialog, QGridLayout, QDialogButtonBox, QTabWidget, \
     QSizePolicy
 from PyQt5.QtCore import Qt
@@ -28,6 +29,12 @@ class SingleDatabaseEditor(QDialog):
         state = self.settings.component_controller.get_state(self._type())
         if state:
             self.tab.splitter.restoreState(state)
+
+    def keyPressEvent(self, keypress: QtGui.QKeyEvent) -> None:
+        if keypress.key() == self.settings.get_editor_close_button():
+            self.reject()
+        else:
+            pass
 
     def set_up(self):
         self.setStyleSheet("font: 10pt;")
@@ -71,14 +78,19 @@ class SingleDatabaseEditor(QDialog):
 
     def restore(self):
         DB.restore(self.saved_data)
-        # Make sure we use the new restored database as the level 
+        # Make sure we use the new restored database as the level
         # in the level editors
         if self.main_editor:
             state_manager = self.main_editor.app_state_manager
             current_level_nid = state_manager.state.selected_level
-            state_manager.change_and_broadcast(
-                'selected_level', current_level_nid)
-        
+            # Sometimes the current level nid stored here
+            # does not exist as a valid level
+            # Reason currently unknown...
+            # Check that it does before broadcasting
+            if current_level_nid in DB.levels.keys():
+                state_manager.change_and_broadcast(
+                    'selected_level', current_level_nid)
+
     def apply(self):
         self.save()
 
@@ -171,7 +183,7 @@ class MultiDatabaseEditor(SingleDatabaseEditor):
         super().closeEvent(event)
 
 class SingleResourceEditor(QDialog):
-    def __init__(self, tab, resource_types=None, parent=None):
+    def __init__(self, tab, resource_types=None, parent=None, *args, **kwargs):
         super().__init__(parent)
         self.window = parent
         self.resource_types = resource_types
@@ -182,12 +194,13 @@ class SingleResourceEditor(QDialog):
         self.grid = QGridLayout(self)
         self.setLayout(self.grid)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, Qt.Horizontal, self)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Apply, Qt.Horizontal, self)
         self.grid.addWidget(self.buttonbox, 1, 1)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
+        self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
 
-        self.tab = tab.create(self)
+        self.tab = tab.create(self, *args, **kwargs)
         self.grid.addWidget(self.tab, 0, 0, 1, 2)
 
         self.setWindowTitle(self.tab.windowTitle())
@@ -217,6 +230,12 @@ class SingleResourceEditor(QDialog):
         super().reject()
         self.close()
 
+    def apply(self):
+        current_proj = self.settings.get_current_project()
+        if current_proj:
+            RESOURCES.save(current_proj, self.resource_types)
+        self.save_geometry()
+
     def closeEvent(self, event):
         self.save_geometry()
         super().closeEvent(event)
@@ -242,10 +261,11 @@ class MultiResourceEditor(SingleResourceEditor):
         self.grid = QGridLayout(self)
         self.setLayout(self.grid)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, Qt.Horizontal, self)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Apply, Qt.Horizontal, self)
         self.grid.addWidget(self.buttonbox, 1, 1)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
+        self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
 
         self.tab_bar = QTabWidget(self)
         self.grid.addWidget(self.tab_bar, 0, 0, 1, 2)

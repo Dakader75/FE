@@ -41,6 +41,7 @@ class MusicDict(dict):
                     self[val] = Song(prefab)
                 except pygame.error as e:
                     logging.warning(e)
+                    return None
             else:
                 return None
         return self[val]
@@ -112,7 +113,7 @@ class Channel():
                         # Could also have been told to fade out without ever starting to play
                         # In which case we don't need to do anything
                         self.state = 'stopped'
-                        # This state machine is an absolute mess that 
+                        # This state machine is an absolute mess that
                         # needs to be considerably refactored
                         # self.last_state = 'stopped'
                     return True
@@ -409,7 +410,7 @@ class SoundController():
         oldest_channel.set_fade_in_time(fade_in)
         oldest_channel.set_current_song(song, num_plays)
 
-    def battle_fade_in(self, next_song, fade=400):
+    def battle_fade_in(self, next_song, fade=400, from_start=True):
         song = MUSIC.get(next_song)
         if not song:
             logging.warning("Song does not exist")
@@ -418,12 +419,12 @@ class SoundController():
             self.crossfade(fade)
             return song
         else:
-            return self.fade_in(next_song, fade_in=fade, from_start=True)
+            return self.fade_in(next_song, fade_in=fade, from_start=from_start)
 
-    def battle_fade_back(self, song):
+    def battle_fade_back(self, song, from_start=True):
         if song.battle:
             self.crossfade()
-        else:
+        elif from_start:
             self.fade_back()
 
     def crossfade(self, fade=400):
@@ -581,4 +582,11 @@ class SoundController():
 
 MUSIC = MusicDict()
 SFX = SoundDict()
-SOUNDTHREAD = SoundController()
+
+_soundthread: SoundController = None
+
+def get_sound_thread():
+    global _soundthread
+    if not _soundthread:
+        _soundthread = SoundController()
+    return _soundthread

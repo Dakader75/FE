@@ -1,0 +1,106 @@
+[
+    {
+        "nid": "Kristin",
+        "name": "Kristin",
+        "desc": "A sincere, honest, and honourable pegasus knight of Frelia.",
+        "variant": "",
+        "level": 1,
+        "klass": "Pegasus_Knight",
+        "tags": [
+            "Female"
+        ],
+        "bases": {
+            "HP": 23,
+            "STR": 5,
+            "MAG": 2,
+            "SKL": 8,
+            "SPD": 10,
+            "LCK": 8,
+            "DEF": 5,
+            "RES": 8,
+            "CON": 5,
+            "MOV": 7,
+            "Atk": 7
+        },
+        "growths": {
+            "HP": 50,
+            "STR": 35,
+            "MAG": 20,
+            "SKL": 30,
+            "SPD": 60,
+            "LCK": 50,
+            "DEF": 20,
+            "RES": 5,
+            "CON": 0,
+            "MOV": 0,
+            "Atk": 40
+        },
+        "starting_items": [
+            [
+                "Iron Lance",
+                false
+            ],
+            [
+                "Javelin",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Duelist"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                31
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Vanessa",
+        "affinity": "Anima",
+        "fields": []
+    }
+]

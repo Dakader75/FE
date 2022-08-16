@@ -3,7 +3,7 @@ from app.engine.graphics.ui_framework.ui_framework_styling import UIMetric
 
 from typing import TYPE_CHECKING, Tuple, Union
 
-from app.utilities.algorithms.interpolation import (lerp, log_interp, tlerp,
+from app.utilities.algorithms.interpolation import (cubic_easing, lerp, log_interp, tcubic_easing, tlerp,
                                                     tlog_interp)
 from app.utilities.utils import clamp
 
@@ -36,8 +36,11 @@ def translate_anim(start_offset: Tuple[int, int], end_offset: Tuple[int, int],
     """
     if interp_mode == InterpolationType.LINEAR:
         lerp_func = tlerp
-    else:
+    elif interp_mode == InterpolationType.LOGARITHMIC:
         lerp_func = lambda a, b, t: tlog_interp(a, b, t, skew)
+    else:
+        lerp_func = lambda a, b, t: tcubic_easing(a, b, t)
+
     def before_translation(c: UIComponent, *args):
         c.offset = start_offset
     def translate(c: UIComponent, anim_time, *args):
@@ -112,8 +115,11 @@ def fade_anim(start_opacity: float, end_opacity: float,
     """
     if interp_mode == InterpolationType.LINEAR:
         lerp_func = lerp
-    else:
+    elif interp_mode == InterpolationType.LOGARITHMIC:
         lerp_func = lambda a, b, t: log_interp(a, b, t, skew)
+    else:
+        lerp_func = lambda a, b, t: cubic_easing(a, b, t)
+
     start_opacity = clamp(start_opacity, 0, 1)
     end_opacity = clamp(end_opacity, 0, 1)
     def before_fade(c: UIComponent, *args):
@@ -162,8 +168,10 @@ def component_scroll_anim(start_scroll: Tuple[int | float | str | UIMetric, int 
 
     if interp_mode == InterpolationType.LINEAR:
         lerp_func = tlerp
-    else:
+    elif interp_mode == InterpolationType.LOGARITHMIC:
         lerp_func = lambda a, b, t: tlog_interp(a, b, t, skew)
+    else:
+        lerp_func = lambda a, b, t: tcubic_easing(a, b, t)
 
     def before_scroll(c: UIComponent, *args):
         c.scroll = sscroll

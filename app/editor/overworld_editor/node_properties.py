@@ -1,17 +1,16 @@
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, \
-    QWidget, QPushButton, QMessageBox, QLabel, QComboBox, QHBoxLayout, QDialog
-from PyQt5.QtCore import Qt, QEvent
-from PyQt5.QtGui import QPixmap
+    QWidget, QMessageBox, QLabel, QComboBox, QHBoxLayout
+from PyQt5.QtCore import Qt
 
 from app.data.database import DB
 from app.resources.resources import RESOURCES
 
 from app.editor.icons import MapIconButton
 
-from app.extensions.custom_gui import ComboBox, SimpleDialog, PropertyBox, PropertyCheckBox, QHLine
+from app.extensions.custom_gui import PropertyBox
 from app.utilities import str_utils
-from app.editor.sound_editor import sound_tab
-from app.editor.tile_editor import tile_tab
+from app.utilities.data import Data
+from app.editor.overworld_editor.node_menu_properties import NodeEventPropertiesMenu
 
 class NodePropertiesMenu(QWidget):
     def __init__(self, state_manager):
@@ -34,15 +33,22 @@ class NodePropertiesMenu(QWidget):
         else:
             self.current_node = None
         if(self.current_node):
+            node_data = self.current_node.menu_options
+            self.event_box.set_data(node_data)
+            
             self.set_components_active(True)
-
+            self.event_box.show()
+            self.event_box.on_node_changed()
             self.nid_box.edit.setText(self.current_node.nid)
             self.title_box.edit.setText(self.current_node.name)
             self.map_icon_selector.set_map_icon_object(RESOURCES.map_icons.get(self.current_node.icon))
             self._populate_level_combo_box(self.level_box.edit)
             self.level_box.edit.setCurrentIndex(self.level_box.edit.findData(self.current_node.level))
         else:
+            node_data = Data()
+            self.event_box.set_data(node_data)
             self.set_components_active(False)
+            self.event_box.hide()
 
     def set_components_active(self, is_active):
         is_inactive = not is_active
@@ -50,6 +56,7 @@ class NodePropertiesMenu(QWidget):
         self.title_box.setDisabled(is_inactive)
         self.level_box.setDisabled(is_inactive)
         self.map_icon_selector.setDisabled(is_inactive)
+        self.event_box.setDisabled(is_inactive)
 
     def node_icon_changed(self, icon_nid):
         if(self.current_node):
@@ -105,7 +112,10 @@ class NodePropertiesMenu(QWidget):
 
         self.map_icon_selector = NodeIconSelector(self.node_icon_changed)
         self.layout.addWidget(self.map_icon_selector)
-
+        
+        self.event_box = NodeEventPropertiesMenu(self.state_manager, self)
+        self.layout.addWidget(self.event_box)
+    
     def _populate_level_combo_box(self, level_combo_box):
         level_combo_box.clear()
         for level in DB.levels.values():
@@ -131,3 +141,5 @@ class NodeIconSelector(QWidget):
 
     def on_node_icon_changed(self, nid):
         self.on_icon_change(nid)
+
+

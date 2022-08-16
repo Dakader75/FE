@@ -6,7 +6,7 @@ from app.utilities import str_utils, utils
 # Used, for instance, for miss and no damage animations
 
 class Animation():
-    def __init__(self, anim, position, delay=0, loop=False, hold=False, reverse=False, speed_adj: float = 1):
+    def __init__(self, anim, position, delay=0, loop=False, hold=False, reverse=False, speed_adj: float = 1, contingent=False):
         self.nid = anim.nid
         if not anim.image:
             anim.image = engine.image_load(anim.full_path)
@@ -25,6 +25,7 @@ class Animation():
         self.enabled = True
         self.tint: bool = False
         self.tint_after_delay = None
+        self.contingent = contingent
 
         self.width = self.sprite.get_width() // self.frame_x
         self.height = self.sprite.get_height() // self.frame_y
@@ -41,7 +42,9 @@ class Animation():
                 'loop': self.loop,
                 'hold': self.hold, 
                 'reverse': self.reverse, 
-                'speed_adj': self.speed_adj}
+                'speed_adj': self.speed_adj,
+                'tint': self.tint,
+                'contingent': self.contingent}
 
     @property
     def speed(self):
@@ -139,8 +142,8 @@ class Animation():
         return surf
 
 class MapAnimation(Animation):
-    def __init__(self, anim, position, delay=0, loop=False, hold=False, reverse=False, speed_adj: float = 1):
-        super().__init__(anim, position, delay, loop, hold, reverse, speed_adj=speed_adj)
+    def __init__(self, anim, position, delay=0, loop=False, hold=False, reverse=False, speed_adj: float = 1, contingent=False):
+        super().__init__(anim, position, delay, loop, hold, reverse, speed_adj=speed_adj, contingent=contingent)
         self.position = self.position[0] * TILEWIDTH, self.position[1] * TILEHEIGHT
         self.use_center()
 

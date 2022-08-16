@@ -1,0 +1,77 @@
+[
+    {
+        "nid": "Cerberus",
+        "name": "Cerberus",
+        "desc": "",
+        "variant": null,
+        "level": 10,
+        "klass": "Dreadfighter",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "Atk": 22,
+            "SKL": 23,
+            "SPD": 25,
+            "LCK": 20,
+            "DEF": 15,
+            "RES": 11,
+            "MOV": 7
+        },
+        "growths": {
+            "HP": 0,
+            "Atk": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0
+        },
+        "starting_items": [
+            [
+                "Silver Sword",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                181
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Riev",
+        "affinity": "None",
+        "fields": []
+    }
+]

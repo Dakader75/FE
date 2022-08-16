@@ -12,7 +12,8 @@ class RecordOption(menu_options.BasicOption):
         self.idx = idx
         self.level, self.turncount, self.mvp = text
         self.help_box = None
-        self.color = 'text-white'
+        self.font = 'text'
+        self.color = None
         self.ignore = False
 
     def get(self):
@@ -30,21 +31,31 @@ class RecordOption(menu_options.BasicOption):
             level_name = level_prefab.name
         else:
             level_name = "???"
-        FONT['text-white'].blit(level_name, surf, (x + 4, y))
-        FONT['text-blue'].blit_right(str(self.turncount), surf, (x + 120, y))
+        main_font = FONT[self.font]
+        width = main_font.width(level_name)
+        if width > 96:
+            FONT['narrow'].blit(level_name, surf, (x + 4, y))
+        else:
+            main_font.blit(level_name, surf, (x + 4, y))
+        main_font.blit_right(str(self.turncount), surf, (x + 120, y), color='blue')
         unit_prefab = DB.units.get(self.mvp)
         if unit_prefab:
             unit_name = unit_prefab.name
         else:
             unit_name = "???"
-        FONT['text-white'].blit_right(unit_name, surf, (x + 196, y))
+        width = main_font.width(unit_name)
+        if width > 72:
+            FONT['narrow'].blit_right(unit_name, surf, (x + 196, y))
+        else:
+            main_font.blit_right(unit_name, surf, (x + 196, y))
 
 class UnitRecordOption(RecordOption):
     def __init__(self, idx, text):
         self.idx = idx
         self.level, self.kills, self.damage, self.healing = text
         self.help_box = None
-        self.color = 'text-white'
+        self.font = 'text'
+        self.color = None
         self.ignore = False
 
     def get(self):
@@ -56,7 +67,7 @@ class UnitRecordOption(RecordOption):
             level_name = level_prefab.name
         else:
             level_name = "???"
-        FONT['text-white'].blit(level_name, surf, (x + 4, y))
+        FONT['text'].blit(level_name, surf, (x + 4, y))
         FONT['text-blue'].blit_right(str(self.kills), surf, (x + 114, y))
         FONT['text-blue'].blit_right(str(self.damage), surf, (x + 164, y))
         FONT['text-blue'].blit_right(str(self.healing), surf, (x + 210, y))
@@ -66,7 +77,8 @@ class LevelRecordOption(RecordOption):
         self.idx = idx
         self.unit_nid, self.kills, self.damage, self.healing = text
         self.help_box = None
-        self.color = 'text-white'
+        self.font = 'text'
+        self.color = None
         self.ignore = False
 
     def get(self):
@@ -79,7 +91,7 @@ class LevelRecordOption(RecordOption):
         else:
             unit_name = "???"
         FONT['text-yellow'].blit(str(self.idx + 1), surf, (x + 4, y))
-        FONT['text-white'].blit(unit_name, surf, (x + 34, y))
+        FONT['text'].blit(unit_name, surf, (x + 34, y))
         FONT['text-blue'].blit_right(str(self.kills), surf, (x + 114, y))
         FONT['text-blue'].blit_right(str(self.damage), surf, (x + 164, y))
         FONT['text-blue'].blit_right(str(self.healing), surf, (x + 210, y))
@@ -140,9 +152,9 @@ class RecordsDisplay(menus.Choice):
         FONT['text-yellow'].blit(text_funcs.translate('Overall MVP'), bg, (100, 4))
         unit = DB.units.get(overall_mvp)
         if unit:
-            FONT['text-white'].blit_right(unit.name, bg, (216, 4))
+            FONT['text'].blit_right(unit.name, bg, (216, 4))
         else:
-            FONT['text-white'].blit_right('--', bg, (216, 4))
+            FONT['text'].blit_right('--', bg, (216, 4))
         return bg
 
     def draw(self, surf, offset=None):

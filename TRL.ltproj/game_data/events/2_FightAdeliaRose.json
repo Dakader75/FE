@@ -1,0 +1,80 @@
+[
+    {
+        "name": "FightAdeliaRose",
+        "trigger": "combat_start",
+        "level_nid": "2",
+        "condition": "(unit.nid == \"Adelia\" and unit2.team == 'Rose') or (unit2.nid == \"Adelia\" and unit.nid == 'Rose')",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Selena",
+                    "Left"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Lute",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Selena",
+                    "Rose! What are you doing here?|Get away from here right now! This is a battle!"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Lute",
+                    "Adelia! No this can't be happening..."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Selena",
+                    "Rose, go now!"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Lute",
+                    "Adelia, listen. Lord Bone was involved in the rebellion at Rigel castle!|He's a wicked man!"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Selena",
+                    "What? A rebllion?| This make no sense. Rose get out of here before you get hurt."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Lute",
+                    "Ugh. Why won't she listen?"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Lute"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Selena"
+                ]
+            ]
+        ],
+        "only_once": true,
+        "priority": 20
+    }
+]

@@ -1,0 +1,77 @@
+[
+    {
+        "nid": "Killer Bow",
+        "name": "Killer Bow",
+        "desc": "-4 Spd penalty.",
+        "icon_nid": "Bow",
+        "icon_index": [
+            0,
+            4
+        ],
+        "components": [
+            [
+                "weapon",
+                null
+            ],
+            [
+                "target_enemy",
+                null
+            ],
+            [
+                "level_exp",
+                null
+            ],
+            [
+                "damage",
+                6
+            ],
+            [
+                "hit",
+                80
+            ],
+            [
+                "weapon_rank",
+                "C"
+            ],
+            [
+                "weapon_type",
+                "Bow"
+            ],
+            [
+                "crit",
+                20
+            ],
+            [
+                "warning",
+                null
+            ],
+            [
+                "min_range",
+                2
+            ],
+            [
+                "max_range",
+                5
+            ],
+            [
+                "effective",
+                12
+            ],
+            [
+                "effective_tag",
+                [
+                    "Flying"
+                ]
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        -4
+                    ]
+                ]
+            ]
+        ]
+    }
+]

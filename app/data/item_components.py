@@ -1,10 +1,28 @@
+from enum import Enum
 from app.data.components import Component, Type
 
-tags = ['base', 'target', 'weapon', 'uses', 'exp', 'class_change', 'extra', 'utility', 'special', 'formula', 'aoe', 'aesthetic', 'advanced']
+class ItemTags(Enum):
+    BASE = 'base'
+    TARGET = 'target'
+    WEAPON = 'weapon'
+    USES = 'uses'
+    EXP = 'exp'
+    CLASS_CHANGE = 'class_change'
+    EXTRA = 'extra'
+    UTILITY = 'utility'
+    SPECIAL = 'special'
+    FORMULA = 'formula'
+    AOE = 'aoe'
+    AESTHETIC = 'aesthetic'
+    ADVANCED = 'advanced'
+
+    CUSTOM = 'custom'
+    HIDDEN = 'hidden'
+    DEPRECATED = 'deprecated'
 
 class ItemComponent(Component):
     item = None
-    
+
 def get_items_using(expose: Type, value, db) -> list:
     affected_items = []
     for item in db.items:

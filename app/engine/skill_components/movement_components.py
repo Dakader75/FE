@@ -1,12 +1,15 @@
-from app.data.skill_components import SkillComponent
+from typing import Set, Tuple
+from app.data.skill_components import SkillComponent, SkillTags
 from app.data.components import Type
 
-from app.engine import equations
+from app.engine import equations, target_system, action
+from app.engine.game_state import game
+from app.engine.objects.unit import UnitObject
 
 class Canto(SkillComponent):
     nid = 'canto'
     desc = "Unit can move again after certain actions"
-    tag = 'movement'
+    tag = SkillTags.MOVEMENT
 
     def has_canto(self, unit, unit2) -> bool:
         """
@@ -17,7 +20,7 @@ class Canto(SkillComponent):
 class CantoPlus(SkillComponent):
     nid = 'canto_plus'
     desc = "Unit can move again even after attacking"
-    tag = 'movement'
+    tag = SkillTags.MOVEMENT
 
     def has_canto(self, unit, unit2) -> bool:
         return True
@@ -25,7 +28,7 @@ class CantoPlus(SkillComponent):
 class CantoSharp(SkillComponent):
     nid = 'canto_sharp'
     desc = "Unit can move and attack in either order"
-    tag = 'movement'
+    tag = SkillTags.MOVEMENT
 
     def has_canto(self, unit, unit2) -> bool:
         return not unit.has_attacked or unit.movement_left >= equations.parser.movement(unit)
@@ -33,7 +36,7 @@ class CantoSharp(SkillComponent):
 class MovementType(SkillComponent):
     nid = 'movement_type'
     desc = "Unit will have a non-default movement type"
-    tag = 'movement'
+    tag = SkillTags.MOVEMENT
 
     expose = Type.MovementType
 
@@ -43,7 +46,7 @@ class MovementType(SkillComponent):
 class Pass(SkillComponent):
     nid = 'pass'
     desc = "Unit can move through enemies"
-    tag = 'movement'
+    tag = SkillTags.MOVEMENT
 
     def pass_through(self, unit):
         return True
@@ -51,7 +54,7 @@ class Pass(SkillComponent):
 class IgnoreTerrain(SkillComponent):
     nid = 'ignore_terrain'
     desc = "Unit will not be affected by terrain"
-    tag = 'movement'
+    tag = SkillTags.MOVEMENT
 
     def ignore_terrain(self, unit):
         return True
@@ -62,7 +65,7 @@ class IgnoreTerrain(SkillComponent):
 class IgnoreRescuePenalty(SkillComponent):
     nid = 'ignore_rescue_penalty'
     desc = "Unit will ignore the rescue penalty"
-    tag = 'movement'
+    tag = SkillTags.MOVEMENT
 
     def ignore_rescue_penalty(self, unit):
         return True
@@ -70,7 +73,65 @@ class IgnoreRescuePenalty(SkillComponent):
 class Grounded(SkillComponent):
     nid = 'grounded'
     desc = "Unit cannot be forcibly moved"
-    tag = 'movement'
+    tag = SkillTags.MOVEMENT
 
     def ignore_forced_movement(self, unit):
         return True
+
+class NoAttackAfterMove(SkillComponent):
+    nid = 'no_attack_after_move'
+    desc = 'Unit can either move or attack, but not both'
+    tag = SkillTags.MOVEMENT
+
+    def no_attack_after_move(self, unit):
+        return True
+
+class WitchWarp(SkillComponent):
+    nid = 'witch_warp'
+    desc = 'Unit can warp to any ally'
+    tag = SkillTags.MOVEMENT
+
+    def witch_warp(self, unit: UnitObject) -> Set[Tuple[int, int]]:
+        warp_spots = set()
+        for ally in game.get_all_units():
+            if ally.team == unit.team and ally.position and game.board.check_bounds(ally.position):
+                pos = ally.position
+                up = (pos[0], pos[1] - 1)
+                down = (pos[0], pos[1] + 1)
+                left = (pos[0] - 1, pos[1])
+                right = (pos[0] + 1, pos[1])
+                for point in [up, down, left, right]:
+                    if game.board.check_bounds(point) and game.movement.check_traversable(unit, point):
+                        warp_spots.add(point)
+        return warp_spots
+
+class SpecificWitchWarp(SkillComponent):
+    nid = 'specific_witch_warp'
+    desc = "Allows unit to witch warp to the given units"
+    tag = SkillTags.MOVEMENT
+
+    expose = (Type.List, Type.Unit)
+
+    def witch_warp(self, unit: UnitObject) -> list:
+        positions = []
+        for val in self.value:
+            u = game.get_unit(val)
+            if u and u.position:
+                partner_pos = u.position
+            else:
+                continue
+            if partner_pos:
+                positions += [pos for pos in target_system.get_adjacent_positions(partner_pos) if game.movement.check_traversable(unit, pos)]
+        return positions
+
+class Galeforce(SkillComponent):
+    nid = 'galeforce'
+    desc = "After killing an enemy on player phase, unit can move again."
+    tag = SkillTags.MOVEMENT
+
+    def end_combat(self, playback, unit, item, target, mode):
+        mark_playbacks = [p for p in playback if p.nid in ('mark_miss', 'mark_hit', 'mark_crit')]
+        if target and target.get_hp() <= 0 and \
+                any(p.main_attacker is unit for p in mark_playbacks):  # Unit is overall attacker
+            action.do(action.Reset(unit))
+            action.do(action.TriggerCharge(unit, self.skill))

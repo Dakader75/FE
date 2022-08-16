@@ -1,0 +1,60 @@
+[
+    {
+        "name": "AdeliaAIChange",
+        "trigger": "turn_change",
+        "level_nid": "2",
+        "condition": "game.get_unit('Jerowm').team == \"player\" or is_dead(\"Jerowm\")",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Adelia",
+                    "Left"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Adelia",
+                    "What? The lord's son has been found by the prince's forces?|Come men, we must hurry before something happens to the lord's son!"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Adelia"
+                ]
+            ],
+            [
+                "change_ai",
+                [
+                    "Adelia",
+                    "Pursue"
+                ]
+            ],
+            [
+                "change_ai",
+                [
+                    "115",
+                    "Pursue"
+                ]
+            ],
+            [
+                "change_ai",
+                [
+                    "116",
+                    "Pursue"
+                ]
+            ],
+            [
+                "change_ai",
+                [
+                    "117",
+                    "Pursue"
+                ]
+            ]
+        ],
+        "only_once": true,
+        "priority": 20
+    }
+]

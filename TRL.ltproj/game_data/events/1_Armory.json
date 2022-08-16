@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Armory",
+        "trigger": "Armory",
+        "level_nid": "1",
+        "condition": "region.nid == 'Armory'",
+        "commands": [
+            [
+                "transition",
+                [
+                    "Close"
+                ]
+            ],
+            [
+                "music",
+                [
+                    "Armory Music"
+                ]
+            ],
+            [
+                "shop",
+                [
+                    "{unit}",
+                    "Iron Sword,Iron Lance,Iron Bow"
+                ]
+            ],
+            [
+                "transition",
+                [
+                    "Open"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

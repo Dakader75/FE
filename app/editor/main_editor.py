@@ -51,11 +51,13 @@ from app.editor.ai_editor.ai_tab import AIDatabase
 from app.editor.difficulty_mode_editor.difficulty_mode_tab import DifficultyModeDatabase
 from app.editor.constant_tab import ConstantDatabase
 from app.editor.tag_widget import TagDialog
+from app.editor.game_var_slot_widget import GameVarSlotDialog
 from app.editor.mcost_dialog import McostDialog
 from app.editor.translation_widget import TranslationDialog
 from app.editor.equation_widget import EquationDialog
 from app.editor.event_editor.event_tab import EventDatabase
 from app.editor.lore_editor.lore_tab import LoreDatabase
+from app.editor.raw_editor.raw_data_tab import RawDataDatabase
 
 # Resources
 from app.editor.icon_editor import icon_tab
@@ -198,6 +200,9 @@ class MainEditor(QMainWindow):
         self.quit_act = QAction(
             "&Quit", self, shortcut="Ctrl+Q", triggered=self.close)
 
+        self.dump_csv = QAction(
+            "Dump CSV data", self, triggered=lambda: self.project_save_load_handler.dump_csv(DB))
+
         self.preferences_act = QAction(
             "&Preferences...", self, triggered=self.edit_preferences)
         self.about_act = QAction("&About", self, triggered=self.about)
@@ -224,6 +229,7 @@ class MainEditor(QMainWindow):
                             "Parties": PartyDatabase.edit,
                             "Classes": ClassDatabase.edit,
                             "Tags": self.edit_tags,
+                            "Game Vars": self.edit_game_vars,
                             "Weapon Types": WeaponDatabase.edit,
                             "Items": ItemDatabase.edit,
                             "Skills": SkillDatabase.edit,
@@ -236,6 +242,7 @@ class MainEditor(QMainWindow):
                             "Difficulty Modes": DifficultyModeDatabase.edit,
                             "Supports": self.edit_supports,
                             "Lore": LoreDatabase.edit,
+                            "Raw Data": RawDataDatabase.edit,
                             "Translations": self.edit_translations
                             }
         self.database_actions = {}
@@ -280,6 +287,7 @@ class MainEditor(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(self.save_act)
         file_menu.addAction(self.save_as_act)
+        file_menu.addAction(self.dump_csv)
         file_menu.addSeparator()
         file_menu.addAction(self.quit_act)
 
@@ -431,7 +439,6 @@ class MainEditor(QMainWindow):
         if self.project_save_load_handler.new():
             # if we made a new game:
             self.set_window_title('Untitled')
-            self.project_save_load_handler.save(True)
             title = os.path.split(self.settings.get_current_project())[-1]
             self.set_window_title(title)
 
@@ -511,6 +518,10 @@ class MainEditor(QMainWindow):
         dialog = TagDialog.create()
         dialog.exec_()
 
+    def edit_game_vars(self, parent=None):
+        dialog = GameVarSlotDialog.create()
+        dialog.exec_()
+
     def edit_supports(self, parent=None):
         dialog = support_pair_tab.get_full_editor()
         dialog.exec_()
@@ -574,10 +585,10 @@ class MainEditor(QMainWindow):
     def about(self):
         QMessageBox.about(self, "About Lex Talionis Game Maker",
                           "<p>This is the <b>Lex Talionis</b> Game Maker.</p>"
-                          "<p>Check out <a href='https://gitlab.com/rainlash/lex-talionis/wikis/home'>https://gitlab.com/rainlash/lex-talionis/wikis/home</a> "
+                          "<p>Check out <a href='https://lt-maker.readthedocs.io/'>https://lt-maker.readthedocs.io/</a> "
                           "for more information and helpful tutorials.</p>"
                           "<p>This program has been freely distributed under the MIT License.</p>"
-                          "<p>Copyright 2014-2021 rainlash.</p>")
+                          "<p>Copyright 2014-2022 rainlash.</p>")
 
     def check_for_updates(self):
         # Only check for updates in frozen version

@@ -7,7 +7,7 @@ from app.engine.game_menus.menu_components.unit_menu.unit_menu import \
 from app.engine.game_state import game
 from app.engine.objects.overworld.overworld_entity import OverworldEntityTypes
 from app.engine.objects.unit import UnitObject
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.state import State
 from app.utilities.enums import Direction
 
@@ -45,27 +45,28 @@ class UnitMenuState(State):
 
         if 'DOWN' in directions:
             if self.ui_display.move_cursor(Direction.DOWN):
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
         elif 'UP' in directions:
             if self.ui_display.move_cursor(Direction.UP):
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
         elif 'LEFT' in directions:
             if self.ui_display.move_cursor(Direction.LEFT):
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
         elif 'RIGHT' in directions:
             if self.ui_display.move_cursor(Direction.RIGHT):
-                SOUNDTHREAD.play_sfx('Select 6')
+                get_sound_thread().play_sfx('Select 6')
 
         if event == 'BACK':
-            SOUNDTHREAD.play_sfx('Select 4')
-            selected = self.ui_display.cursor_hover()
-            if isinstance(selected, UnitObject):
-                if self.in_level:
-                    game.cursor.set_pos(selected.position)
+            get_sound_thread().play_sfx('Select 4')
+            if not game.level.roam:
+                selected = self.ui_display.cursor_hover()
+                if isinstance(selected, UnitObject):
+                    if self.in_level:
+                        game.cursor.set_pos(selected.position)
             game.state.change('transition_pop')
 
         elif event == 'SELECT':
-            SOUNDTHREAD.play_sfx('Select 2')
+            get_sound_thread().play_sfx('Select 2')
             selected = self.ui_display.cursor_hover()
             if isinstance(selected, UnitObject):
                 if self.in_level:

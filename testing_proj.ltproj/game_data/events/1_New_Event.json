@@ -1,0 +1,44 @@
+[
+    {
+        "name": "New Event",
+        "trigger": "level_start",
+        "level_nid": "1",
+        "condition": "True",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Eirika",
+                    "Left"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "27,21",
+                    "1000"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Eirika"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

@@ -6,7 +6,7 @@ from app.engine.sprites import SPRITES
 
 from app.utilities import utils
 
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine import config as cf
 from app.engine import engine, image_mods
 from app.engine.game_state import game
@@ -20,23 +20,23 @@ def fade_in_phase_music():
     fade = game.game_vars.get('_phase_music_fade_ms', 400)
     if music:
         if DB.constants.value('restart_phase_music'):
-            SOUNDTHREAD.fade_in(music, fade_in=fade, from_start=True)
+            get_sound_thread().fade_in(music, fade_in=fade, from_start=True)
         else:
-            SOUNDTHREAD.fade_in(music, fade_in=fade)
+            get_sound_thread().fade_in(music, fade_in=fade)
     else:
-        SOUNDTHREAD.fade_to_pause(fade_out=fade)
+        get_sound_thread().fade_to_pause(fade_out=fade)
 
 def fade_out_phase_music():
     logging.info('Fade out Phase Music')
     next_team = game.phase.get_current()
     next_music = game.level.music.get(next_team + '_phase')
-    currently_playing = SOUNDTHREAD.get_current_song()
+    currently_playing = get_sound_thread().get_current_song()
     # Don't fade_out phase music if we will just fade in to the same song
     if currently_playing and next_music and next_music == currently_playing.nid:
         pass
     else:
         fade = game.game_vars.get('_phase_music_fade_ms', 400)
-        SOUNDTHREAD.fade_to_pause(fade_out=fade)
+        get_sound_thread().fade_to_pause(fade_out=fade)
 
 class PhaseController():
     def __init__(self):
@@ -118,7 +118,7 @@ class PhaseIn():
 
     def begin(self):
         self.starting_time = engine.get_time()
-        SOUNDTHREAD.play_sfx('Next Turn')
+        get_sound_thread().play_sfx('Next Turn')
         if self.name == 'player':
             if cf.SETTINGS['autocursor']:
                 game.cursor.autocursor()
@@ -172,7 +172,7 @@ class PhaseIn():
             t = int(diff * 16)
 
         for x in range(0, WINWIDTH, 16):
-            for y in range(0, 64, 16):
+            for y in range(0, WINHEIGHT//2 - 16, 16):
                 i, j = x//16, y//16
                 k1 = int(t * 1.5 - (i - j%2)/2 + j/2 - 4)
                 k2 = int(t * 1.5 - (i - j%2)/2 + j/2 - 1)

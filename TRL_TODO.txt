@@ -1,0 +1,17 @@
+General:
+Skills: Scholar - check functionality
+Items: Accesories - find item icons for accessories
+Skills: Procrastionator - add functionailty
+Skills: Preperation - add functionaility
+Skills: Extravagant - add functionality
+Global: Magic - allows units to gain spells through levelup
+Global: Promotion - implement raising stats to reach class bases (Echoes promotion system)
+Items: Empepror Lance - Redo stats
+Skills: Rudolf - decide on a skill for him (no spd penalties from weapons or accessories?)
+Global: Add world map and cutscences between levels
+
+
+Ch2x:
+Look into random monster spawns (I don't think there really random)
+Get random monster reinforcements to use variable positions
+Add opening dialogue

@@ -24,13 +24,13 @@ class HeaderList(UIComponent, Generic[T]):
 
         # children references
         self.header_row = header_row
-        self.scrollable_list = None
+        self.scrollable_list = UIComponent('list', self)
         self.regenerate_list_component()
         self.repopulate_children()
 
     @property
     def scrolled_index(self):
-        if self.scrollable_list:
+        if self.scrollable_list and self.row_height:
             return self.scrollable_list.scroll[1] / self.row_height
         else:
             return 0
@@ -57,8 +57,10 @@ class HeaderList(UIComponent, Generic[T]):
 
     def repopulate_children(self):
         self.children = []
-        self.add_child(self.header_row)
-        self.add_child(self.scrollable_list)
+        if self.header_row:
+            self.add_child(self.header_row)
+        if self.scrollable_list:
+            self.add_child(self.scrollable_list)
 
     def set_header(self, header_row: T):
         self.header_row = header_row
@@ -85,7 +87,7 @@ class HeaderList(UIComponent, Generic[T]):
         if not self.data_rows:
             return
         list_comp = UIComponent('list', self)
-        list_comp.size = ('100%', self.height - self.header_row.height)
+        list_comp.size = ('100%', self.height - (self.header_row.height if self.header_row else 0))
         list_comp.max_height = self.height
         list_comp.props.layout = UILayoutType.LIST
         list_comp.props.list_style = ListLayoutStyle.COLUMN
@@ -116,6 +118,7 @@ class HeaderList(UIComponent, Generic[T]):
     def to_surf(self, no_cull=False) -> engine.Surface:
         # manually cull rows
         if self.scrollable_list:
+            self.scrollable_list._should_redraw = True
             for idx, row in enumerate(self.scrollable_list.children):
                 if idx < self.scrolled_index - 0.4:
                     row.disable()

@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Scholar",
+        "name": "Scholar",
+        "desc": "Every dark magic spell that this unit knows, adds +1 to damage dealt",
+        "icon_nid": "Skills",
+        "icon_index": [
+            9,
+            0
+        ],
+        "components": [
+            [
+                "dynamic_damage",
+                "len(get_item(\"Morpheus\", \"Morpheus's Magic\").subitems)"
+            ]
+        ]
+    }
+]

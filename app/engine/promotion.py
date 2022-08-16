@@ -6,7 +6,7 @@ from app.utilities import utils
 
 from app.engine.fonts import FONT
 from app.engine.sprites import SPRITES
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.state import State
 from app.engine import background, menus, engine, dialog, text_funcs, icons, \
     action, item_system, battle_animation
@@ -30,7 +30,7 @@ class PromotionChoiceState(State):
         game.memory['current_unit'] = self.unit
         game.memory['next_class'] = next_class
         game.memory['next_state'] = 'promotion'
-        game.state.change('transition_to')
+        game.state.change('transition_to_with_pop')
 
     def start(self):
         self.fluid = FluidScroll()
@@ -45,6 +45,7 @@ class PromotionChoiceState(State):
         display_options = self._get_choices()
 
         self.menu = menus.Choice(self.unit, display_options, (14, 13))
+        self.menu.set_limit(5)
         self.child_menu = None
 
         self.animations = []
@@ -84,9 +85,15 @@ class PromotionChoiceState(State):
         first_push = self.fluid.update()
         directions = self.fluid.get_directions()
 
+        current_idx = self.menu.get_current_index()
         self.menu.handle_mouse()
+        new_idx = self.menu.get_current_index()
+        if current_idx != new_idx:  # Mouse moved
+            self.target_anim_offset = True
+            self.current_desc = self._get_desc()
+
         if 'DOWN' in directions:
-            SOUNDTHREAD.play_sfx('Select 6')
+            get_sound_thread().play_sfx('Select 6')
             if self.child_menu:
                 self.child_menu.move_down(first_push)
             else:
@@ -94,9 +101,9 @@ class PromotionChoiceState(State):
                 self.target_anim_offset = True
                 self.current_desc = self._get_desc()
         elif 'UP' in directions:
-            SOUNDTHREAD.play_sfx('Select 6')
+            get_sound_thread().play_sfx('Select 6')
             if self.child_menu:
-                self.menu.move_up(first_push)
+                self.child_menu.move_up(first_push)
             else:
                 self.menu.move_up(first_push)
                 self.target_anim_offset = True
@@ -104,29 +111,29 @@ class PromotionChoiceState(State):
 
         elif event == 'BACK':
             if self.child_menu:
-                SOUNDTHREAD.play_sfx('Select 4')
+                get_sound_thread().play_sfx('Select 4')
                 self.child_menu = None
             elif self.can_go_back:
-                SOUNDTHREAD.play_sfx('Select 4')
+                get_sound_thread().play_sfx('Select 4')
                 game.state.back()
                 if self.combat_item:
                     action.do(action.Reset(self.unit))
                     item_system.reverse_use(self.unit, self.combat_item)
             else:
                 # Can't go back...
-                SOUNDTHREAD.play_sfx('Error')
+                get_sound_thread().play_sfx('Error')
 
         elif event == 'SELECT':
             if self.child_menu:
                 selection = self.child_menu.get_current()
                 if selection == 'Change':
-                    SOUNDTHREAD.play_sfx('Select 1')
+                    get_sound_thread().play_sfx('Select 1')
                     self._proceed(self.class_options[self.menu.get_current_index()])
                 else:
-                    SOUNDTHREAD.play_sfx('Select 4')
+                    get_sound_thread().play_sfx('Select 4')
                     self.child_menu = None
             else:
-                SOUNDTHREAD.play_sfx('Select 1')
+                get_sound_thread().play_sfx('Select 1')
                 selection = self.menu.get_current()
                 options = ['Change', 'Cancel']
                 self.child_menu = menus.Choice(selection, options, self.menu)
@@ -134,7 +141,7 @@ class PromotionChoiceState(State):
     def _get_desc(self):
         current_klass = self.class_options[self.menu.get_current_index()]
         desc = DB.classes.get(current_klass).desc
-        d = dialog.Dialog(text_funcs.translate(desc))
+        d = dialog.Dialog(desc.replace('\n', '{br}'))
         d.position = (6, 112)
         d.text_width = WINWIDTH - 28
         d.width = d.text_width + 16
@@ -205,13 +212,15 @@ class ClassChangeChoiceState(PromotionChoiceState):
             self.class_options = [c for c in unit_prefab.alternate_classes if c != self.unit.klass]
         else:  # Just every class, lol?
             self.class_options = [c.nid for c in DB.classes.values() if c.nid != self.unit.klass]
+        if DB.constants.value('class_change_same_tier'):
+            self.class_options = [c for c in self.class_options if DB.classes.get(c).tier == DB.classes.get(self.unit.klass).tier]
         return [DB.classes.get(c).name for c in self.class_options]
 
     def _proceed(self, next_class):
         game.memory['current_unit'] = self.unit
         game.memory['next_class'] = next_class
         game.memory['next_state'] = 'class_change'
-        game.state.change('transition_to')
+        game.state.change('transition_to_with_pop')
 
 class PromotionState(State, MockCombat):
     name = 'promotion'
@@ -226,11 +235,11 @@ class PromotionState(State, MockCombat):
     def start(self):
         self.create_background()
 
-        music = 'music_%s' % self.name 
+        music = 'music_%s' % self.name
         self.promotion_song = None
         if DB.constants.value(music):
             self.promotion_song = \
-                SOUNDTHREAD.fade_in(DB.constants.value(music), fade_in=50)
+                get_sound_thread().fade_in(DB.constants.value(music), fade_in=50)
 
         self.unit = game.memory['current_unit']
         color = utils.get_team_color(self.unit.team)
@@ -246,7 +255,7 @@ class PromotionState(State, MockCombat):
         platform = RESOURCES.platforms[platform_type + '-Melee']
         self.left_platform = engine.image_load(platform)
         self.right_platform = engine.flip_horiz(self.left_platform.copy())
-        
+
         # Name tag
         self.name_tag = SPRITES.get('combat_name_right_' + color).copy()
         width = FONT['text-brown'].width(self.unit.name)
@@ -303,12 +312,12 @@ class PromotionState(State, MockCombat):
 
         elif self.state == 'leave':
             if current_time > utils.frames2ms(10):
-                game.state.change('transition_double_pop')
+                game.state.change('transition_pop')
                 self.state = 'done'
                 if self.promotion_song:
-                    SOUNDTHREAD.fade_back()
+                    get_sound_thread().fade_back()
                 return 'repeat'
-        
+
         if self.state != self.current_state:
             self.last_update = engine.get_time()
 

@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Procrastination",
+        "name": "Procrastination",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            10
+        ],
+        "components": [
+            [
+                "status_on_hold",
+                "Procrastination_child"
+            ]
+        ]
+    }
+]

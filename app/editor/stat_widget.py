@@ -2,14 +2,14 @@ import math
 
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, \
     QSizePolicy, QTableView, QPushButton, QDialog, QHBoxLayout, \
-    QButtonGroup, QMenu, QAction, QApplication, QMessageBox
+    QButtonGroup, QMenu, QAction, QApplication, QMessageBox, QLineEdit, QVBoxLayout
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 from app.utilities import utils
 from app.data.database import DB
 
-from app.extensions.custom_gui import IntDelegate
+from app.extensions.custom_gui import IntDelegate, PropertyBox, SimpleDialog
 from app.extensions.list_models import VirtualListModel
 
 import logging
@@ -248,6 +248,11 @@ class StatAverageDialog(QDialog):
         hbox_layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(hbox_layout, 0, 1, alignment=Qt.AlignRight)
 
+        self.button_custom = QPushButton("Show all levels")
+        hbox_layout.addWidget(self.button_custom, alignment=Qt.AlignCenter)
+        self.button_custom.clicked.connect(self.show_all_levels)
+        self.showing_all = False
+
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
         self.button_group.buttonToggled.connect(self.button_clicked)
@@ -276,10 +281,14 @@ class StatAverageDialog(QDialog):
 
     def set_current(self, current):
         self.current = current
-        self.model.set_current(self.current)
+        self.model.set_current(self.current, self.showing_all)
 
     def update(self):
         self.model.layoutChanged.emit()
+
+    def show_all_levels(self):
+        self.showing_all = not self.showing_all
+        self.model.set_current(self.current, self.showing_all)
 
     def closeEvent(self, event):
         # Remove averages dialog
@@ -319,9 +328,12 @@ class ClassStatAveragesModel(VirtualListModel):
         self.current = current
         self._rows = [1] + list(range(5, current.max_level, 5)) + [current.max_level]
 
-    def set_current(self, current):
+    def set_current(self, current, all_levels=False):
         self.current = current
-        self._rows = [1] + list(range(5, current.max_level, 5)) + [current.max_level]
+        if not all_levels:
+            self._rows = [1] + list(range(5, current.max_level, 5)) + [current.max_level]
+        else:
+            self._rows = list(range(1, current.max_level + 1))
         self.layoutChanged.emit()
 
     def determine_average(self, obj, stat_nid, level_ups):
@@ -394,7 +406,7 @@ class GenericStatAveragesModel(ClassStatAveragesModel):
         self.current = current
         self._rows = [current.level]
 
-    def set_current(self, current):
+    def set_current(self, current, _=None):
         self.current = current
         self._rows = [current.level]
         self.layoutChanged.emit()
@@ -429,11 +441,15 @@ class UnitStatAveragesModel(ClassStatAveragesModel):
         self.current = current
         self.get_rows()
 
-    def get_rows(self):
+    def get_rows(self, all_levels=False):
         klass = DB.classes.get(self.current.klass)
         max_level = klass.max_level
         self._rows = []
-        for i in [1] + list(range(5, max_level, 5)) + [max_level]:
+        if not all_levels:
+            level_range = [1] + list(range(5, max_level, 5)) + [max_level]
+        else:
+            level_range = list(range(1, max_level+1))
+        for i in level_range:
             self._rows.append((klass.nid, i, i))
         true_levels = 0
         while klass.promotion_options(DB):
@@ -441,14 +457,14 @@ class UnitStatAveragesModel(ClassStatAveragesModel):
             klass = DB.classes.get(klass.promotion_options(DB)[0])
             if klass:
                 max_level = klass.max_level
-                for i in [1] + list(range(5, max_level, 5)) + [max_level]:
+                for i in level_range:
                     self._rows.append((klass.nid, i, i + true_levels))
             else:
                 return
 
-    def set_current(self, current):
+    def set_current(self, current, all_levels=False):
         self.current = current
-        self.get_rows()
+        self.get_rows(all_levels)
         self.layoutChanged.emit()
 
     def headerData(self, idx, orientation, role=Qt.DisplayRole):
@@ -465,6 +481,10 @@ class UnitStatAveragesModel(ClassStatAveragesModel):
     def determine_average(self, obj, stat_nid, level_ups):
         stat_base = obj.bases.get(stat_nid, 0)
         stat_growth = obj.growths.get(stat_nid, 0)
+        if DB.constants.value('unit_stats_as_bonus'):
+            klass = DB.classes.get(obj.klass)
+            stat_base += klass.bases.get(stat_nid, 0)
+            stat_growth += klass.growths.get(stat_nid, 0)
         average = 0.5
         quantile10 = 0
         quantile90 = 0

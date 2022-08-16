@@ -1,10 +1,10 @@
-from app.data.item_components import ItemComponent
+from app.data.item_components import ItemComponent, ItemTags
 from app.data.components import Type
 
 class AlternateDamageFormula(ItemComponent):
     nid = 'alternate_damage_formula'
     desc = 'Item uses a different damage formula'
-    tag = 'formula'
+    tag = ItemTags.FORMULA
 
     expose = Type.Equation
     value = 'DAMAGE'
@@ -14,8 +14,8 @@ class AlternateDamageFormula(ItemComponent):
 
 class AlternateResistFormula(ItemComponent):
     nid = 'alternate_resist_formula'
-    desc = 'Item uses a different resist formula'
-    tag = 'formula'
+    desc = 'Item uses a different resist formula. Resist applies to both defense and resistance.'
+    tag = ItemTags.FORMULA
 
     expose = Type.Equation
     value = 'DEFENSE'
@@ -26,7 +26,7 @@ class AlternateResistFormula(ItemComponent):
 class AlternateAccuracyFormula(ItemComponent):
     nid = 'alternate_accuracy_formula'
     desc = 'Item uses a different accuracy formula'
-    tag = 'formula'
+    tag = ItemTags.FORMULA
 
     expose = Type.Equation
     value = 'HIT'
@@ -37,7 +37,7 @@ class AlternateAccuracyFormula(ItemComponent):
 class AlternateAvoidFormula(ItemComponent):
     nid = 'alternate_avoid_formula'
     desc = 'Item uses a different avoid formula'
-    tag = 'formula'
+    tag = ItemTags.FORMULA
 
     expose = Type.Equation
     value = 'AVOID'
@@ -48,7 +48,7 @@ class AlternateAvoidFormula(ItemComponent):
 class AlternateCritAccuracyFormula(ItemComponent):
     nid = 'alternate_crit_accuracy_formula'
     desc = 'Item uses a different critical accuracy formula'
-    tag = 'formula'
+    tag = ItemTags.FORMULA
 
     expose = Type.Equation
     value = 'CRIT_HIT'
@@ -59,7 +59,7 @@ class AlternateCritAccuracyFormula(ItemComponent):
 class AlternateCritAvoidFormula(ItemComponent):
     nid = 'alternate_crit_avoid_formula'
     desc = 'Item uses a different critical avoid formula'
-    tag = 'formula'
+    tag = ItemTags.FORMULA
 
     expose = Type.Equation
     value = 'CRIT_AVOID'
@@ -69,8 +69,8 @@ class AlternateCritAvoidFormula(ItemComponent):
 
 class AlternateAttackSpeedFormula(ItemComponent):
     nid = 'alternate_attack_speed_formula'
-    desc = 'Item uses a different attack speed formula'
-    tag = 'formula'
+    desc = 'Item uses a different attack speed formula. Attack speed is used when initiating a combat.'
+    tag = ItemTags.FORMULA
 
     expose = Type.Equation
     value = 'HIT'
@@ -80,8 +80,8 @@ class AlternateAttackSpeedFormula(ItemComponent):
 
 class AlternateDefenseSpeedFormula(ItemComponent):
     nid = 'alternate_defense_speed_formula'
-    desc = 'Item uses a different defense speed formula'
-    tag = 'formula'
+    desc = 'Item uses a different defense speed formula. Defense speed is used when being attacked.'
+    tag = ItemTags.FORMULA
 
     expose = Type.Equation
     value = 'HIT'

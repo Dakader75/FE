@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Heir_Apparent",
+        "name": "Heir Apparent",
+        "desc": "If unit has 5 more Atk than foe, unit takes -4 damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            4,
+            4
+        ],
+        "components": [
+            [
+                "dynamic_resist",
+                "4 if (unit.stats['Atk'] - 5) >= target.stats['Atk'] else 0"
+            ]
+        ]
+    }
+]

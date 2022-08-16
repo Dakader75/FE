@@ -1,10 +1,10 @@
 from app.resources.resources import RESOURCES
 from app.data.database import DB
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.state import MapState
 from app.engine.game_state import game
 from app.engine import engine, action, skill_system, \
-    health_bar, animations, item_system, item_funcs
+    health_bar, animations, item_system, item_funcs, gui
 
 import logging
 
@@ -20,6 +20,12 @@ class StatusUpkeepState(MapState):
                           unit.position and
                           unit.team == game.phase.get_current() and
                           not unit.dead]
+            # Handle travelers
+            if DB.constants.value('pairup') or DB.constants.value('traveler_time_decrement'):
+                possible_carrying_units = [unit for unit in game.units if unit.position]
+                for unit in possible_carrying_units:
+                    if unit.traveler and game.get_unit(unit.traveler).team == game.phase.get_current():
+                        self.units.append(game.get_unit(unit.traveler))
         self.cur_unit = None
 
         self.health_bar = None
@@ -30,6 +36,16 @@ class StatusUpkeepState(MapState):
 
         self.actions, self.playback = [], []
 
+    def is_traveler(self, cur_unit):
+        possible_carrying_units = [unit for unit in game.units if unit.position]
+        for u in possible_carrying_units:
+            if u.traveler == cur_unit.nid:
+                return u
+        return False
+
+    def can_process(self, cur_unit) -> bool:
+        return cur_unit.position or self.is_traveler(cur_unit)
+
     def update(self):
         super().update()
 
@@ -37,32 +53,32 @@ class StatusUpkeepState(MapState):
             self.health_bar.update()
 
         if self.state == 'processing':
-            if (not self.cur_unit or not self.cur_unit.position) and self.units:
+            if (not self.cur_unit or not self.can_process(self.cur_unit)) and self.units:
                 self.cur_unit = self.units.pop()
 
             if self.cur_unit:
                 self.actions.clear()
                 self.playback.clear()
-                if self.cur_unit.traveler and not self.cur_unit.built_guard:
-                    action.do(action.IncGauge(self.cur_unit, -self.cur_unit.get_gauge_inc()))
-                if self.cur_unit.built_guard:
-                    action.do(action.BuiltGuard(self.cur_unit))
                 if self.name == 'status_endstep':
                     skill_system.on_endstep(self.actions, self.playback, self.cur_unit)
                     for item in item_funcs.get_all_items(self.cur_unit):
+                        item_system.on_endstep(self.actions, self.playback, self.cur_unit, item)
+                    for item in skill_system.get_extra_abilities(self.cur_unit).values():
                         item_system.on_endstep(self.actions, self.playback, self.cur_unit, item)
                 else:
                     skill_system.on_upkeep(self.actions, self.playback, self.cur_unit)
                     for item in item_funcs.get_all_items(self.cur_unit):
                         item_system.on_upkeep(self.actions, self.playback, self.cur_unit, item)
-                if self.playback and self.cur_unit.position:
+                    for item in skill_system.get_extra_abilities(self.cur_unit).values():
+                        item_system.on_upkeep(self.actions, self.playback, self.cur_unit, item)
+                if self.playback and self.cur_unit.position:  # Travelers skip this part
                     game.cursor.set_pos(self.cur_unit.position)
                     game.state.change('move_camera')
                     self.cur_unit.sprite.change_state('selected')
                     self.health_bar = health_bar.MapCombatInfo('splash', self.cur_unit, None, None, None)
                     self.state = 'start'
                     self.last_update = engine.get_time()
-                elif self.actions and self.cur_unit.position:
+                elif self.actions and self.can_process(self.cur_unit):
                     for act in self.actions:
                         action.do(act)
                     self.check_death()
@@ -96,22 +112,33 @@ class StatusUpkeepState(MapState):
 
     def handle_playback(self, playback):
         for brush in playback:
-            if brush[0] == 'unit_tint_add':
-                color = brush[2]
-                brush[1].sprite.begin_flicker(333, color, 'add')
-            elif brush[0] == 'unit_tint_sub':
-                color = brush[2]
-                brush[1].sprite.begin_flicker(333, color, 'sub')
-            elif brush[0] == 'cast_sound':
-                SOUNDTHREAD.play_sfx(brush[1])
-            elif brush[0] == 'hit_sound':
-                SOUNDTHREAD.play_sfx(brush[1])
-            elif brush[0] == 'cast_anim':
-                anim = RESOURCES.animations.get(brush[1])
+            if brush.nid == 'unit_tint_add':
+                brush.unit.sprite.begin_flicker(333, brush.color, 'add')
+            elif brush.nid == 'unit_tint_sub':
+                brush.unit.sprite.begin_flicker(333, brush.color, 'sub')
+            elif brush.nid == 'cast_sound':
+                get_sound_thread().play_sfx(brush.sound)
+            elif brush.nid == 'hit_sound':
+                get_sound_thread().play_sfx(brush.sound)
+            elif brush.nid == 'cast_anim':
+                anim = RESOURCES.animations.get(brush.anim)
                 pos = game.cursor.position
                 if anim:
                     anim = animations.MapAnimation(anim, pos)
                     self.animations.append(anim)
+            elif brush.nid == 'damage_numbers':
+                damage = brush.damage
+                if damage == 0:
+                    continue
+                str_damage = str(abs(damage))
+                target = brush.unit
+                if damage < 0:
+                    color = 'small_cyan'
+                else:
+                    color = 'small_red'
+                for idx, num in enumerate(str_damage):
+                    d = gui.DamageNumber(int(num), idx, len(str_damage), target.position, color)
+                    target.sprite.damage_numbers.append(d)
 
     def check_death(self):
         if self.cur_unit.get_hp() <= 0:

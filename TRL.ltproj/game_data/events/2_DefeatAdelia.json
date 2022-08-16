@@ -1,0 +1,82 @@
+[
+    {
+        "name": "DefeatAdelia",
+        "trigger": "unit_death",
+        "level_nid": "2",
+        "condition": "unit.nid == \"Adelia\"",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Selena",
+                    "Left"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Selena",
+                    "I've been bested. My lord, I'm sorry...|Rose...|Be safe..."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Selena"
+                ]
+            ],
+            [
+                "if",
+                [
+                    "unit2.nid == \"Adelia\""
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "{unit}",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "{unit}",
+                    "She dropped a key..."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "{unit}"
+                ]
+            ],
+            [
+                "else",
+                []
+            ],
+            [
+                "add_portrait",
+                [
+                    "{unit2}",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "{unit2}",
+                    "She dropped a key..."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "{unit2}"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

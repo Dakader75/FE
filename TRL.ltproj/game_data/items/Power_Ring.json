@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Power Ring",
+        "name": "Power Ring",
+        "desc": "A ring with unique properties. Grants +5 damage and +10 hit to physical attacks.",
+        "icon_nid": "Boosters",
+        "icon_index": [
+            0,
+            8
+        ],
+        "components": [
+            [
+                "equippable_accessory",
+                null
+            ],
+            [
+                "status_on_equip",
+                "Power Ring"
+            ]
+        ]
+    }
+]

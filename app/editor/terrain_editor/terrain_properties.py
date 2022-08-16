@@ -40,7 +40,7 @@ class TerrainProperties(QWidget):
         name_section.addWidget(self.nid_box)
 
         self.name_box = PropertyBox("Display Name", QLineEdit, self)
-        self.name_box.edit.setMaxLength(13)
+
         self.name_box.edit.textChanged.connect(self.name_changed)
         name_section.addWidget(self.name_box)
 
@@ -65,6 +65,7 @@ class TerrainProperties(QWidget):
         self.platform_box.edit.currentIndexChanged.connect(self.platform_changed)
 
         self.background_box = PropertyBox("Combat Background", ComboBox, self)
+        self.background_box.edit.addItem(QIcon(), 'None')
         for panorama in RESOURCES.panoramas:
             icon = QIcon(panorama.get_all_paths()[0])
             self.background_box.edit.addItem(icon, panorama.nid)
@@ -161,7 +162,10 @@ class TerrainProperties(QWidget):
         self.name_box.edit.setText(current.name)
         self.minimap_box.edit.setValue(current.minimap)
         self.platform_box.edit.setValue(current.platform)
-        self.background_box.edit.setValue(current.background)
+        if current.background:
+            self.background_box.edit.setValue(current.background)
+        else:
+            self.background_box.edit.setValue('None')
         self.movement_box.edit.setValue(current.mtype)
         self.opaque_box.edit.setChecked(bool(current.opaque))
         if current.status:

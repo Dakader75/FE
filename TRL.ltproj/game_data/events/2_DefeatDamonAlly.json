@@ -1,0 +1,66 @@
+[
+    {
+        "name": "DefeatDamonAlly",
+        "trigger": "unit_death",
+        "level_nid": "2",
+        "condition": "unit.nid == \"Damon\" and unit.team == \"other\"",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Damon",
+                    "Left"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Damon",
+                    "Lord Aston...|I've failed my...|duty..."
+                ]
+            ],
+            [
+                "expression",
+                [
+                    "Damon",
+                    "CloseEyes"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Damon",
+                    "Glory be to House Aston..."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Damon"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Jerowm",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Jerowm",
+                    "Damon...|And glory we shall have, Damon.|I'm sorry..."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Jerowm"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

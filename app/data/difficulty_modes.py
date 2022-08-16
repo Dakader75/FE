@@ -41,6 +41,8 @@ class DifficultyModePrefab(Prefab):
     enemy_autolevels: int = 0
     boss_autolevels: int = 0
 
+    promoted_autolevels_fraction: float = 1.0
+
     def init_bases(self, db):
         self.player_bases = {k: 0 for k in db.stats.keys()}
         self.enemy_bases = {k: 0 for k in db.stats.keys()}

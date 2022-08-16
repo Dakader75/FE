@@ -21,7 +21,7 @@ from app.data.overworld_node import OverworldNodePrefab
 from app.engine.overworld.overworld_road_sprite_wrapper import OverworldRoadSpriteWrapper
 from app.engine import engine, image_mods
 from app.engine.animations import MapAnimation
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.resources.map_icons import MapIcon
 from app.resources.resources import RESOURCES
 from app.utilities import utils
@@ -176,8 +176,9 @@ class OverworldRoadSprite():
         return surf
 
 class OverworldUnitSprite():
-    def __init__(self, unit_object: UnitObject | UnitPrefab, parent: OverworldEntityObject):
+    def __init__(self, unit_object: UnitObject | UnitPrefab, parent: OverworldEntityObject, team: NID):
         self.unit: UnitObject | UnitPrefab = unit_object
+        self.team = team
         self.state = 'normal'                       # What state the image sprite is in
         self.image_state = 'passive'                # What the image looks like
         self.transition_state = 'normal'
@@ -195,7 +196,6 @@ class OverworldUnitSprite():
         self.offset = [0, 0]
 
         self.flicker = []
-        self.flicker_tint = []
         self.vibrate = []
         self.vibrate_counter = 0
         self.animations = {}
@@ -214,8 +214,7 @@ class OverworldUnitSprite():
             self.map_sprite = None
             return
 
-        team = 'player'
-        map_sprite = MapSprite(res, team)
+        map_sprite = MapSprite(res, self.team)
         self.map_sprite = map_sprite
 
     # Normally drawing units is culled to those on the screen
@@ -232,13 +231,6 @@ class OverworldUnitSprite():
     def remove_animation(self, animation_nid):
         if animation_nid in self.animations:
             del self.animations[animation_nid]
-
-    def add_flicker_tint(self, color, period, width):
-        self.flicker_tint.append((color, period, width))
-
-    def remove_flicker_tint(self, color, period, width):
-        if (color, period, width) in self.flicker_tint:
-            self.flicker_tint.remove((color, period, width))
 
     def begin_flicker(self, total_time, color, direction='add'):
         self.flicker.append((engine.get_time(), total_time, color, direction, False))
@@ -269,12 +261,12 @@ class OverworldUnitSprite():
         elif self.transition_state == 'fade_move':
             self.fake_position = self.parent.display_position
         elif self.transition_state == 'warp_in':
-            SOUNDTHREAD.play_sfx('WarpEnd')
+            get_sound_thread().play_sfx('WarpEnd')
         elif self.transition_state == 'warp_out':
-            SOUNDTHREAD.play_sfx('Warp')
+            get_sound_thread().play_sfx('Warp')
             self.fake_position = self.parent.display_position
         elif self.transition_state == 'warp_move':
-            SOUNDTHREAD.play_sfx('Warp')
+            get_sound_thread().play_sfx('Warp')
             self.fake_position = self.parent.display_position
 
     def change_state(self, new_state):
@@ -416,13 +408,6 @@ class OverworldUnitSprite():
                     image = image_mods.add_tint(image.convert_alpha(), color)
                 elif direction == 'sub':
                     image = image_mods.sub_tint(image.convert_alpha(), color)
-
-        for flicker_tint in self.flicker_tint:
-            color, period, width = flicker_tint
-            diff = utils.model_wave(current_time, period, width)
-            diff = utils.clamp(255. * diff, 0, 255)
-            color = tuple([int(c * diff) for c in color])
-            image = image_mods.add_tint(image.convert_alpha(), color)
 
         topleft = left - max(0, (image.get_width() - 16)//2), top - 24
         surf.blit(image, topleft)

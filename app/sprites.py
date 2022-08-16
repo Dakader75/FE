@@ -1,17 +1,37 @@
+from app.constants import WINHEIGHT, WINWIDTH
 import os
 from dataclasses import dataclass
+from app.engine import engine
 
 @dataclass
 class BasicSprite(object):
     full_path: str = None
     pixmap: str = None
-    image: str = None
+    image: engine.Surface = None
+
+@dataclass
+class SpecialSprite(object):
+    # pregenerated sprites, e.g. black screen/white screen
+    full_path: str = None
+    pixmap: str = None
+    _image: engine.Surface = None
+
+    # because these are pregenerated, they have to be converted only when used, with pygame initialized
+    converted: bool = False
+
+    @property
+    def image(self):
+        if not self.converted:
+            self._image = self._image.convert_alpha()
+            self.converted = True
+        return self._image
 
 class SpriteDict(dict):
     def get(self, val):
         if val in self:
             return self[val].image
-        return None
+        # Defaults to this
+        return self['bg_black_tile'].image
 
 def load_sprites(root):
     for root, dirs, files in os.walk(root):
@@ -20,9 +40,16 @@ def load_sprites(root):
                 full_name = os.path.join(root, name)
                 SPRITES[name[:-4]] = BasicSprite(full_name)
 
+def load_special_sprites():
+    black_bg = engine.create_simple_surface((WINWIDTH, WINHEIGHT))
+    black_bg_sprite = SpecialSprite(_image=black_bg)
+    SPRITES['bg_black'] = black_bg_sprite
+
 SPRITES = SpriteDict()
 load_sprites('sprites/')
+load_special_sprites()
 
 def reset():
     SPRITES.clear()
     load_sprites('sprites/')
+    load_special_sprites()

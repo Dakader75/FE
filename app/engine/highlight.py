@@ -1,12 +1,12 @@
 from app.constants import TILEWIDTH, TILEHEIGHT
 from app.data.database import DB
+from app.events.regions import RegionType
 
 from app.engine.sprites import SPRITES
 from app.engine import engine, target_system, line_of_sight
 from app.engine.game_state import game
 
 import logging
-logger = logging.getLogger(__name__)
 
 class HighlightController():
     starting_cutoff = 7
@@ -129,7 +129,7 @@ class HighlightController():
         rect = (self.update_idx//4 * TILEWIDTH, 0, TILEWIDTH, TILEHEIGHT)
         escape_image = engine.subsurface(escape_image, rect)
         for region in game.level.regions:
-            if region.region_type == 'event' and region.sub_nid in ('Escape', 'Arrive'):
+            if (region.region_type == RegionType.EVENT and region.sub_nid in ('Escape', 'Arrive')) or (region.region_type == RegionType.TIME):
                 for position in region.get_all_positions():
                     surf.blit(escape_image, (position[0] * TILEWIDTH - cull_rect[0], position[1] * TILEHEIGHT - cull_rect[1]))
 

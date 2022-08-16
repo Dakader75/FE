@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene
 from PyQt5.QtGui import QPixmap
 
-from app.resources.icons import Icon
+from app.resources.icons import Icon, IconSheet
 
 class IconView(QGraphicsView):
     min_scale = 0.5
@@ -44,21 +44,31 @@ class IconView(QGraphicsView):
             self.screen_scale -= 1
             self.scale(0.5, 0.5)
 
-def icon_slice(resource, base_width: int, base_height: int) -> list:
+def icon_slice(resource: IconSheet, base_width: int, base_height: int, vertical: bool = True) -> list:
     if not resource.pixmap:
         resource.pixmap = QPixmap(resource.full_path)
     sheet = resource.pixmap
     width, height = sheet.width(), sheet.height()
     if width == base_width and height == base_height:
-        return [resource]
+        new_nid = resource.get_alias((0, 0))
+        new_image = Icon(new_nid, (0, 0), resource.nid)
+        new_image.pixmap = resource.pixmap
+        return [new_image]
     sub_images = []
-    for x in range(width//base_width):
+    if vertical:
+        for x in range(width//base_width):
+            for y in range(height//base_height):
+                region = sheet.copy(x*base_width, y*base_height, base_width, base_height)
+                new_nid = resource.get_alias((x, y))
+                new_image = Icon(new_nid, (x, y), resource.nid)
+                new_image.pixmap = region
+                sub_images.append(new_image)
+    else:
         for y in range(height//base_height):
-            region = sheet.copy(x*base_width, y*base_height, base_width, base_height)
-            new_nid = resource.nid + " " + str(x) + ',' + str(y)
-            new_image = Icon(new_nid, resource.full_path)
-            new_image.icon_index = (x, y)
-            new_image.parent_nid = resource.nid
-            new_image.pixmap = region
-            sub_images.append(new_image)
+            for x in range(width//base_width):
+                region = sheet.copy(x*base_width, y*base_height, base_width, base_height)
+                new_nid = resource.get_alias((x, y))
+                new_image = Icon(new_nid, (x, y), resource.nid)
+                new_image.pixmap = region
+                sub_images.append(new_image)
     return sub_images

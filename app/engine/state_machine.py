@@ -1,4 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.engine.state import State
+
 import logging
+
 
 class SimpleStateMachine():
     def __init__(self, starting_state):
@@ -26,10 +34,14 @@ class StateMachine():
         self.prev_state = None
 
     def load_states(self, starting_states=None, temp_state=None):
-        from app.engine import title_screen, transitions, general_states, level_up, \
-            turnwheel, game_over, settings, info_menu, prep, base, trade, promotion, \
-            status_upkeep, debug_mode, chapter_title, player_choice, feat_choice, \
-            victory_screen, objective_menu, minimap, roam_state, game_menus, dialog_log
+        from app.engine import (base, chapter_title, debug_mode, dialog_log,
+                                feat_choice, game_over, general_states,
+                                info_menu, level_up, minimap, objective_menu,
+                                player_choice, prep, promotion, roam_state,
+                                settings, status_upkeep, text_entry,
+                                title_screen, trade, transitions, turnwheel,
+                                victory_screen)
+        from app.engine.game_menus.menu_states import unit_menu_state
         from app.engine.overworld import overworld_states
         from app.events import event_state
         self.all_states = \
@@ -50,6 +62,7 @@ class StateMachine():
              'transition_pop': transitions.TransitionPopState,
              'transition_double_pop': transitions.TransitionDoublePopState,
              'transition_to': transitions.TransitionToState,
+             'transition_to_with_pop': transitions.TransitionToWithPopState,
              'turn_change': general_states.TurnChangeState,
              'initiative_upkeep': general_states.InitiativeUpkeep,
              'free': general_states.FreeState,
@@ -57,7 +70,7 @@ class StateMachine():
              'option_child': general_states.OptionChildState,
              'settings_menu': settings.SettingsMenuState,
              'objective_menu': objective_menu.ObjectiveMenuState,
-             'unit_menu': game_menus.UnitMenuState,
+             'unit_menu': unit_menu_state.UnitMenuState,
              'info_menu': info_menu.InfoMenuState,
              'phase_change': general_states.PhaseChangeState,
              'move': general_states.MoveState,
@@ -68,6 +81,7 @@ class StateMachine():
              'dying': general_states.DyingState,
              'menu': general_states.MenuState,
              'item': general_states.ItemState,
+             'subitem_child': general_states.SubItemChildState,
              'item_child': general_states.ItemChildState,
              'item_discard': general_states.ItemDiscardState,
              'targeting': general_states.TargetingState,
@@ -75,12 +89,14 @@ class StateMachine():
              'combat_trade': trade.CombatTradeState,
              'weapon_choice': general_states.WeaponChoiceState,
              'spell_choice': general_states.SpellChoiceState,
+             'combat_art_choice': general_states.CombatArtChoiceState,
              'combat_targeting': general_states.CombatTargetingState,
              'item_targeting': general_states.ItemTargetingState,
              'combat': general_states.CombatState,
              'alert': general_states.AlertState,
              'ai': general_states.AIState,
              'shop': general_states.ShopState,
+             'repair_shop': general_states.RepairShopState,
              'unlock_select': general_states.UnlockSelectState,
              'exp': level_up.ExpState,
              'promotion_choice': promotion.PromotionChoiceState,
@@ -93,6 +109,8 @@ class StateMachine():
              'chapter_title': chapter_title.ChapterTitleState,
              'event': event_state.EventState,
              'player_choice': player_choice.PlayerChoiceState,
+             'text_entry': text_entry.TextEntryState,
+             'text_confirm': text_entry.TextConfirmState,
              'victory': victory_screen.VictoryState,
              'minimap': minimap.MinimapState,
              'status_upkeep': status_upkeep.StatusUpkeepState,
@@ -103,11 +121,13 @@ class StateMachine():
              'prep_formation_select': prep.PrepFormationSelectState,
              'prep_manage': prep.PrepManageState,
              'prep_manage_select': prep.PrepManageSelectState,
+             'optimize_all_choice': prep.OptimizeAllChoiceState,
              'base_manage': prep.PrepManageState,
              'base_manage_select': prep.PrepManageSelectState,
              'prep_trade_select': prep.PrepTradeSelectState,
              'prep_trade': trade.PrepTradeState,
              'prep_items': prep.PrepItemsState,
+             'base_items': prep.PrepItemsState,
              'supply_items': prep.PrepItemsState,
              'prep_restock': prep.PrepRestockState,
              'prep_market': prep.PrepMarketState,
@@ -121,9 +141,11 @@ class StateMachine():
              'base_library': base.BaseLibraryState,
              'base_guide': base.BaseGuideState,
              'base_records': base.BaseRecordsState,
+             'base_sound_room': base.BaseSoundRoomState,
+             'extras_sound_room': base.BaseSoundRoomState,
              'free_roam': roam_state.FreeRoamState,
              'debug': debug_mode.DebugState,
-             'overworld': overworld_states.OverworldState,
+             'overworld': overworld_states.OverworldFreeState,
              'overworld_movement': overworld_states.OverworldMovementState,
              'overworld_game_option_menu': overworld_states.OverworldGameOptionMenuState,
              'overworld_party_option_menu': overworld_states.OverworldPartyOptionMenu,
@@ -157,6 +179,14 @@ class StateMachine():
     def current(self):
         if self.state:
             return self.state[-1].name
+
+    def current_state(self) -> State:
+        if self.state:
+            return self.state[-1]
+
+    def get_prev_state(self) -> State:
+        if self.state and len(self.state) > 1:
+            return self.state[-2]
 
     def exit_state(self, state):
         if state.processed:

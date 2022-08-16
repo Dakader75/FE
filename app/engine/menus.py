@@ -1,4 +1,4 @@
-import math
+import math, string
 
 from app.constants import TILEX, WINWIDTH, WINHEIGHT
 from app.data.database import DB
@@ -7,13 +7,14 @@ from app.utilities import utils
 from app.data import lore
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
-from app.engine.input_manager import INPUT
+from app.engine.input_manager import get_input_manager
 from app.engine import engine, image_mods, icons, help_menu, menu_options, \
     item_system, gui, item_funcs
 from app.engine.gui import ScrollBar
 from app.engine.base_surf import create_base_surf
 from app.engine.objects.item import ItemObject
 from app.engine.objects.unit import UnitObject
+from app.engine.objects.skill import SkillObject
 from app.engine.game_state import game
 
 def draw_unit_top(surf, topleft, unit):
@@ -21,7 +22,7 @@ def draw_unit_top(surf, topleft, unit):
     white_surf = SPRITES.get('prep_top')
     surf.blit(white_surf, (x - 6, y - white_surf.get_height()))
     icons.draw_chibi(surf, unit.portrait_nid, (x + 3, y - 35))
-    FONT['text-white'].blit_center(unit.name, surf, (x + 68, y - 35))
+    FONT['text'].blit_center(unit.name, surf, (x + 68, y - 35))
     FONT['text-blue'].blit_right(str(unit.level), surf, (x + 72, y - 19))
     FONT['text-blue'].blit_right(str(unit.exp), surf, (x + 97, y - 19))
 
@@ -35,11 +36,11 @@ def make_bg_surf(shimmer):
 
 def draw_unit_face(surf, topleft, unit, right):
     x, y = topleft
-    face_image = icons.get_portrait(unit)
+    face_image, offset = icons.get_portrait(unit)
     if right:
         face_image = engine.flip_horiz(face_image)
     face_image = face_image.convert_alpha()
-    face_image = engine.subsurface(face_image, (0, 0, 96, 76))
+    face_image = engine.subsurface(face_image, (0, max(0, offset - 4), 96, 76))
     face_image = image_mods.make_translucent(face_image, 0.5)
     left = x + 104//2 + 1
     top = y + (16 * DB.constants.total_items() + 8)//2 - 1 + 2
@@ -82,14 +83,14 @@ def draw_unit_bexp(surf, topleft, unit, new_exp, new_bexp, current_bexp, include
         # Blit bonus exp
         button_right = SPRITES.get('buttons').subsurface(1, 19, 13, 12)
         FONT['text-blue'].blit('Current/New EXP', surf, (topleft[0] + 2, topleft[1] + 4))
-        FONT['text-white'].blit(str(unit.exp), surf, (topleft[0] + 2, topleft[1] + 20))
+        FONT['text'].blit(str(unit.exp), surf, (topleft[0] + 2, topleft[1] + 20))
         surf.blit(button_right, (topleft[0] + 20, topleft[1] + 23))
-        FONT['text-white'].blit(str(new_exp), surf, (topleft[0] + 35, topleft[1] + 20))
+        FONT['text'].blit(str(new_exp), surf, (topleft[0] + 35, topleft[1] + 20))
 
         FONT['text-blue'].blit('Current/New BEXP', surf, (topleft[0] + 2, topleft[1] + 36))
-        FONT['text-white'].blit(str(current_bexp), surf, (topleft[0] + 2, topleft[1] + 52))
+        FONT['text'].blit(str(current_bexp), surf, (topleft[0] + 2, topleft[1] + 52))
         surf.blit(button_right, (topleft[0] + 42, topleft[1] + 55))
-        FONT['text-white'].blit(str(new_bexp), surf, (topleft[0] + 57, topleft[1] + 52))
+        FONT['text'].blit(str(new_bexp), surf, (topleft[0] + 57, topleft[1] + 52))
 
 class Cursor():
     def __init__(self, sprite=None):
@@ -190,11 +191,15 @@ class Simple():
 
     def create_options(self, options, info_descs=None):
         self.options.clear()
-        for idx, option in enumerate(options):
-            option = menu_options.BasicOption(idx, option)
-            if info_descs:
-                option.help_box = help_menu.HelpDialog(info_descs[idx])
-            self.options.append(option)
+        if not options:
+            null_option = menu_options.NullOption(0)
+            self.options.append(null_option)
+        else:
+            for idx, option in enumerate(options):
+                option = menu_options.BasicOption(idx, option)
+                if info_descs:
+                    option.help_box = help_menu.HelpDialog(info_descs[idx])
+                self.options.append(option)
 
     def get_current(self):
         if self.options:
@@ -285,7 +290,7 @@ class Simple():
         if options is not None:
             bare_options = options
         else:
-            bare_options = [option.get() for option in self.options]
+            bare_options = [option.get() for option in self.options if option.get() is not None]
         self.create_options(bare_options)
         self.current_index = utils.clamp(self.current_index, 0, len(self.options) - 1)
 
@@ -314,9 +319,9 @@ class Simple():
         elif isinstance(self.topleft, Simple):
             parent_topleft = self.topleft.get_topleft()
             if parent_topleft[0] < WINWIDTH//2:
-                return (parent_topleft[0] - 20 + self.topleft.get_menu_width(), parent_topleft[1] + self.topleft.current_index * 16 + 4)
+                return (parent_topleft[0] - 20 + self.topleft.get_menu_width(), parent_topleft[1] + self.topleft.current_index * 16 + 4 - self.topleft.scroll * 16)
             else:
-                return (WINWIDTH - 40 - self.topleft.get_menu_width(), parent_topleft[1] + self.topleft.current_index * 16 + 8)
+                return (WINWIDTH - 40 - self.topleft.get_menu_width(), parent_topleft[1] + self.topleft.current_index * 16 + 8 - self.topleft.scroll * 16)
         else:
             return self.topleft
 
@@ -334,7 +339,7 @@ class Simple():
         return NotImplementedError
 
     def handle_mouse(self) -> bool:
-        mouse_position = INPUT.get_mouse_position()
+        mouse_position = get_input_manager().get_mouse_position()
         if mouse_position:
             mouse_x, mouse_y = mouse_position
             idxs, option_rects = self.get_rects()
@@ -382,37 +387,45 @@ class Choice(Simple):
 
     def create_options(self, options, info_descs=None):
         self.options.clear()
-        for idx, option in enumerate(options):
-            if isinstance(option, ItemObject):
-                if self.display_total_uses:
-                    option = menu_options.FullItemOption(idx, option)
-                elif self.is_convoy:
-                    option = menu_options.ConvoyItemOption(idx, option, self.owner)
+        if not options and not self.hard_limit:
+            null_option = menu_options.NullOption(0)
+            self.options.append(null_option)
+        else:
+            for idx, option in enumerate(options):
+                if isinstance(option, ItemObject):
+                    if self.display_total_uses:
+                        option = menu_options.FullItemOption(idx, option)
+                    elif self.is_convoy:
+                        option = menu_options.ConvoyItemOption(idx, option, self.owner)
+                    else:
+                        option = menu_options.ItemOption(idx, option)
+                    option.help_box = option.get_help_box()
+                    self.options.append(option)
+                elif isinstance(option, lore.Lore):
+                    option = menu_options.LoreOption(idx, option)
+                    self.options.append(option)
                 else:
-                    option = menu_options.ItemOption(idx, option)
-                option.help_box = option.get_help_box()
-                self.options.append(option)
-            elif isinstance(option, lore.Lore):
-                option = menu_options.LoreOption(idx, option)
-                self.options.append(option)
-            else:
-                if self.horizontal:
-                    option = menu_options.HorizOption(idx, option)
-                elif option:
-                    option = menu_options.BasicOption(idx, option)
-                else:
-                    option = menu_options.BasicOption(idx, option)
-                    option.display_text = ' ' * 20  # 80 pixels
-                if info_descs:
-                    option.help_box = help_menu.HelpDialog(info_descs[idx])
-                self.options.append(option)
+                    if self.horizontal:
+                        option = menu_options.HorizOption(idx, option)
+                    elif option:
+                        option = menu_options.BasicOption(idx, option)
+                    else:
+                        option = menu_options.BasicOption(idx, option)
+                        option.display_text = ' ' * 20  # 80 pixels
+                    if info_descs:
+                        desc = info_descs[idx]
+                        if isinstance(desc, ItemObject): # Uses special item description for items
+                            option.help_box = help_menu.ItemHelpDialog(desc)
+                        elif desc:
+                            option.help_box = help_menu.HelpDialog(desc)
+                    self.options.append(option)
 
-        if self.hard_limit:
-            for num in range(self.limit - len(options)):
-                option = menu_options.EmptyOption(len(options) + num)
-                if self.is_convoy:
-                    option._width = 112
-                self.options.append(option)
+            if self.hard_limit:
+                for num in range(self.limit - len(options)):
+                    option = menu_options.EmptyOption(len(options) + num)
+                    if self.is_convoy:
+                        option._width = 112
+                    self.options.append(option)
 
     def move_down(self, first_push=True):
         if all(option.ignore for option in self.options):
@@ -463,6 +476,18 @@ class Choice(Simple):
             self._bg_surf = None  # Unstore bg
         return did_move
 
+    def get_menu_width(self):
+        if self.horizontal:
+            return sum(option.width() + 8 for option in self.options) + 16
+        else:
+            return super().get_menu_width()
+
+    def get_menu_height(self):
+        if self.horizontal:
+            return 24
+        else:
+            return super().get_menu_height()
+
     def show_face(self):
         return self.is_convoy or self.disp_value == 'sell'
 
@@ -476,7 +501,7 @@ class Choice(Simple):
             return self._bg_surf
 
         if self.horizontal:
-            width = sum(option.width() + 8 for option in self.options) + 16
+            width = self.get_menu_width()
             if self._bg_surf and self._bg_surf.get_width() == width:
                 pass
             else:
@@ -505,7 +530,7 @@ class Choice(Simple):
                     if item:
                         unit = game.get_unit(item.owner_nid)
                     if unit:
-                        face_image = icons.get_portrait(unit)
+                        face_image, _ = icons.get_portrait(unit)
                         face_image = face_image.convert_alpha()
                         # face_image = engine.subsurface(face_image, (0, 0, 96, 76))
                         face_image = image_mods.make_translucent(face_image, 0.5)
@@ -673,24 +698,53 @@ class Inventory(Choice):
             self.options.append(option)
 
 class Shop(Choice):
-    def __init__(self, owner, options, topleft=None, disp_value='sell', background='menu_bg_base', info=None):
+    default_option = menu_options.ValueItemOption
+
+    def __init__(self, owner, options, topleft=None, disp_value='sell', background='menu_bg_base', info=None, stock=None):
         self.disp_value = disp_value
+        self.stock = stock
         super().__init__(owner, options, topleft, background, info)
 
     def get_menu_width(self):
-        return 152
+        if self.stock:
+            return 168
+        else:
+            return 152
+
+    def decrement_stock(self):
+        if self.stock:
+            self.options[self.current_index].stock -= 1
+
+    def get_stock(self):
+        if self.stock:
+            return self.options[self.current_index].stock
+        else:
+            return -1
+
+    def set_stock(self, stock):
+        self.stock = stock
+        for idx, option in enumerate(self.options):
+            option.stock[idx] = stock
 
     def create_options(self, options, info_descs=None):
         self.options.clear()
         for idx, option in enumerate(options):
-            option = menu_options.ValueItemOption(idx, option, self.disp_value)
+            if self.stock:
+                option = menu_options.StockValueItemOption(idx, option, self.disp_value, self.stock[idx])
+            else:
+                option = self.default_option(idx, option, self.disp_value)
             option.help_box = option.get_help_box()
             self.options.append(option)
 
         if self.hard_limit:
             for num in range(self.limit - len(options)):
                 option = menu_options.EmptyOption(len(options) + num)
+                if self.stock:
+                    option._width = 168
                 self.options.append(option)
+
+class RepairShop(Shop):
+    default_option = menu_options.RepairValueItemOption
 
 class Trade(Simple):
     """
@@ -873,8 +927,8 @@ class Trade(Simple):
         # Draw trade names
         surf.blit(self.trade_name_surf, (-4, -1))
         surf.blit(self.trade_name_surf, (WINWIDTH - self.trade_name_surf.get_width() + 4, -1))
-        FONT['text-white'].blit(self.owner.name, surf, (24 - FONT['text-white'].width(self.owner.name)//2, 0))
-        FONT['text-white'].blit(self.partner.name, surf, (WINWIDTH - 24 - FONT['text-white'].width(self.partner.name)//2, 0))
+        FONT['text'].blit(self.owner.name, surf, (24 - FONT['text'].width(self.owner.name)//2, 0))
+        FONT['text'].blit(self.partner.name, surf, (WINWIDTH - 24 - FONT['text'].width(self.partner.name)//2, 0))
 
         # Draw Portraits
         # Owner
@@ -900,7 +954,7 @@ class Trade(Simple):
         return surf
 
     def handle_mouse(self) -> bool:
-        mouse_position = INPUT.get_mouse_position()
+        mouse_position = get_input_manager().get_mouse_position()
         did_move = False
         if mouse_position:
             mouse_x, mouse_y = mouse_position
@@ -948,6 +1002,9 @@ class Table(Simple):
 
     def create_options(self, options, info_descs=None):
         self.options.clear()
+        if not options:
+            null_option = menu_options.NullOption(0)
+            self.options.append(null_option)
         for idx, option in enumerate(options):
             if isinstance(option, UnitObject):
                 option = menu_options.UnitOption(idx, option)
@@ -1064,14 +1121,18 @@ class Table(Simple):
             col += 1
             if self._exists(row, col):
                 pass
-            elif first_push:
+            elif idx >= len(self.options) - 1:
+                break  # Don't move right because we are on the last row
+            elif row < self.rows - 1:
+                row += 1
                 col = 0
             else:
                 break
             idx = self._idx_coords(row, col)
             if not self.options[idx].ignore:
                 break
-        self.current_index = idx
+        if not self.options[idx].ignore:
+            self.current_index = idx
         return old_index != self.current_index
 
     def move_left(self, first_push=True):
@@ -1084,21 +1145,23 @@ class Table(Simple):
             col -= 1
             if self._exists(row, col):
                 pass
-            elif first_push:
+            elif row > 0:
+                row -= 1
                 col = self._get_right(row)
             else:
                 break
             idx = self._idx_coords(row, col)
             if not self.options[idx].ignore:
                 break
-        self.current_index = idx
+        if not self.options[idx].ignore:
+            self.current_index = idx
         return old_index != self.current_index
 
     def get_menu_width(self):
-        max_width = max(option.width() for option in self.options)
+        max_width = max(option.width() - option.width()%8 for option in self.options)
         total_width = max_width * self.columns
         total_width = total_width - total_width%8
-        if self.mode in ('unit',):
+        if self.mode in ('unit', 'prep_manage'):
             total_width += 32
         return total_width
 
@@ -1153,7 +1216,6 @@ class Table(Simple):
         start_index = self.scroll * self.columns
         end_index = (self.scroll + self.rows) * self.columns
         choices = self.options[start_index:end_index]
-        # print(self.scroll, start_index, end_index)
         width = max(option.width() for option in self.options)
         width -= width%8
         height = max(option.height() for option in self.options)
@@ -1161,7 +1223,7 @@ class Table(Simple):
             for idx, choice in enumerate(choices):
                 top = topleft[1] + 4 + (idx // self.columns * height)
                 left = topleft[0] + (idx % self.columns * width)
-                if self.mode in ('unit',):
+                if self.mode in ('unit', 'prep_manage'):
                     left += 16
 
                 if idx + (self.scroll * self.columns) == self.current_index and self.takes_input and self.draw_cursor:
@@ -1193,7 +1255,7 @@ class Table(Simple):
         for idx, choice in enumerate(choices):
             top = topleft[1] + 4 + (idx // self.columns * height)
             left = topleft[0] + (idx % self.columns * width)
-            if self.mode in ('unit',):
+            if self.mode in ('unit', 'prep_manage'):
                 left += 16
             rect = (left, top, width, height)
             rects.append(rect)
@@ -1279,7 +1341,7 @@ class Convoy():
         for name, menu in self.menus.items():
             menu.update_options(sorted_dict[name])
 
-    def get_menu(self):
+    def get_menu(self) -> Choice:
         return self.menus[self.order[self.menu_index]]
 
     def get_current(self):
@@ -1299,6 +1361,9 @@ class Convoy():
             return self.inventory.get_current_index()
         else:
             return self.get_menu().get_current_index()
+
+    def get_scrolled_index(self):
+        return self.get_menu().scroll
 
     def get_context(self):
         if self.selection_index == 0:
@@ -1439,7 +1504,7 @@ class Convoy():
 
     def draw(self, surf):
         surf.blit(self.trade_name_surf, (-4, -1))
-        FONT['text-white'].blit(self.owner.name, surf, (24 - FONT['text-white'].width(self.owner.name)//2, 0))
+        FONT['text'].blit(self.owner.name, surf, (24 - FONT['text'].width(self.owner.name)//2, 0))
 
         # Draw Portrait to left of menu
         # Owner
@@ -1457,17 +1522,6 @@ class Convoy():
         if item:
             unit = game.get_unit(item.owner_nid)
 
-        self.get_menu().draw(surf)
-        if self.inventory:
-            self.inventory.draw(surf)
-
-        # Draw item owner
-        if unit and self.takes_input:
-            unit_str = "Owner: %s" % unit.name
-        else:
-            unit_str = "Owner: ---"
-        FONT['text-white'].blit(unit_str, surf, (160, 4))
-
         # Draw item icons
         dist = (self.menu_width - 10)/len(self.order)
         for idx, weapon_nid in enumerate(reversed(self.order)):
@@ -1483,12 +1537,23 @@ class Convoy():
                 icons.draw_weapon(surf, weapon_nid, topleft)
                 surf.blit(SPRITES.get('weapon_shine'), topleft)
 
+        self.get_menu().draw(surf)
+        if self.inventory:
+            self.inventory.draw(surf)
+
+        # Draw item owner
+        if unit and self.takes_input:
+            unit_str = "Owner: %s" % unit.name
+        else:
+            unit_str = "Owner: ---"
+        FONT['text'].blit(unit_str, surf, (160, 4))
+
         self.left_arrow.draw(surf)
         self.right_arrow.draw(surf)
         return surf
 
     def handle_mouse(self) -> bool:
-        mouse_position = INPUT.get_mouse_position()
+        mouse_position = get_input_manager().get_mouse_position()
         did_move = False
         if mouse_position:
             mouse_x, mouse_y = mouse_position
@@ -1511,9 +1576,10 @@ class Convoy():
         return did_move
 
 class Market(Convoy):
-    def __init__(self, owner, options, topleft, disp_value=None):
+    def __init__(self, owner, options, topleft, disp_value=None, show_stock: bool = False):
         self.options = options
         self.disp_value = disp_value
+        self.show_stock = show_stock
         super().__init__(owner, topleft, disp_value=disp_value)
         self.selection_index = 1
         self.menu_index = 0
@@ -1523,7 +1589,11 @@ class Market(Convoy):
         sorted_dict = self.get_sorted_dict()
         self.menus = {}
         for w_type in self.order:
-            new_menu = Shop(self.owner, sorted_dict[w_type], self.topleft, self.disp_value)
+            if self.show_stock:
+                stock = [game.market_items[item.nid] for item in sorted_dict[w_type]]
+            else:
+                stock = None
+            new_menu = Shop(self.owner, sorted_dict[w_type], self.topleft, self.disp_value, stock=stock)
             new_menu.set_limit(7)
             new_menu.set_hard_limit(True)
             new_menu.gem = False
@@ -1553,6 +1623,24 @@ class Market(Convoy):
             value.sort(key=lambda item: bool(item.owner_nid))
 
         return sorted_dict
+
+    def update_options(self):
+        if self.inventory:
+            self.inventory.update_options(self.owner.items)
+        sorted_dict = self.get_sorted_dict()
+        for name, menu in self.menus.items():
+            if self.show_stock:
+                menu.stock = [game.market_items[item.nid] for item in sorted_dict[name]]
+            menu.update_options(sorted_dict[name])
+
+    def get_stock(self):
+        if self.show_stock:
+            return self.menus[self.order[self.selection_index - 1]].get_stock()
+        return -1
+
+    def decrement_stock(self):
+        if self.show_stock:
+            self.menus[self.order[self.selection_index - 1]].decrement_stock()
 
     def get_current(self):
         return self.menus[self.order[self.selection_index - 1]].get_current()
@@ -1593,8 +1681,12 @@ class Market(Convoy):
             self.menu_index = self.selection_index - 1
             self.right_arrow.pulse()
 
-    def toggle_info(self):
-        self.menus[self.order[self.selection_index - 1]].toggle_info()
+    # def toggle_info(self):
+    #     self.menus[self.order[self.selection_index - 1]].toggle_info()
+
+    def draw_info(self, surf):
+        self.menus[self.order[self.selection_index - 1]].vert_draw_info(surf)
+        return surf
 
     def set_takes_input(self, val):
         self.takes_input = val
@@ -1668,9 +1760,12 @@ class ChapterSelect(Main):
 
     def set_color(self, idx, color):
         self.colors[idx] = color
+        self.options[idx].set_bg_color(color)
 
     def set_colors(self, colors):
         self.colors = colors
+        for idx, option in enumerate(self.options):
+            option.set_bg_color(self.colors[idx])
 
     def create_options(self, options):
         self.options.clear()
@@ -1775,3 +1870,94 @@ class ModeSelect(Main):
             height = center[1] - 12 - (num_options/2.0 - self.current_index) * (option.height() + 1)
             self.cursor1.draw_vert(surf, center[0] - option.width()//2 - 8 - 8, height)
             self.cursor2.draw_vert(surf, center[0] + option.width()//2 - 8 + 8, height)
+
+class KeyboardMenu(Table):
+    def __init__(self, header, character_limit=16, illegal_characters=[]):
+        self.header = header
+        self.character_limit = character_limit
+        self.illegal_characters = illegal_characters
+        self.name = ''
+        self.topleft = (9, 42)
+
+        self.all_characters = {}
+        self.all_characters['uppercase'] = string.ascii_uppercase
+        self.all_characters['lowercase'] = string.ascii_lowercase
+        self.all_characters['uppercase_UTF8'] = \
+            ['Á','À','Â','Ä','Å','Ç','Ð','É','È','Ê','Ë','Í','Ì','Î','Ï','Ñ','Ó','Ò','Ô','Ö','Ø','Þ','Ú','Ù','Û','Ü','Ý','Ÿ','Ƿ','Æ','Œ']
+        self.all_characters['lowercase_UTF8'] = \
+            ['á','à','â','ä','å','ç','ð','é','è','ê','ë','í','ì','î','ï','ñ','ó','ò','ô','ö','ø','þ','ú','ù','û','ü','ý','ÿ','ƿ','æ','œ']
+        self.all_characters['numbers_and_punctuation'] = \
+            ['0','1','2','3','4','5','6','7','8','9','!','¡','?','¿','&','-','+',';',':',"'",',','.','"'] + ([' '] * (26 - 7))
+
+        for group in self.illegal_characters:
+            if group in self.all_characters:
+                self.all_characters.pop(group)
+
+        self.options = []
+        for character_list in self.all_characters.values():
+            self.options.extend(character_list)
+
+        # Build background
+        self.backsurf = SPRITES.get('NamingScreen')
+
+        super().__init__(None, self.options, (7, 26), self.topleft, self.backsurf, None)
+
+    def create_options(self, options, info_descs=None):
+        self.options.clear()
+        for idx, option in enumerate(options):
+            option = menu_options.SingleCharacterOption(idx, option)
+            self.options.append(option)
+
+    def updateName(self, character):
+        if character == 'back':
+            self.name = self.name[:-1]
+        elif character == 'space':
+            self.name += ' '
+        else:
+            self.name += character
+
+    def draw(self, surf):
+        surf.blit(self.backsurf, (0, 0))
+
+        if self.header:
+            FONT['text-blue'].blit(self.header, surf, (3, 2))
+
+        draw_scroll_bar = False
+        if len(self.options) > self.rows * self.columns:
+            draw_scroll_bar = True
+            self.draw_scroll_bar(surf, self.topleft)
+
+        start_index = self.scroll * self.columns
+        end_index = (self.scroll + self.rows) * self.columns
+        choices = self.options[start_index:end_index]
+        width = 8
+        height = max(option.height() for option in self.options)
+        if choices:
+            for idx, choice in enumerate(choices):
+                top = self.topleft[1] + 4 + (idx // self.columns * height)
+                left = self.topleft[0] + (idx % self.columns * width)
+
+                if idx + (self.scroll * self.columns) == self.current_index and self.takes_input and self.draw_cursor:
+                    choice.draw_highlight(surf, left, top, width - 8 if draw_scroll_bar else width)
+                elif idx + (self.scroll * self.columns) == self.fake_cursor_idx:
+                    choice.draw_highlight(surf, left, top, width - 8 if draw_scroll_bar else width)
+                else:
+                    choice.draw(surf, left, top)
+                if idx + (self.scroll * self.columns) == self.fake_cursor_idx:
+                    self.stationary_cursor.draw(surf, left, top)
+                if idx + (self.scroll * self.columns) == self.current_index and self.takes_input and self.draw_cursor:
+                    self.cursor.draw(surf, left, top)
+
+        else:
+            FONT['text-grey'].blit("Nothing", surf, (self.topleft[0] + 16, self.topleft[1] + 4))
+
+        FONT['text'].blit(self.name, surf, (6, 20))
+        if len(self.name) < self.character_limit:
+            self.draw_underscore(surf)
+
+    def draw_underscore(self, surf):
+        size = FONT['text'].size(self.name)
+        left = 6 + size[0]
+        top = 17 + size[1]
+        underscore = SPRITES.get('Underscore')
+        surf.blit(underscore, (left, top))

@@ -1,20 +1,21 @@
 # Takes in unit, returns False if not present
 # All default hooks are exclusive
 formula = ('damage_formula', 'resist_formula', 'accuracy_formula', 'avoid_formula',
-           'crit_accuracy_formula', 'crit_avoid_formula', 'attack_speed_formula', 'defense_speed_formula')
+           'crit_accuracy_formula', 'crit_avoid_formula', 'attack_speed_formula', 'defense_speed_formula',
+           'critical_multiplier_formula', 'critical_addition_formula', 'thracia_critical_multiplier_formula')
 default_behaviours = (
     'pass_through', 'vantage', 'ignore_terrain', 'crit_anyway',
     'ignore_region_status', 'no_double', 'def_double', 'alternate_splash',
     'ignore_rescue_penalty', 'ignore_forced_movement', 'distant_counter',
-    'ignore_fatigue')
+    'ignore_fatigue', 'no_attack_after_move', 'has_dynamic_range', 'disvantage', 'close_counter', 'attack_stance_double')
 # Takes in unit, returns default value
-exclusive_behaviours = ('can_select', 'movement_type', 'sight_range', 'empower_splash', 'num_items_offset', 'num_accessories_offset', 'change_variant', 'change_animation', 'change_ai', 'witch_warp')
+exclusive_behaviours = ('can_select', 'movement_type', 'sight_range', 'empower_splash', 'num_items_offset', 'num_accessories_offset', 'change_variant', 'change_animation', 'change_ai', 'change_roam_ai', 'witch_warp')
 
 exclusive_behaviours += formula
 # Takes in unit and item, returns default value
-item_behaviours = ('modify_buy_price', 'modify_sell_price', 'limit_maximum_range', 'modify_maximum_range', 'wexp_usable_skill')
+item_behaviours = ('modify_buy_price', 'modify_sell_price', 'limit_maximum_range', 'modify_maximum_range', 'wexp_usable_skill', 'wexp_unusable_skill')
 # Takes in unit and target, returns default value
-targeted_behaviours = ('check_ally', 'check_enemy', 'can_trade', 'exp_multiplier', 'enemy_exp_multiplier', 'wexp_multiplier', 'enemy_wexp_multiplier', 'steal_icon', 'has_canto', 'empower_heal')
+targeted_behaviours = ('check_ally', 'check_enemy', 'can_trade', 'exp_multiplier', 'enemy_exp_multiplier', 'wexp_multiplier', 'enemy_wexp_multiplier', 'has_canto', 'empower_heal', 'empower_heal_received')
 # Takes in unit, item returns bonus
 modify_hooks = (
     'modify_damage', 'modify_resist', 'modify_accuracy', 'modify_avoid',
@@ -42,7 +43,7 @@ def compile_skill_system():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     compiled_skill_system = open(os.path.join(dir_path, '..', 'skill_system.py'), 'w')
     skill_system_base = open(os.path.join(dir_path, 'skill_system_base.py'), 'r')
-    warning_msg = open(os.path.join(dir_path, 'warning_msg'), 'r')
+    warning_msg = open(os.path.join(dir_path, 'warning_msg.txt'), 'r')
 
     # write warning msg
     for line in warning_msg.readlines():
@@ -177,7 +178,8 @@ def %s(actions, playback, unit, item, target, mode, attack_info):
     for skill in unit.skills:
         for component in skill.components:
             if component.defines('%s'):
-                component.%s(actions, playback, unit, item, target, mode, attack_info)""" \
+                if component.ignore_conditional or condition(skill, unit):
+                    component.%s(actions, playback, unit, item, target, mode, attack_info)""" \
             % (hook, hook, hook)
         compiled_skill_system.write(func)
         compiled_skill_system.write('\n')
@@ -188,7 +190,8 @@ def %s(unit, item):
     for skill in unit.skills:
         for component in skill.components:
             if component.defines('%s'):
-                component.%s(unit, item)""" \
+                if component.ignore_conditional or condition(skill, unit):
+                    component.%s(unit, item)""" \
             % (hook, hook, hook)
         compiled_skill_system.write(func)
         compiled_skill_system.write('\n')

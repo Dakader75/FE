@@ -1,0 +1,138 @@
+.shared_windows_runners:
+  tags:
+  - shared-windows
+  - windows
+  - windows-1809
+
+stages:
+    - test
+    - generate_engine
+    - generate_editor
+    - release
+
+run_tests:
+    stage: test
+    image: "python:3.7.9"
+    only:
+        refs:
+            - merge_requests
+    before_script:
+        - python --version
+        - pip install -r requirements_editor.txt
+    script:
+        - echo "Running tests"
+        - python -m app.engine.component_system_compiler.source_generator
+        - python -m unittest discover -s app/tests -p 'test*.py'
+
+build_engine:
+    stage: generate_engine
+    image: "python:3.7.9"
+    extends:
+    - .shared_windows_runners
+    except: # If this double builds consider changing to only: pushes
+        refs:
+            - merge_requests
+    only:
+        - release
+    before_script:
+        - choco install -y python --version=3.7.9
+        - "C:\\Python37\\python.exe -m pip install -r requirements_engine.txt"
+        - "C:\\Python37\\python.exe -m pip install pywin32"
+        - "C:\\Python37\\python.exe -m pip install setuptools --upgrade"
+        - echo "Prereqs successfully installed"
+    script:
+        - echo "Generating component files"
+        - "C:\\Python37\\python.exe -m app.engine.component_system_compiler.source_generator"
+        - start powershell
+        - echo "Building generic engine..."
+        - cp ./utilities/build_tools/generic_engine.spec .
+        - "C:\\Python37\\Scripts\\pyinstaller.exe -y generic_engine.spec"
+        - rm generic_engine.spec -fo
+        - mkdir lt_engine
+        - mv dist/lt_engine ./lt_engine/lt_engine
+        - cp utilities/install/double_click_to_play.bat ./lt_engine
+        - echo "Copying generated files"
+        - cp app/engine/item_system.py ./lt_engine/lt_engine/app/engine
+        - cp app/engine/skill_system.py ./lt_engine/lt_engine/app/engine
+        - echo $CI_COMMIT_SHORT_SHA > ./lt_engine/lt_engine/version.txt
+        - echo "Done!"
+    artifacts:
+        name: "LT Engine"
+        paths:
+            - lt_engine/
+
+build_editor:
+    stage: generate_editor
+    image: "python:3.7.9"
+    extends:
+    - .shared_windows_runners
+    except: # If this double builds consider changing to only: pushes
+        refs:
+            - merge_requests
+    only:
+        - release
+    before_script:
+        - choco install -y python --version=3.7.9
+        - "C:\\Python37\\python.exe -m pip install -r requirements_editor.txt"
+        - "C:\\Python37\\python.exe -m pip install pywin32"
+        - "C:\\Python37\\python.exe -m pip install setuptools --upgrade"
+        - echo "Prereqs successfully installed"
+    script:
+        - echo "Generating component files"
+        - "C:\\Python37\\python.exe -m app.engine.component_system_compiler.source_generator"
+        - start powershell
+        - echo "Building autoupdater"
+        - cp ./utilities/build_tools/autoupdater.spec .
+        - "C:\\Python37\\Scripts\\pyinstaller.exe -y autoupdater.spec"
+        - rm autoupdater.spec -fo
+        - echo "Now building main editor..."
+        - cp ./utilities/build_tools/editor.spec .
+        - "C:\\Python37\\Scripts\\pyinstaller.exe -y editor.spec"
+        - rm editor.spec -fo
+        - mkdir lt_editor
+        - mv dist/lt_editor ./lt_editor/lt_editor
+        - cp utilities/install/double_click_to_run.bat ./lt_editor
+        - cp dist/autoupdater.exe ./lt_editor/lt_editor
+        - cp autoupdater.py ./lt_editor/lt_editor
+        - mv build/editor ./lt_editor/lt_editor
+        - echo "Copying default lt project..."
+        - cp default.ltproj ./lt_editor/lt_editor -r
+        - echo "Copying generated files"
+        - cp app/engine/item_system.py ./lt_editor/lt_editor/app/engine
+        - cp app/engine/skill_system.py ./lt_editor/lt_editor/app/engine
+        - echo $CI_COMMIT_SHORT_SHA > ./lt_editor/lt_editor/version.txt
+        - echo "Done!"
+    artifacts:
+        name: "LT Editor"
+        paths:
+            - lt_editor/
+
+release:
+    stage: release
+    image: registry.gitlab.com/gitlab-org/release-cli:latest
+    needs:
+    - job: build_editor
+      artifacts: true
+    - job: build_engine
+    except:
+        refs:
+            - merge_requests
+    only:
+        - release
+    script:
+        - echo 'running release'
+        - echo 'remember to make sure your url is correct!'
+    release:
+        name: 'Release Executables $CI_COMMIT_SHORT_SHA'
+        description: 'Download Lex_Talionis_Maker from the Packages header to use the editor! Once the download is extracted run double_click_to_run.bat to open the editor.'
+        tag_name: '$CI_COMMIT_SHORT_SHA'
+        assets:
+            links: # IF SOMETHING IS BROKEN, IT'S PROBABLY THESE URLS FAULT
+                - name: 'Lex_Talionis_Maker'
+                  filepath: /lex_talionis_maker
+                  url: "https://gitlab.com/rainlash/lt-maker/-/jobs/artifacts/release/download?job=build_editor"
+                  link_type: package
+                - name: 'Lex_Talionis_Engine'
+                  filepath: /lex_talionis_engine
+                  url: "https://gitlab.com/rainlash/lt-maker/-/jobs/artifacts/release/download?job=build_engine"
+                  link_type: package

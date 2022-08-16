@@ -1,10 +1,10 @@
-from app.data.skill_components import SkillComponent
+from app.data.skill_components import SkillComponent, SkillTags
 from app.data.components import Type
 
 class CombatCondition(SkillComponent):
     nid = 'combat_condition'
     desc = "Status is conditional based on combat properties"
-    tag = "advanced"
+    tag = SkillTags.ADVANCED
 
     expose = Type.String
     value = 'False'
@@ -15,7 +15,7 @@ class CombatCondition(SkillComponent):
     def pre_combat(self, playback, unit, item, target, mode):
         from app.engine import evaluate
         try:
-            x = bool(evaluate.evaluate(self.value, unit, target, item, mode=mode))
+            x = bool(evaluate.evaluate(self.value, unit, target, unit.position, {'item': item, 'mode': mode}))
             self._condition = x
             return x
         except Exception as e:
@@ -36,7 +36,7 @@ class CombatCondition(SkillComponent):
 class Condition(SkillComponent):
     nid = 'condition'
     desc = "Status is conditional"
-    tag = "advanced"
+    tag = SkillTags.ADVANCED
 
     expose = Type.String
     value = 'False'
@@ -46,6 +46,6 @@ class Condition(SkillComponent):
     def condition(self, unit):
         from app.engine import evaluate
         try:
-            return bool(evaluate.evaluate(self.value, unit))
+            return bool(evaluate.evaluate(self.value, unit, position=unit.position))
         except Exception as e:
             print("%s: Could not evaluate condition %s" % (e, self.value))

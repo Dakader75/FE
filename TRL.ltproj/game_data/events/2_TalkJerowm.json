@@ -1,0 +1,199 @@
+[
+    {
+        "name": "TalkJerowm",
+        "trigger": "on_talk",
+        "level_nid": "2",
+        "condition": "unit2.nid == \"Jerowm\"",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Innes",
+                    "Left"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Seth",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "Prince Berkut! It's an honor to meet you.|We have mush to discuss."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "Who are you? Hand over Bone and you may have mercy from the emperor."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "My apolgies. I am Jerowm. May father is Bone and I am happy to tell you where he is."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "What?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "He is located in the center of the estate. I have the key to his chamber right here.|I expect you want this, no?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "I don't understand. Why are you giving up your father?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "My father doesn't understand the first priciple of good business.|Do you know what that would be prince?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "Do tell."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "Sell to the highest bidder."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "Oh?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "My father is stuck in the old way of doing things.|He supported that little incursion at Rigel castle because he doesn't belive anyone can fill Rudolf's shoes."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "..."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "Unforntantly, my father is a misguided fool.|I have faith in you, Lord Berkut. I trust that you have the ambition to save Rigel. This is why I choose to give up my father."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "I see you are a man of reason."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "Always, my Lord.|I also wish to make sure that my Father is dealt with. I ask that you let me tag along with your detachment to ensure that everything goes smoothly."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "You may do as you like.|I will always appericate support to my cause."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "Of course, my lord."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Seth",
+                    "Well, now. Let's see what awaits us in the center of the manner."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Seth"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "...|(Finally. Evething went exactly as I envisioned it.)|(Soon, I'll gain the prince's favor and I'll practically have Rigel to myself!)"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Innes"
+                ]
+            ],
+            [
+                "change_team",
+                [
+                    "Jerowm",
+                    "player"
+                ]
+            ],
+            [
+                "change_team",
+                [
+                    "Damon",
+                    "other"
+                ]
+            ],
+            [
+                "add_talk",
+                [
+                    "Jerowm",
+                    "Damon"
+                ]
+            ],
+            [
+                "remove_talk",
+                [
+                    "Berkut",
+                    "Damon"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

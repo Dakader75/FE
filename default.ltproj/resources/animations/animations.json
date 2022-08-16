@@ -210,6 +210,13 @@
         "speed": "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,23"
     },
     {
+        "nid": "MissPurple",
+        "frame_x": 5,
+        "frame_y": 4,
+        "num_frames": 20,
+        "speed": "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,23"
+    },
+    {
         "nid": "NoDamageBlue",
         "frame_x": 5,
         "frame_y": 5,
@@ -225,6 +232,13 @@
     },
     {
         "nid": "NoDamageGreen",
+        "frame_x": 5,
+        "frame_y": 5,
+        "num_frames": 25,
+        "speed": "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,48"
+    },
+    {
+        "nid": "NoDamagePurple",
         "frame_x": 5,
         "frame_y": 5,
         "num_frames": 25,

@@ -60,25 +60,26 @@ class OverworldEntityObject():
         else:
             unit = DB.units.values()[0]
             logging.error("OverworldEntityObject cannot find unit %s", party_prefab.leader)
-        entity.sprite = OverworldUnitSprite(unit, entity)
+        entity.sprite = OverworldUnitSprite(unit, entity, 'player')
 
         from app.engine import unit_sound
         entity.sound = unit_sound.UnitSound(unit)
         return entity
 
     @classmethod
-    def from_unit_prefab(cls, nid: NID, initial_position: Point, unit_nid: NID):
+    def from_unit_prefab(cls, nid: NID, initial_position: Point, unit_nid: NID, team: NID):
         entity = cls()
         entity.nid = nid
         entity.dnid = unit_nid
         entity.dtype = OverworldEntityTypes.UNIT
         entity.on_node = None
+        entity.team = team
 
         unit = DB.units.get(unit_nid)
         if not unit:
             logging.error("OverworldEntityObject cannot find unit %s, using default unit %s", unit_nid, DB.units.values()[0].nid)
             unit = DB.units.values()[0]
-        entity.sprite = OverworldUnitSprite(unit, entity)
+        entity.sprite = OverworldUnitSprite(unit, entity, team)
 
         entity.display_position = initial_position
 
@@ -109,8 +110,7 @@ class OverworldEntityObject():
             return entity_object
         elif entity_dtype == OverworldEntityTypes.UNIT: # dummy entity
             entity_position = s_dict['position']
-            entity_object = OverworldEntityObject.from_unit_prefab(entity_nid, entity_position, prefab_nid)
-            entity_object.team = s_dict['team']
+            entity_object = OverworldEntityObject.from_unit_prefab(entity_nid, entity_position, prefab_nid, s_dict['team'])
             return entity_object
         else:
             raise TypeError("Unknown OverworldEntityType")

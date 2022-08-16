@@ -5,7 +5,7 @@ from app.constants import WINWIDTH, WINHEIGHT
 from app.utilities import utils
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
-from app.engine.input_manager import INPUT
+from app.engine.input_manager import get_input_manager
 
 from app.engine import engine, image_mods, icons
 
@@ -83,7 +83,7 @@ class SkillIcon():
         self.right = right
         self.center = center
         self.small = small
-        self.font = FONT['text-white']
+        self.font = FONT['text']
         self.text = self.skill.name
         self.text_width = self.font.width(self.text)
         icon = icons.get_icon(self.skill)
@@ -238,12 +238,11 @@ class ScrollBar():
             surf.blit(bottom_arrow, (x - 1, y + height + 4))
 
 class Logo():
-    speed = 64
-
-    def __init__(self, texture, center, num_frames=8):
+    def __init__(self, texture, center, num_frames=8, speed=64):
         self.texture = texture
         self.center = center
         self.num_frames = num_frames
+        self.speed = speed
 
         self.height = self.texture.get_height()//self.num_frames
         self.width = self.texture.get_width()
@@ -348,7 +347,7 @@ class MouseIndicator():
     mouse_indicator_bottom = engine.flip_vert(SPRITES.get('mouse_indicator_top'))
 
     def draw(self, surf):
-        mouse_position = INPUT.get_real_mouse_position()
+        mouse_position = get_input_manager().get_real_mouse_position()
         if mouse_position:
             mouse_x, mouse_y = mouse_position
             if mouse_x <= 16:

@@ -1,0 +1,82 @@
+[
+    {
+        "name": "Wall",
+        "trigger": "combat_end",
+        "level_nid": "2x",
+        "condition": "True",
+        "commands": [
+            [
+                "level_var",
+                [
+                    "cantors_alive",
+                    "game.check_alive(\"Cantor1\") or game.check_alive(\"Cantor2\") or game.check_alive(\"Cantor3\") or game.check_alive(\"Cantor4\") or game.check_alive(\"Cantor5\") or game.check_alive(\"Cantor6\") or game.check_alive(\"Cantor7\") or game.check_alive(\"Cantor8\")"
+                ]
+            ],
+            [
+                "if",
+                [
+                    "not game.level_vars['cantors_alive']"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "8,12"
+                ]
+            ],
+            [
+                "show_layer",
+                [
+                    "WallOpen"
+                ]
+            ],
+            [
+                "sound",
+                [
+                    "Forblaze2"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "1000"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "Soceress"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Soceress (Soceress)",
+                    "CenterLeft"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Sorceress",
+                    "...|The ritual is not complete...|A predicament, perhaps?|No matter...|I have strength sufficent to destroy any childen of the beast."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Soceress (Soceress)"
+                ]
+            ],
+            [
+                "change_ai",
+                [
+                    "Soceress",
+                    "Pursue"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

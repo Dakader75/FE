@@ -24,6 +24,10 @@
         "text": "Pass the turn."
     },
     {
+        "nid": "Quit_Game_desc",
+        "text": "Close the game."
+    },
+    {
         "nid": "Turnwheel_desc",
         "text": "Can undo previous actions."
     },
@@ -318,5 +322,77 @@
     {
         "nid": "unit_record_header",
         "text": "Chapter Name        Kills    Damage    Healing"
+    },
+    {
+        "nid": "Item_desc",
+        "text": "Check inventory and use items."
+    },
+    {
+        "nid": "Wait_desc",
+        "text": "Take no further action this phase."
+    },
+    {
+        "nid": "Take_desc",
+        "text": "Take held unit from adjacent ally."
+    },
+    {
+        "nid": "Give_desc",
+        "text": "Give held unit to adjacent ally."
+    },
+    {
+        "nid": "Rescue_desc",
+        "text": "Pick up adjacent ally, but incur a SPD/SKL penalty."
+    },
+    {
+        "nid": "Trade_desc",
+        "text": "Give, take, or exchange items with adjacent ally."
+    },
+    {
+        "nid": "Drop_desc",
+        "text": "Release held unit onto adjacent tile."
+    },
+    {
+        "nid": "Visit_desc",
+        "text": "Visit a location."
+    },
+    {
+        "nid": "Armory_desc",
+        "text": "Enter a weapon shop."
+    },
+    {
+        "nid": "Vendor_desc",
+        "text": "Enter a magic and item shop."
+    },
+    {
+        "nid": "Spells_desc",
+        "text": "Use a spell from the inventory."
+    },
+    {
+        "nid": "Attack_desc",
+        "text": "Attack an enemy with a weapon in the inventory."
+    },
+    {
+        "nid": "Steal_desc",
+        "text": "Take an item from an adjacent enemy."
+    },
+    {
+        "nid": "Shove_desc",
+        "text": "Push adjacent unit 1 tile away."
+    },
+    {
+        "nid": "Pair Up_desc",
+        "text": "Combine with adjacent ally to support them."
+    },
+    {
+        "nid": "Swap_desc",
+        "text": "Exchange paired units with adjacent ally."
+    },
+    {
+        "nid": "Separate_desc",
+        "text": "Release paired unit onto adjacent tile."
+    },
+    {
+        "nid": "Transfer_desc",
+        "text": "Give paired unit to adjacent ally."
     }
 ]

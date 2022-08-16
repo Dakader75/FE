@@ -2,6 +2,7 @@ from typing import Tuple
 
 from app.resources.map_icons import MapIconCatalog
 from app.utilities.data import Data, Prefab
+from app.events.node_events import NodeMenuEvent
 
 
 class OverworldNodePrefab(Prefab):
@@ -11,13 +12,23 @@ class OverworldNodePrefab(Prefab):
         self.pos: Tuple[int, int] = pos             # tuple of location pair
         self.icon: str = icon or MapIconCatalog.DEFAULT()           # icon nid (see map_icons.json for a manifest)
         self.level: str = None          # level associated
+        self.menu_options: Data[NodeMenuEvent] = Data()      #Events that can be activated in the node's menu
 
     def save_attr(self, name, value):
-        value = super().save_attr(name, value)
+        if name == 'menu_options':
+            value = [menu_options.save() for menu_options in value]
+        else:
+            value = super().save_attr(name, value)
         return value
 
     def restore_attr(self, name, value):
-        value = super().restore_attr(name, value)
+        if name == 'menu_options':
+            if value:
+                value = Data([NodeMenuEvent.restore(val) for val in value])
+            else:
+                value = Data()
+        else:
+            value = super().restore_attr(name, value)
         if(name == 'pos'):
             value = tuple(value)
         return value

@@ -123,6 +123,7 @@ constants = ConstantCatalog([
     Constant('end_turn_points', "Points gained on ending turn in growth range", int, 1, 'growth'),
     Constant('combat_points', "Points gained on combat in growth range", int, 0, 'growth'),
     Constant('interact_points', "Points gained on interacting with partner", int, 0, 'growth'),
+    Constant('pairup_points', "Points gained on combat with a pairup partner", int, 0, 'growth'),
     Constant('bonus_ally_limit', "Limit to number of support bonuses that can be active at once (0 - No limit)", int, 0, 'limit'),
     Constant("rank_limit", "Limit to number of support ranks allowed per character (0 - No limit)", int, 5, 'limit'),
     Constant("highest_rank_limit", "Limit to number of highest rank supports allowed on one character (0 - No limit)", int, 1, 'limit'),

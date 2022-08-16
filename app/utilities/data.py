@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from ctypes import Union
 from typing import Dict, Generic, List, Tuple, TypeVar
 
 from app.utilities.typing import NID
@@ -58,8 +57,12 @@ class Data(Generic[T]):
         else:
             logging.error('%s not found in self._dict' % old_key)
 
-    def append(self, val: T):
+    def append(self, val: T, overwrite: bool = False):
         if val.nid not in self._dict:
+            self._list.append(val)
+            self._dict[val.nid] = val
+        elif overwrite:
+            self.remove_key(val.nid)
             self._list.append(val)
             self._dict[val.nid] = val
         else:

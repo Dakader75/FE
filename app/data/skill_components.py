@@ -1,6 +1,23 @@
+from enum import Enum
 from app.data.components import Component
 
-tags = ['attribute', 'base', 'movement', 'combat', 'combat2', 'dynamic', 'formula', 'status', 'time', 'charge', 'aesthetic', 'advanced', 'extra']
+class SkillTags(Enum):
+    ATTRIBUTE = 'attribute'
+    BASE = 'base'
+    MOVEMENT = 'movement'
+    COMBAT = 'combat'
+    COMBAT2 = 'combat2'
+    DYNAMIC = 'dynamic'
+    FORMULA = 'formula'
+    STATUS = 'status'
+    TIME = 'time'
+    CHARGE = 'charge'
+    AESTHETIC = 'aesthetic'
+    ADVANCED = 'advanced'
+    EXTRA = 'extra'
+
+    CUSTOM = 'custom'
+    HIDDEN = 'hidden'
 
 class SkillComponent(Component):
     skill = None

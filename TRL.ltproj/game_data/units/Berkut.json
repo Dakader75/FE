@@ -1,0 +1,102 @@
+[
+    {
+        "nid": "Berkut",
+        "name": "Berkut",
+        "desc": "The princess of the Kingdom of\nRenais. She's elegant and kind.",
+        "variant": null,
+        "level": 1,
+        "klass": "Cavalier",
+        "tags": [
+            "Lord"
+        ],
+        "bases": {
+            "HP": 24,
+            "STR": 4,
+            "MAG": 2,
+            "SKL": 20,
+            "SPD": 20,
+            "LCK": 4,
+            "DEF": 6,
+            "CON": 5,
+            "MOV": 7,
+            "RES": 4,
+            "Atk": 20
+        },
+        "growths": {
+            "HP": 70,
+            "STR": 40,
+            "MAG": 20,
+            "SKL": 35,
+            "SPD": 40,
+            "LCK": 30,
+            "DEF": 50,
+            "CON": 0,
+            "MOV": 0,
+            "RES": 4,
+            "Atk": 60
+        },
+        "starting_items": [
+            [
+                "Ridersbane",
+                false
+            ],
+            [
+                "Leather Shield",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Heir_Apparent"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                0
+            ],
+            "Lance": [
+                false,
+                181
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Berkut",
+        "affinity": "Fire",
+        "fields": []
+    }
+]

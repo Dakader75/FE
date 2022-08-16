@@ -17,7 +17,11 @@ class PartyObject(Prefab):
             self.convoy = [i for i in self.convoy if i]
         else:
             self.convoy = []
-        self.bexp = bexp
+        self.bexp: int = bexp
+
+    @property
+    def items(self):
+        return self.convoy
 
     def save(self):
         return {'nid': self.nid,
@@ -30,5 +34,7 @@ class PartyObject(Prefab):
 
     @classmethod
     def restore(cls, s_dict):
-        party = cls(s_dict['nid'], s_dict['name'], s_dict['leader_nid'], s_dict['units'], s_dict['money'], s_dict['convoy'], s_dict['bexp'])
+        party = cls(s_dict['nid'], s_dict['name'], s_dict['leader_nid'],
+                    s_dict['units'], s_dict['money'], s_dict['convoy'],
+                    s_dict['bexp'])
         return party

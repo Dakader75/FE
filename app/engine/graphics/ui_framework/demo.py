@@ -11,6 +11,7 @@ from .demo_code.demo_ui import DemoUI
 from .demo_code.demo_narration import NarrationUI
 from .demo_code.demo_scroll import ScrollUI
 from .demo_code.demo_unit_menu import DemoUnitMenu
+from .demo_code.demo_table import DemoTable
 from .ui_framework import *
 from .ui_framework_animation import *
 from .ui_framework_layout import *
@@ -135,6 +136,32 @@ def LoadUnitMenuDemo(screen, tmp_surf, clock):
         pygame.display.flip()
         clock.tick(60)
 
+def LoadTableDemo(screen, tmp_surf, clock):
+    ui_overlay = DemoTable()
+    world_map = pygame.image.load(os.path.join(DIR_PATH, 'demo_code', 'magvel_demo.png'))
+    font = pygame.font.Font(None, 30)
+    while True:
+        tmp_surf.fill((255, 255, 255, 255))
+        events = pygame.event.get()
+        for e in events:
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    return
+                elif e.key == pygame.K_DOWN:
+                    ui_overlay.move_down()
+                elif e.key == pygame.K_UP:
+                    ui_overlay.move_up()
+                elif e.key == pygame.K_LEFT:
+                    ui_overlay.move_left()
+                elif e.key == pygame.K_RIGHT:
+                    ui_overlay.move_right()
+
+        tmp_surf.blit(world_map, (0, 0))
+        ui_overlay.draw(tmp_surf)
+        frame = pygame.transform.scale(tmp_surf, (WINWIDTH * 2, WINHEIGHT * 2))
+        screen.blit(frame, (0, 0))
+        pygame.display.flip()
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WINWIDTH * 2, WINHEIGHT * 2))
@@ -145,7 +172,8 @@ def main():
     # LoadWorldMapDemo(screen, tmp_surf, clock)
     # LoadNarrationDialogDemo(screen, tmp_surf, clock)
     # LoadDialogLogDemo(screen, tmp_surf, clock)
-    LoadUnitMenuDemo(screen, tmp_surf, clock)
+    # LoadUnitMenuDemo(screen, tmp_surf, clock)
+    LoadTableDemo(screen, tmp_surf, clock)
     return
 
 def profile():

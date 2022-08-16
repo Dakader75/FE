@@ -1,0 +1,102 @@
+[
+    {
+        "nid": "Marcel",
+        "name": "Marcel",
+        "desc": "A childhood friend of Neimi who hails from Renais. He can be snide.",
+        "variant": "",
+        "level": 5,
+        "klass": "Mage (M)",
+        "tags": [
+            "Rose Family"
+        ],
+        "bases": {
+            "HP": 26,
+            "STR": 4,
+            "MAG": 2,
+            "SKL": 8,
+            "SPD": 7,
+            "LCK": 7,
+            "DEF": 7,
+            "RES": 8,
+            "CON": 6,
+            "MOV": 5,
+            "Atk": 10
+        },
+        "growths": {
+            "HP": 60,
+            "STR": 40,
+            "MAG": 20,
+            "SKL": 35,
+            "SPD": 35,
+            "LCK": 30,
+            "DEF": 45,
+            "RES": 2,
+            "CON": 0,
+            "MOV": 0,
+            "Atk": 40
+        },
+        "starting_items": [
+            [
+                "Marcel's Magic",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Highborn"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                1
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Artur",
+        "affinity": "Light",
+        "fields": []
+    }
+]

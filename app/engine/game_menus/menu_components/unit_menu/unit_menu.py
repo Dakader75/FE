@@ -54,7 +54,7 @@ class UnitMenuUI():
         self.sort_by_text = uif.plain_text_component.PlainTextLine("sort by", self.sort_box, "")
         self.sort_by_text.props.h_alignment = uif.HAlignment.LEFT
         self.sort_by_text.props.v_alignment = uif.VAlignment.CENTER
-        self.sort_by_text.props.font = FONT['text-white']
+        self.sort_by_text.props.font = FONT['text']
         self.sort_by_text.margin = (3, 0, 0, 0)
         self.sort_by_text.padding = (0, 0, 0, 2)
         self.sort_by_text.set_text("Sort: ")

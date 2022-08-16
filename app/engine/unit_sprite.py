@@ -1,9 +1,10 @@
+from typing import Dict
 from app.engine.game_counters import ANIMATION_COUNTERS
 import math
 
 from app.constants import TILEWIDTH, TILEHEIGHT, COLORKEY
 from app.data.palettes import gray_colors, enemy_colors, other_colors, enemy2_colors, black_colors, \
-    player_dark_colors, enemy_dark_colors, gray_dark_colors
+    player_dark_colors, enemy_dark_colors, other_dark_colors, gray_dark_colors
 
 from app.resources.resources import RESOURCES
 from app.data.database import DB
@@ -11,12 +12,13 @@ from app.data.database import DB
 from app.utilities import utils
 
 from app.engine.sprites import SPRITES
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine import engine, image_mods, health_bar, equations
 from app.engine import item_funcs, item_system, skill_system, particles
 import app.engine.config as cf
 from app.engine.animations import Animation
 from app.engine.game_state import game
+from app.utilities.typing import NID
 
 class MapSprite():
     def __init__(self, map_sprite, team):
@@ -44,7 +46,7 @@ class MapSprite():
             if DB.constants.value('dark_sprites'):
                 conversion_dict = player_dark_colors
             else:
-                return map_sprite.standing_image, map_sprite.moving_image
+                conversion_dict = {}
         elif self.team == 'enemy':
             if DB.constants.value('dark_sprites'):
                 conversion_dict = enemy_dark_colors
@@ -53,7 +55,10 @@ class MapSprite():
         elif self.team == 'enemy2':
             conversion_dict = enemy2_colors
         elif self.team == 'other':
-            conversion_dict = other_colors
+            if DB.constants.value('dark_sprites'):
+                conversion_dict = other_dark_colors
+            else:
+                conversion_dict = other_colors
         elif self.team == 'black':
             conversion_dict = black_colors
 
@@ -104,10 +109,9 @@ class UnitSprite():
         self.offset = [0, 0]
 
         self.flicker = []
-        self.flicker_tint = []
         self.vibrate = []
         self.vibrate_counter = 0
-        self.animations = {}
+        self.animations: Dict[NID, Animation] = {}
         self.particles = []
         self.damage_numbers = []
 
@@ -127,22 +131,28 @@ class UnitSprite():
         self.offset = [0, 0]
         ANIMATION_COUNTERS.attack_movement_counter.reset()
 
-    def add_animation(self, animation_nid):
-        anim = RESOURCES.animations.get(animation_nid)
-        if anim:
-            anim = Animation(anim, (-16, -16), loop=True)
-            self.animations[animation_nid] = anim
+    def get_round_fake_pos(self):
+        if self.fake_position:
+            return int(round(self.fake_position[0])), int(round(self.fake_position[1]))
+        return None
+
+    def add_animation(self, anim, loop=True, contingent=False):
+        if isinstance(anim, str):
+            anim = RESOURCES.animations.get(anim)
+            if anim:
+                anim = Animation(anim, (-16, -16), loop=loop, contingent=contingent)
+            else:
+                return
+        if anim.nid in self.animations.keys():
+            return False
+        self.animations[anim.nid] = anim
+        return True
 
     def remove_animation(self, animation_nid):
         if animation_nid in self.animations:
             del self.animations[animation_nid]
-
-    def add_flicker_tint(self, color, period, width):
-        self.flicker_tint.append((color, period, width))
-
-    def remove_flicker_tint(self, color, period, width):
-        if (color, period, width) in self.flicker_tint:
-            self.flicker_tint.remove((color, period, width))
+            return True
+        return False
 
     def begin_flicker(self, total_time, color, direction='add'):
         self.flicker.append((engine.get_time(), total_time, color, direction, False))
@@ -188,7 +198,7 @@ class UnitSprite():
         self.transition_state = new_state
         self.transition_counter = self.transition_time  # 400
         if self.state == 'moving':
-            self.change_state('normal')
+            # self.change_state('normal')
             self.reset()
 
         if self.transition_state == 'normal':
@@ -207,32 +217,32 @@ class UnitSprite():
         elif self.transition_state == 'fade_move':
             self.fake_position = self.unit.position
         elif self.transition_state == 'warp_in':
-            SOUNDTHREAD.play_sfx('WarpEnd')
+            get_sound_thread().play_sfx('WarpEnd')
             self.fake_position = None
             self.add_warp_anim('warp_in')
             self.add_warp_flowers(reverse=True)
         elif self.transition_state == 'warp_out':
-            SOUNDTHREAD.play_sfx('Warp')
+            get_sound_thread().play_sfx('Warp')
             self.fake_position = self.unit.position
             self.add_warp_anim('warp_out')
             self.begin_flicker(self.transition_time, (255, 255, 255))
             self.add_warp_flowers()
         elif self.transition_state == 'warp_move':
-            SOUNDTHREAD.play_sfx('Warp')
+            get_sound_thread().play_sfx('Warp')
             self.fake_position = self.unit.position
             self.add_warp_anim('warp_move')
             self.begin_flicker(self.transition_time, (255, 255, 255))
             self.add_warp_flowers()
         elif self.transition_state == 'swoosh_in':
-            SOUNDTHREAD.play_sfx('Sword Whoosh')
+            get_sound_thread().play_sfx('Sword Whoosh')
             self.fake_position = None
             self.add_swoosh_anim()
         elif self.transition_state == 'swoosh_out':
-            SOUNDTHREAD.play_sfx('Sword Whoosh')
+            get_sound_thread().play_sfx('Sword Whoosh')
             self.fake_position = self.unit.position
             self.add_swoosh_anim(reverse=True)
         elif self.transition_state == 'swoosh_move':
-            SOUNDTHREAD.play_sfx('Sword Whoosh')
+            get_sound_thread().play_sfx('Sword Whoosh')
             self.fake_position = self.unit.position
             self.add_swoosh_anim(reverse=True)
 
@@ -250,7 +260,10 @@ class UnitSprite():
             self.handle_net_position(self.net_position)
         elif self.state == 'combat_counter':
             attacker = game.memory['current_combat'].defender
-            self.net_position = attacker.position[0] - self.unit.position[0], attacker.position[1] - self.unit.position[1]
+            if attacker:
+                self.net_position = attacker.position[0] - self.unit.position[0], attacker.position[1] - self.unit.position[1]
+            else:
+                self.net_position = 0, 0
             self.handle_net_position(self.net_position)
         elif self.state == 'fake_transition_in':
             pos = (self.unit.position[0] + utils.clamp(self.offset[0], -1, 1),
@@ -265,6 +278,8 @@ class UnitSprite():
             self.handle_net_position(self.net_position)
         elif self.state == 'selected':
             self.image_state = 'down'
+        elif self.state == 'normal':
+            self.set_transition('normal')
 
     def handle_net_position(self, pos):
         if abs(pos[0]) >= abs(pos[1]):
@@ -286,7 +301,6 @@ class UnitSprite():
         self.health_bar.update()
 
     def update_state(self):
-        current_time = engine.get_time()
         if self.state == 'normal':
             if self.unit.finished and not self.unit.is_dying:
                 self.image_state = 'gray'
@@ -303,15 +317,22 @@ class UnitSprite():
             self.offset[0] = utils.clamp(self.net_position[0], -1, 1) * ANIMATION_COUNTERS.attack_movement_counter.value()
             self.offset[1] = utils.clamp(self.net_position[1], -1, 1) * ANIMATION_COUNTERS.attack_movement_counter.value()
         elif self.state == 'chosen':
-            self.net_position = game.cursor.position[0] - self.unit.position[0], game.cursor.position[1] - self.unit.position[1]
-            self.handle_net_position(self.net_position)
+            pos = self.unit.position or self.fake_position
+            test_position = game.cursor.position[0] - pos[0], game.cursor.position[1] - pos[1]
+            if test_position != (0, 0):
+                self.net_position = test_position
+            if self.net_position:
+                self.handle_net_position(self.net_position)
+            else:
+                self.image_state = 'down'
         elif self.state == 'moving':
             next_position = game.movement.get_next_position(self.unit.nid)
-            if not next_position:
+            if not next_position or not self.unit.position:
                 self.set_transition('normal')
                 return
             self.net_position = (next_position[0] - self.unit.position[0], next_position[1] - self.unit.position[1])
             last_update = game.movement.get_last_update(self.unit.nid)
+            current_time = engine.get_time()
             dt = current_time - last_update
             self.offset[0] = int(TILEWIDTH * dt / cf.SETTINGS['unit_speed'] * self.net_position[0])
             self.offset[1] = int(TILEHEIGHT * dt / cf.SETTINGS['unit_speed'] * self.net_position[1])
@@ -375,7 +396,7 @@ class UnitSprite():
             self.map_sprite = MapSprite(res, self.unit.team)
         if self.transition_state == 'swoosh_in':
             state = 'down'
-        image = getattr(self.map_sprite, state)
+        image = self.map_sprite.__dict__.get(state)  # This is roughly 2x as fast as getattr, but getattr is safer
         image = self.select_frame(image, state)
         return image
 
@@ -405,7 +426,7 @@ class UnitSprite():
                 left += (1 if self.vibrate_counter % 2 else -1)
 
         # Handle transitions
-        if self.transition_state in ('fade_out', 'warp_out', 'swoosh_out', 'fade_move', 'warp_move', 'swoosh_move'):
+        if self.transition_state in ('fade_out', 'warp_out', 'swoosh_out', 'fade_move', 'warp_move', 'swoosh_move') or self.state in ('fake_transition_out'):
             progress = utils.clamp((self.transition_time - self.transition_counter) / self.transition_time, 0, 1)
             # Distort Vertically
             if self.transition_state in ('swoosh_out', 'swoosh_move'):
@@ -416,7 +437,7 @@ class UnitSprite():
                 top -= extra_height
             image = image_mods.make_translucent(image.convert_alpha(), progress)
 
-        elif self.transition_state in ('fade_in', 'warp_in', 'swoosh_in'):
+        elif self.transition_state in ('fade_in', 'warp_in', 'swoosh_in') or self.state in ('fake_transition_in'):
             progress = utils.clamp((self.transition_time - self.transition_counter) / self.transition_time, 0, 1)
             progress = 1 - progress
             if self.transition_state == 'swoosh_in':
@@ -455,9 +476,11 @@ class UnitSprite():
                 color = (0, int(diff * .5), 0)  # Tint image green at magnitude depending on diff
                 image = image_mods.change_color(image.convert_alpha(), color)
 
-        for flicker_tint in self.flicker_tint:
-            color, period, width = flicker_tint
-            diff = utils.model_wave(current_time, period, width)
+        flicker_tint = skill_system.unit_sprite_flicker_tint(self.unit)
+        for idx, tint in enumerate(flicker_tint):
+            color, period, width = tint
+            offset = idx * period / len(flicker_tint)
+            diff = utils.model_wave(current_time + offset, period, width)
             diff = utils.clamp(diff, 0, 1)
             color = tuple([int(c * diff) for c in color])
             image = image_mods.add_tint(image.convert_alpha(), color)
@@ -471,6 +494,7 @@ class UnitSprite():
             partner_image = partner.sprite.create_image(self.image_state)
             partner_image = partner_image.convert_alpha()
             surf.blit(partner_image, (topleft[0] + 3, topleft[1] - 3))
+            # This make gray is probably slow...
             gray_version = image_mods.make_gray(partner_image)
             translucent_gray = image_mods.make_translucent(gray_version, 0.25)
             surf.blit(translucent_gray, (topleft[0] + 3, topleft[1] - 3))
@@ -479,9 +503,12 @@ class UnitSprite():
             surf.blit(image, topleft)
 
         # Draw animations
+
+        valid_anims: list = skill_system.should_draw_anim(self.unit)
         self.animations = {k: v for (k, v) in self.animations.items() if not v.update()}
         for animation in self.animations.values():
-            animation.draw(surf, (left, anim_top))
+            if not animation.contingent or animation.nid in valid_anims:
+                animation.draw(surf, (left, anim_top))
 
         # Draw personal particles
         self.particles = [ps for ps in self.particles if not ps.remove_me_flag]
@@ -510,56 +537,37 @@ class UnitSprite():
             cur_unit = game.get_unit(game.level.roam_unit)
         if not cur_unit:
             return surf
-        map_markers = SPRITES.get('map_markers')
 
         left, top = self.get_topleft(cull_rect)
         topleft = (left - 2, top - 14)
 
         frame = (engine.get_time() // 100) % 8
         offset = [0, 0, 0, 1, 2, 2, 2, 1][frame]
+        markers = []
         if game.level.roam and game.state.current() == 'free_roam' and game.state.state[-1].can_talk() and \
                 (self.unit.nid, cur_unit.nid) in game.talk_options:
-            talk_marker = engine.subsurface(map_markers, (0, 0, 24, 16))
-            surf.blit(talk_marker, (topleft[0], topleft[1] + offset))
-        if (cur_unit.nid, self.unit.nid) in game.talk_options:
-            talk_marker = engine.subsurface(map_markers, (0, 0, 24, 16))
-            surf.blit(talk_marker, (topleft[0], topleft[1] + offset))
-        elif cur_unit.team == 'player' and skill_system.check_enemy(self.unit, cur_unit):
-            warning = False
+            markers.append('talk')
+        elif (cur_unit.nid, self.unit.nid) in game.talk_options:
+            markers.append('talk')
+        if (game.level.roam and game.state.current() == 'free_roam' and
+            game.state.state[-1].can_visit() and
+            game.state.state[-1].roam_unit and
+            game.state.state[-1].roam_unit.nid == self.unit.nid):
+            markers.append('interact')
+        if cur_unit.team == 'player':
             for item in item_funcs.get_all_items(self.unit):
-                if item_system.warning(self.unit, item, cur_unit):
-                    warning = True
-                    break
-            danger = False
-            for item in item_funcs.get_all_items(self.unit):
-                if item_system.danger(self.unit, item, cur_unit):
-                    danger = True
-                    break
-            steal = False
-            if skill_system.steal_icon(cur_unit, self.unit):
-                steal = True
-            if warning or danger or steal:
-                icon_frame = (engine.get_time() // 500) % sum([warning, danger, steal])
-                danger_marker = engine.subsurface(map_markers, (0, 16, 16, 16))
-                warning_marker = engine.subsurface(map_markers, (16, 16, 16, 16))
-                steal_marker = engine.subsurface(map_markers, (32, 16, 16, 16))
-                if icon_frame == 0:
-                    if warning:
-                        surf.blit(warning_marker, (topleft[0] + 2, topleft[1] + offset))
-                    elif danger:
-                        surf.blit(danger_marker, (topleft[0] + 2, topleft[1] + offset))
-                    else:
-                        surf.blit(steal_marker, (topleft[0] + 2, topleft[1] + offset))
-                elif icon_frame == 1:
-                    if warning:
-                        surf.blit(danger_marker, (topleft[0] + 2, topleft[1] + offset))
-                    else:
-                        surf.blit(steal_marker, (topleft[0] + 2, topleft[1] + offset))
-                elif icon_frame == 2:
-                    surf.blit(steal_marker, (topleft[0] + 2, topleft[1] + offset))
+                markers += item_system.target_icon(cur_unit, item, self.unit)
+            markers += skill_system.target_icon(cur_unit, self.unit)
+        markers = [SPRITES.get('marker_%s' % marker) for marker in markers if marker]
+        markers = [_ for _ in markers if _]  # Only include non-None
+        if markers:
+            icon_frame = (engine.get_time() // 500) % len(markers)
+            surf.blit(markers[icon_frame], (topleft[0], topleft[1] + offset))
         return surf
 
     def check_draw_hp(self) -> bool:
+        if game.level.roam and DB.constants.value('roam_hide_hp'):
+            return False
         if self.unit.is_dying or self.unit.dead:
             return False
         if (cf.SETTINGS['hp_map_team'] == 'All') or \
@@ -570,17 +578,22 @@ class UnitSprite():
                 return True
         return False
 
-    def draw_hp(self, surf, cull_rect):
+    def draw_hp(self, surf, cull_rect, event=False):
         current_time = engine.get_time()
         left, top = self.get_topleft(cull_rect)
 
-        if self.check_draw_hp():
+        if not event and self.check_draw_hp():
             self.health_bar.draw(surf, left, top)
 
-        if 'Boss' in self.unit.tags and self.transition_state == 'normal' and not self.unit.is_dying and \
+        if self.transition_state == 'normal' and not self.unit.is_dying and \
                 self.image_state in ('gray', 'passive') and int((current_time%450) // 150) in (1, 2):
-            boss_icon = SPRITES.get('boss_icon')
-            surf.blit(boss_icon, (left - 8, top - 8))
+            icon = None
+            if 'Boss' in self.unit.tags:
+                icon = SPRITES.get('boss_icon')
+            elif 'Elite' in self.unit.tags:
+                icon = SPRITES.get('elite_icon')
+            if icon:
+                surf.blit(icon, (left - 8, top - 8))
 
         if self.unit.traveler and self.transition_state == 'normal' and \
                 not self.unit.is_dying and not DB.constants.value('pairup'):

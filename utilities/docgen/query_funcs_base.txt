@@ -1,0 +1,4 @@
+# Useful Functions
+
+There are a number of useful functions that can be employed in event eval zones to fetch some aspect of the game. This page is exhaustive; it will list every ready-made
+function that can query the game state.

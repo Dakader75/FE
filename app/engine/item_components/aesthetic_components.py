@@ -1,71 +1,76 @@
 from app.engine.fonts import NORMAL_FONT_COLORS
-from app.data.item_components import ItemComponent
+from app.data.item_components import ItemComponent, ItemTags
 from app.data.components import Type
+
+from app.engine.combat import playback as pb
+from app.engine import engine, image_mods, skill_system
+
+import logging
 
 class MapHitAddBlend(ItemComponent):
     nid = 'map_hit_add_blend'
     desc = "Changes the color that appears on the unit when hit -- Use to make brighter"
-    tag = 'aesthetic'
+    tag = ItemTags.AESTHETIC
 
     expose = Type.Color3
     value = (255, 255, 255)
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
-        playback.append(('unit_tint_add', target, self.value))
+        playback.append(pb.UnitTintAdd(target, self.value))
 
 class MapHitSubBlend(ItemComponent):
     nid = 'map_hit_sub_blend'
     desc = "Changes the color that appears on the unit when hit -- Use to make darker"
-    tag = 'aesthetic'
+    tag = ItemTags.AESTHETIC
 
     expose = Type.Color3
     value = (0, 0, 0)
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
-        playback.append(('unit_tint_sub', target, self.value))
+        playback.append(pb.UnitTintSub(target, self.value))
 
 class MapHitSFX(ItemComponent):
     nid = 'map_hit_sfx'
-    desc = "Changes the sound the item will make on hit"
-    tag = 'aesthetic'
+    desc = "When the target is hit by this item the selected sound is played."
+    tag = ItemTags.AESTHETIC
 
     expose = Type.Sound
     value = 'Attack Hit 1'
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
-        playback.append(('hit_sound', self.value))
+        playback.append(pb.HitSound(self.value))
 
 class MapCastSFX(ItemComponent):
     nid = 'map_cast_sfx'
-    desc = "Adds a sound to the item on cast"
-    tag = 'aesthetic'
+    desc = "When item is used the selected sound is played."
+    tag = ItemTags.AESTHETIC
 
     expose = Type.Sound
     value = 'Attack Hit 1'
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
-        playback.append(('cast_sound', self.value))
+        playback.append(pb.CastSound(self.value))
 
     def on_miss(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
-        playback.append(('cast_sound', self.value))
+        playback.append(pb.CastSound(self.value))
 
 class MapCastAnim(ItemComponent):
     nid = 'map_cast_anim'
-    desc = "Adds a map animation to the item on cast"
-    tag = 'aesthetic'
+    desc = "Adds a specific animation effect when the item is used. Relevant in map combat situations."
+    tag = ItemTags.AESTHETIC
 
     expose = Type.MapAnimation
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
-        playback.append(('cast_anim', self.value))
+        playback.append(pb.CastAnim(self.value))
 
     def on_miss(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
-        playback.append(('cast_anim', self.value))
+        playback.append(pb.CastAnim(self.value))
 
 class BattleCastAnim(ItemComponent):
     nid = 'battle_cast_anim'
-    desc = "Set a specific effect animation to the item in battle"
-    tag = 'aesthetic'
+    desc = "Adds a specific animation effect when the item is used. This does not change the battle animation used, think instead of the spell's effect."
+    tag = ItemTags.AESTHETIC
 
     expose = Type.EffectAnimation
 
@@ -75,7 +80,7 @@ class BattleCastAnim(ItemComponent):
 class BattleAnimationMusic(ItemComponent):
     nid = 'battle_animation_music'
     desc = "Uses custom battle music"
-    tag = 'aesthetic'
+    tag = ItemTags.AESTHETIC
 
     expose = Type.Music
     value = None
@@ -83,10 +88,18 @@ class BattleAnimationMusic(ItemComponent):
     def battle_music(self, unit, item, target, mode):
         return self.value
 
+class NoMapCombatDisplay(ItemComponent):
+    nid = 'no_map_hp_display'
+    desc = "Item does not show full map hp display when used"
+    tag = ItemTags.BASE
+
+    def no_map_hp_display(self, unit, item):
+        return True
+
 class PreCombatEffect(ItemComponent):
     nid = 'pre_combat_effect'
     desc = "Item plays a combat effect right before combat."
-    tag = 'aesthetic'
+    tag = ItemTags.AESTHETIC
 
     expose = Type.EffectAnimation
 
@@ -95,38 +108,60 @@ class PreCombatEffect(ItemComponent):
 
 class Warning(ItemComponent):
     nid = 'warning'
-    desc = "Yellow warning sign appears above wielder's head"
-    tag = 'aesthetic'
+    desc = "A yellow exclamation mark appears above the wielder's head. Often used for killing weapons."
+    tag = ItemTags.AESTHETIC
 
-    def warning(self, unit, item, target) -> bool:
-        return True
+    def target_icon(self, target, item, unit) -> str:
+        return 'warning' if skill_system.check_enemy(target, unit) else None
 
 class EvalWarning(ItemComponent):
     nid = 'eval_warning'
-    desc = "Yellow warning sign appears above wielder's head if current unit meets eval"
-    tag = 'aesthetic'
+    desc = "A red exclamation mark appears above the wielder’s head if the selected unit matches the evaluated string. Often used for effective weapons."
+    tag = ItemTags.AESTHETIC
 
     expose = Type.String
     value = 'True'
 
-    def warning(self, unit, item, target) -> bool:
+    def target_icon(self, target, item, unit) -> bool:
+        from app.engine import evaluate
+        if not skill_system.check_enemy(target, unit):
+            return None
+        try:
+            val = evaluate.evaluate(self.value, unit, target, unit.position, {'item': item})
+            if bool(val):
+                return 'danger'
+        except Exception as e:
+            logging.error("Could not evaluate %s (%s)" % (self.value, e))
+        return None
+
+class ItemIconFlash(ItemComponent):
+    nid = 'item_icon_flash'
+    desc = "During combat preview, item will flash if target's item meets condition"
+    tag = ItemTags.AESTHETIC
+
+    expose = Type.String
+    value = 'True'
+
+    def item_icon_mod(self, unit, item, target, sprite):
         from app.engine import evaluate
         try:
-            val = evaluate.evaluate(self.value, unit, target, item)
-            return bool(val)
+            val = evaluate.evaluate(self.value, unit, target, unit.position, {'item': item})
         except Exception as e:
             print("Could not evaluate %s (%s)" % (self.value, e))
-            return False
+            return sprite
+        if val:
+            sprite = image_mods.make_white(sprite.convert_alpha(), abs(250 - engine.get_time()%500)/250)
+        return sprite
 
 class TextColor(ItemComponent):
     nid = 'text_color'
     desc = 'Special color for item text.'
-    tag = 'aesthetic'
+    tag = ItemTags.AESTHETIC
 
     expose = (Type.MultipleChoice, NORMAL_FONT_COLORS)
     value = 'white'
 
     def text_color(self, unit, item):
         if self.value not in NORMAL_FONT_COLORS:
-            return 'text-white'
-        return 'text-' + self.value
+            return 'white'
+        return self.value

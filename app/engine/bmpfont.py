@@ -1,17 +1,29 @@
+from dataclasses import dataclass
+import re
+from typing import Dict, Tuple
+from functools import lru_cache
+
 from app.engine import engine
 
+@dataclass
+class CharGlyph():
+    """Class representing a char position and dimension on the sheet"""
+    x: int
+    y: int
+    char_width: int
+
 class BmpFont():
-    def __init__(self, png_path, idx_path):
+    def __init__(self, png_path: str, idx_path: str, default_color: str = 'default'):
         self.all_uppercase = False
         self.all_lowercase = False
         self.stacked = False
-        self.chartable = {}
+        self.chartable: Dict[str, CharGlyph] = {}
         self.idx_path = idx_path
         self.png_path = png_path
         self.space_offset = 0
         self._width = 8
         self.height = 16
-        self.memory = {}
+        self.memory: Dict[str, Dict[str, Tuple[engine.Surface, int]]] = {}
 
         with open(self.idx_path, 'r', encoding='utf-8') as fp:
             for x in fp.readlines():
@@ -35,11 +47,13 @@ class BmpFont():
                         words[0] = words[0].upper()
                     if self.all_lowercase:
                         words[0] = words[0].lower()
-                    self.chartable[words[0]] = (int(words[1]) * self._width,
-                                                int(words[2]) * self.height,
-                                                int(words[3]))
+                    self.chartable[words[0]] = CharGlyph(int(words[1]) * self._width,
+                                                         int(words[2]) * self.height,
+                                                         int(words[3]))
 
-        self.surface = engine.image_load(self.png_path)
+        self.default_color = default_color
+        self.surfaces: Dict[str, engine.Surface] = {}
+        self.surfaces[default_color] = engine.image_load(self.png_path)
         # engine.set_colorkey(self.surface, (0, 0, 0), rleaccel=True)
 
     def modify_string(self, string: str) -> str:
@@ -50,55 +64,86 @@ class BmpFont():
         # string = string.replace('_', ' ')
         return string
 
-    def blit(self, string, surf, pos=(0, 0)):
-        def normal_render(left, top, string):
-            for c in string:
-                if c not in self.memory:
-                    try:
-                        char_pos_x = self.chartable[c][0]
-                        char_pos_y = self.chartable[c][1]
-                        char_width = self.chartable[c][2]
-                    except KeyError as e:
-                        char_pos_x = 0
-                        char_pos_y = 0
-                        char_width = 8
-                        print(e)
-                        print("%s is not chartable" % c)
-                        print("string: ", string)
-                    subsurf = engine.subsurface(self.surface, (char_pos_x, char_pos_y, self._width, self.height))
-                    self.memory[c] = (subsurf, char_width)
-                else:
-                    subsurf, char_width = self.memory[c]
-                engine.blit(surf, subsurf, (left, top))
-                left += char_width + self.space_offset
+    @lru_cache()
+    def _get_char_from_surf(self, c: str, color: str = None) -> Tuple[engine.Surface, int]:
+        if not color:
+            color = self.default_color
+        if c not in self.chartable:
+            cx, cy, cwidth = 0, 0, 8
+            print("unknown char: %s" % c)
+        else:
+            c_info = self.chartable[c]
+            cx, cy, cwidth = c_info.x, c_info.y, c_info.char_width
+        base_surf = self.surfaces[color]
+        char_surf = engine.subsurface(base_surf, (cx, cy, self._width, self.height))
+        return (char_surf, cwidth)
 
-        def stacked_render(left, top, string):
-            orig_left = left
-            for c in string:
-                if c not in self.memory:
-                    try:
-                        char_pos_x = self.chartable[c][0]
-                        char_pos_y = self.chartable[c][1]
-                        char_width = self.chartable[c][2]
-                    except KeyError as e:
-                        char_pos_x = 0
-                        char_pos_y = 0
-                        char_width = 8
-                        print(e)
-                        print("%s is not chartable" % c)
-                        print("string: ", string)
+    @lru_cache()
+    def _get_stacked_char_from_surf(self, c: str, color: str = None) -> Tuple[engine.Surface, engine.Surface, int]:
+        if not color:
+            color = 'default'
+        if c not in self.chartable:
+            cx, cy, cwidth = 0, 0, 8
+            print("unknown char: %s" % c)
+        else:
+            c_info = self.chartable[c]
+            cx, cy, cwidth = c_info.x, c_info.y, c_info.char_width
+        base_surf = self.surfaces[color]
+        high_surf = engine.subsurface(base_surf, (cx, cy, self._width, self.height))
+        lowsurf = engine.subsurface(base_surf, (cx, cy + self.height, self._width, self.height))
+        return (high_surf, lowsurf, cwidth)
 
-                    highsurf = engine.subsurface(self.surface, (char_pos_x, char_pos_y, self._width, self.height))
-                    lowsurf = engine.subsurface(self.surface, (char_pos_x, char_pos_y + self.height, self._width, self.height))
-                    self.memory[c] = (highsurf, lowsurf, char_width)
+    def blit(self, string, surf, pos=(0, 0), color: str = None, no_process=False):
+        if not color:
+            color = self.default_color
+
+        def normal_render(left, top, string: str, bcolor):
+            curr_color = bcolor
+            color_stack = [bcolor]
+            mode = 'normal'
+            color = ""
             for c in string:
-                highsurf, lowsurf, char_width = self.memory[c]
-                engine.blit(surf, lowsurf, (left, top))
-                left += char_width + self.space_offset
+                if c == '<' and not no_process: # detect color tag
+                    mode = 'color'
+                    color = ""
+                elif mode == 'normal':
+                    c_surf, char_width = self._get_char_from_surf(c, curr_color)
+                    engine.blit(surf, c_surf, (left, top))
+                    left += char_width + self.space_offset
+                elif c == '>' and not no_process and mode == 'color':
+                    color = color.lower()
+                    if color not in self.surfaces.keys():
+                        curr_color = color_stack.pop() if color_stack else bcolor
+                    else:
+                        color_stack.append(curr_color)
+                        curr_color = color
+                    mode = 'normal'
+                elif mode == 'color':
+                    color += c
+
+        def stacked_render(left, top, string: str, bcolor):
+            curr_color = bcolor
+            color_stack = [bcolor]
+            mode = 'normal'
             for c in string:
-                highsurf, lowsurf, char_width = self.memory[c]
-                engine.blit(surf, highsurf, (orig_left, top))
-                orig_left += char_width + self.space_offset
+                if c == '<' and not no_process: # detect color tag
+                    mode = 'color'
+                    color = ""
+                elif mode == 'normal':
+                    highsurf, lowsurf, char_width = self._get_stacked_char_from_surf(c, curr_color)
+                    engine.blit(surf, lowsurf, (left, top))
+                    engine.blit(surf, highsurf, (left, top))
+                    left += char_width + self.space_offset
+                elif c == '>' and not no_process and mode == 'color':
+                    color = color.lower()
+                    if color not in self.surfaces.keys():
+                        curr_color = color_stack.pop() if color_stack else bcolor
+                    else:
+                        color_stack.append(curr_color)
+                        curr_color = color
+                    mode = 'normal'
+                elif mode == 'color':
+                    color += c
 
         x, y = pos
         surfwidth, surfheight = surf.get_size()
@@ -106,17 +151,26 @@ class BmpFont():
         string = self.modify_string(string)
 
         if self.stacked:
-            stacked_render(x, y, string)
+            stacked_render(x, y, string, color)
         else:
-            normal_render(x, y, string)
+            normal_render(x, y, string, color)
 
-    def blit_right(self, string, surf, pos):
+    def blit_right(self, string, surf, pos, color=None):
         width = self.width(string)
-        self.blit(string, surf, (pos[0] - width, pos[1]))
+        self.blit(string, surf, (pos[0] - width, pos[1]), color)
 
-    def blit_center(self, string, surf, pos):
+    def blit_center(self, string, surf, pos, color=None):
         width = self.width(string)
-        self.blit(string, surf, (pos[0] - width//2, pos[1]))
+        self.blit(string, surf, (pos[0] - width//2, pos[1]), color)
+
+    def process_string(self, string):
+        """
+        strips all non-displayed chars from string. used to calculate width.
+        """
+        stripped = re.sub(r"\<[^()]*?\>", "", string)
+        stripped = re.sub(r"\<[^()]*?$", "", stripped)
+        return stripped
+
 
     def size(self, string):
         """
@@ -130,14 +184,14 @@ class BmpFont():
         """
         length = 0
         string = self.modify_string(string)
-
+        string = self.process_string(string)
         for c in string:
             try:
-                char_width = self.chartable[c][2]
+                char_width = self.chartable[c].char_width
             except KeyError as e:
-                print(e)
-                print("%s is not chartable" % c)
-                print("string: ", string)
+                # print(e)
+                # print("%s is not chartable" % c)
+                # print("string: ", string)
                 char_width = 8
             length += char_width
         length += 1

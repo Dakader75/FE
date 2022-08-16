@@ -90,3 +90,9 @@ class MainSettingsController():
 
     def get_autocomplete_button(self, fallback=None):
         return self.state.value('autocomplete_button', fallback, type=Qt.Key)
+
+    def set_editor_close_button(self, value):
+        self.state.setValue('editor_close_button', value)
+
+    def get_editor_close_button(self, fallback=Qt.Key_Escape):
+        return self.state.value('editor_close_button', fallback, type=Qt.Key)

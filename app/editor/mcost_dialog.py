@@ -131,8 +131,8 @@ class ColumnHeaderView(QHeaderView):
                 msg = "Deleting column <b>%s</b> would remove these references." % column_name
                 swap, ok = McostDeletionDialog.get_swap(affected_classes, model, msg, MovementClassBox(self))
                 if ok:
-                    for terrain in affected_classes:
-                        terrain.mtype = swap
+                    for klass in affected_classes:
+                        klass.movement_group = swap
                 else:
                     return # User cancelled swap
             self.parent().model().delete_col(idx)
@@ -140,7 +140,12 @@ class ColumnHeaderView(QHeaderView):
             QMessageBox.critical(self.parent(), 'Error', 'Cannot delete when only one column left!')
 
     def rename(self, idx):
+        old_column_name = DB.mcost.column_headers[idx]
         self.parent().model().change_col_header(idx)
+        new_column_name = DB.mcost.column_headers[idx]
+        affected = [klass for klass in DB.classes if klass.movement_group == old_column_name]
+        for klass in affected:
+            klass.movement_group = new_column_name
 
     def cut(self, idx):
         self.parent().model().copy_col(idx)
@@ -210,8 +215,13 @@ class RowHeaderView(QHeaderView):
         else:
             QMessageBox.critical(self.parent(), 'Error', 'Cannot delete when only one row left!')
 
-    def rename(self, idx):
+    def rename(self, idx):               
+        old_row_name = DB.mcost.row_headers[idx]
         self.parent().model().change_row_header(idx)
+        new_row_name = DB.mcost.row_headers[idx]
+        affected = [terrain for terrain in DB.terrain if terrain.mtype == old_row_name]
+        for terrain in affected:
+            terrain.mtype = new_row_name
 
     def cut(self, idx):
         self.parent().model().copy_row(idx)

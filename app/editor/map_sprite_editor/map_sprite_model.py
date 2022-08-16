@@ -34,7 +34,10 @@ def get_basic_icon(pixmap, num, active=False, team='player'):
         else:
             one_frame = editor_utilities.color_convert(one_frame, editor_utilities.enemy_colors)
     elif team == 'other':
-        one_frame = editor_utilities.color_convert(one_frame, editor_utilities.other_colors)
+        if DB.constants.value('dark_sprites'):
+            one_frame = editor_utilities.color_convert(one_frame, editor_utilities.other_dark_colors)
+        else:
+            one_frame = editor_utilities.color_convert(one_frame, editor_utilities.other_colors)
     elif team == 'enemy2':
         one_frame = editor_utilities.color_convert(one_frame, editor_utilities.enemy2_colors)
     # Must convert colorkey last, or else color conversion doesn't work correctly

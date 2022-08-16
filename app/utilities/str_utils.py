@@ -85,3 +85,97 @@ def is_float(s: str) -> bool:
 
 def camel_case(s: str) -> str:
     return functools.reduce(lambda a, b: a + ((b.upper() == b and (a and a[-1].upper() != a[-1])) and (' ' + b) or b), s, '')
+
+def camel_to_snake(name: str) -> str:
+    """
+    https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+    """
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
+
+def snake_to_readable(s: str) -> str:
+    return s.replace('_', ' ').title()
+
+def nested_expr(s, opener, closer):
+    # Returns a nested list
+    assert opener != closer
+    assert len(opener) == 1
+    assert len(closer) == 1
+    main_list = []
+    list_stack = [main_list]
+    current_list = main_list
+    for character in s:
+        if character == opener:
+            new_list = []
+            list_stack.append(new_list)
+            current_list.append(new_list)
+            current_list = new_list
+        elif character == closer:
+            list_stack.pop()
+            current_list = list_stack[-1]
+        else:
+            current_list.append(character)
+    return main_list[0]
+
+def matched_expr(s: str, opener: str, closer: str):
+    # returns all strings bounded by balanced openers, closers
+    # e.g. "{bac{def}jk} {lmno}" would return "[bac{def}jk, lmno]", not "[bac{def, lmno]"
+    assert opener != closer
+    assert len(opener) == 1
+    assert len(closer) == 1
+    all_strs = []
+    curr = ""
+    unclosed = 0
+    for character in s:
+        if unclosed > 0:
+            curr += character
+        if character == closer and unclosed > 0:
+            unclosed -= 1
+            if unclosed == 0:
+                all_strs.append(curr)
+                curr = ""
+        elif character == opener:
+            if unclosed == 0:
+                curr += character
+            unclosed += 1
+    return all_strs
+
+def remove_all_matched(s: str, opener: str, closer: str):
+    """
+    usage: `{d:{eval:f}.{eval:y}.` becomes `{d:..` - useful for determining which level of a nested eval we're in
+    https://stackoverflow.com/questions/37528373/how-to-remove-all-text-between-the-outer-parentheses-in-a-string
+    """
+    assert opener != closer
+    assert len(opener) == 1
+    assert len(closer) == 1
+    n = 1  # run at least once
+    rstr = '\\' + opener + '[^' + opener + closer + ']*\\' + closer
+    while n:
+        s, n = re.subn(rstr, '', s)  # remove non-nested/flat balanced parts
+    return s
+
+if __name__ == '__main__':
+    # print(camel_to_snake("Direction"))
+    # print(camel_to_snake("EntityID"))
+    # print(camel_to_snake("Node1"))
+    # print(camel_to_snake("OverworldNodeNid"))
+
+    # def recursive_parse(parse_list) -> str:
+    #     copy = [""] * len(parse_list)
+    #     for idx, nested in enumerate(parse_list):
+    #         if isinstance(nested, list):
+    #             recursively_parsed = recursive_parse(nested)
+    #             copy[idx] = recursively_parsed
+    #         else:
+    #             copy[idx] = nested
+    #     return str('{' + ''.join(copy) + '}')
+
+    # test_str = "See, {e:game.get_unit('{e:unit.nid}')}."
+    # to_evaluate = re.findall(r'\{.*\}', test_str)
+    # for to_eval in to_evaluate:
+    #     res = nested_expr(to_eval, "{", "}")
+    #     print(res)
+    #     parsed = recursive_parse(res)
+    #     print(parsed)
+    print(matched_expr('{d:MercenaryHiringList.{v:MercenaryHireChoice}.Class}', '{', '}'))
+    print(remove_all_matched('{d:{eval}.{var}.', '{', '}'))

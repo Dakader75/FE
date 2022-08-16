@@ -1,0 +1,96 @@
+[
+    {
+        "nid": "Mueller",
+        "name": "Mueller",
+        "desc": "A villager from Renais. He was once a feared military leader.",
+        "variant": "",
+        "level": 3,
+        "klass": "Archer",
+        "tags": [],
+        "bases": {
+            "HP": 26,
+            "STR": 8,
+            "MAG": 0,
+            "SKL": 7,
+            "SPD": 4,
+            "LCK": 3,
+            "DEF": 6,
+            "RES": 1,
+            "CON": 14,
+            "MOV": 5,
+            "Atk": 11
+        },
+        "growths": {
+            "HP": 80,
+            "STR": 65,
+            "MAG": 0,
+            "SKL": 35,
+            "SPD": 25,
+            "LCK": 25,
+            "DEF": 40,
+            "RES": 1,
+            "CON": 0,
+            "MOV": 0,
+            "Atk": 50
+        },
+        "starting_items": [
+            [
+                "Steel Bow",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Preperation"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                0
+            ],
+            "Bow": [
+                false,
+                31
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Kyle",
+        "affinity": "Anima",
+        "fields": []
+    }
+]

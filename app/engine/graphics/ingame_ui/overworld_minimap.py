@@ -2,7 +2,7 @@ from __future__ import annotations
 from app.engine.overworld.overworld_manager import OverworldManager
 from app.utilities.typing import Point
 from app.utilities.utils import tmult, tuple_add, tuple_sub
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 import app.engine.graphics.ui_framework as uif
 from app.engine import engine
 from app.engine.objects.overworld import OverworldObject
@@ -88,7 +88,6 @@ class OverworldMinimap(uif.UIComponent):
             true_minimap_pos = tuple_add(pos_offset, self.TRUE_MAP_TOPLEFT)
             return (int(true_minimap_pos[0]), int(true_minimap_pos[1]))
         return (0, 0)
-
 
     def get_entity_positions(self) -> List[Tuple[bool, Point]]:
         entity_positions = []

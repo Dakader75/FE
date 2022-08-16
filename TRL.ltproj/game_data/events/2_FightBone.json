@@ -1,0 +1,32 @@
+[
+    {
+        "name": "FightBone",
+        "trigger": "combat_start",
+        "level_nid": "2",
+        "condition": "(unit.nid == \"Bone\" and unit2.team == 'player' and unit2.nid != \"Berkut\" and unit2.nid != \"Jerowm\") or (unit2.nid == \"Bone\" and unit.team == 'player' and unit.nid != \"Berkut\" and unit.nid != \"Jerowm\")",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Bone",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Bone",
+                    "Pillagers! You have no right!"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Bone"
+                ]
+            ]
+        ],
+        "only_once": true,
+        "priority": 20
+    }
+]

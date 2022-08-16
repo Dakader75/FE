@@ -1,7 +1,7 @@
 from app.constants import WINWIDTH, WINHEIGHT
 
 from app.engine.sprites import SPRITES
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 from app.engine.fonts import FONT
 from app.engine.state import State
 from app.engine import background, image_mods, engine
@@ -31,12 +31,12 @@ class ChapterTitleState(State):
 
         # Fade in music
         self.music_flag = False
-        if game.memory.get('chapter_title_sound'):
-            song = SOUNDTHREAD.fade_in(game.memory.get('chapter_sound'))
+        if game.memory.get('chapter_title_music'):
+            song = get_sound_thread().fade_in(game.memory.get('chapter_title_music'))
             if song:
                 self.music_flag = True
         if not self.music_flag:
-            song = SOUNDTHREAD.fade_in('Chapter Sound')
+            song = get_sound_thread().fade_in('Chapter Sound')
             if song:
                 self.music_flag = True
 
@@ -50,7 +50,7 @@ class ChapterTitleState(State):
     def take_input(self, event):
         if event in ('START', 'SELECT', 'BACK'):
             if self.music_flag:
-                SOUNDTHREAD.stop()
+                get_sound_thread().stop()
             game.state.change('transition_pop')
             self.state = 'end'
             return 'repeat'
@@ -98,7 +98,7 @@ class ChapterTitleState(State):
                 self.sigil_fade = 0
                 self.state = 'ribbon_close'
                 if self.music_flag:
-                    SOUNDTHREAD.fade_to_stop()
+                    get_sound_thread().fade_to_stop()
 
         elif self.state == 'ribbon_close':
             self.banner_grow_y -= 2
@@ -127,7 +127,7 @@ class ChapterTitleState(State):
         if self.state in ('ribbon_fade_in', 'wait', 'ribbon_close', 'sigil_out', 'end'):
             new_ribbon = engine.copy_surface(self.ribbon)
             name_width = FONT['chapter-yellow'].width(self.title)
-            position = (WINWIDTH//2 - name_width//2, self.ribbon.get_height()//2 - 6)
+            position = (new_ribbon.get_width()//2 - name_width//2, self.ribbon.get_height()//2 - 6)
             FONT['chapter-yellow'].blit(self.title, new_ribbon, position)
             rect = (0, (self.ribbon.get_height() - self.banner_grow_y)//2, self.ribbon.get_width(), self.banner_grow_y)
             new_ribbon = engine.subsurface(new_ribbon, rect)

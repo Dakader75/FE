@@ -1,0 +1,19 @@
+[
+    {
+        "name": "TurnChange",
+        "trigger": "turn_change",
+        "level_nid": "1",
+        "condition": "game.turncount == 2",
+        "commands": [
+            [
+                "give_item",
+                [
+                    "101",
+                    "Hand Axe (Hand Axe)"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

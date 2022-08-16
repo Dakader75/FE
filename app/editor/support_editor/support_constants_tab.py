@@ -43,7 +43,7 @@ class SupportConstantDatabase(DatabaseTab):
         main_constants = ('combat_convos', 'base_convos', 'bonus_method')
         main_section = self.create_section(main_constants)
         main_section.setTitle("Main Constants")
-        points_constants = ('bonus_range', 'growth_range', 'chapter_points', 'end_turn_points', 'combat_points', 'interact_points')
+        points_constants = ('bonus_range', 'growth_range', 'chapter_points', 'end_turn_points', 'combat_points', 'interact_points', 'pairup_points')
         points_section = self.create_section(points_constants)
         points_section.setTitle("Range and Points")
         limit_constants = ('bonus_ally_limit', 'rank_limit', 'highest_rank_limit', 'ally_limit', 'point_limit_per_chapter', 'rank_limit_per_chapter')

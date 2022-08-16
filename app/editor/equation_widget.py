@@ -14,6 +14,30 @@ from app.data import equations, level_units, item_components, components
 import logging
 
 class EquationMultiModel(MultiAttrListModel):
+    descs = {
+        "AVOID": "Chance to avoid an enemy's attack",
+        "CONSTITUTION": "Offsets weight speed reduction from items",
+        "CRIT_ADD": "Flat damage bonus on crits",
+        "CRIT_AVOID": "Reduces enemy's crit chance",
+        "CRIT_HIT": "Crit chance",
+        "CRIT_MULT": "Multiplicative damage bonus on crits, after def/res",
+        "DAMAGE": "Base damage with physical weapons",
+        "DEFENSE": "Base defense",
+        "HEAL": "Base heal formula",
+        "HIT": "Base hit rate",
+        "HITPOINTS": "Total HP",
+        "MAGIC_DAMAGE": "Base damage with magical weapons",
+        "MAGIC_DEFENSE": "Base magical defense",
+        "MOVEMENT": "Total movement",
+        "RATING": "Overall unit rating",
+        "RESCUE_AID": "Maximum weight that can be rescued",
+        "RESCUE_WEIGHT": "Rescue weight",
+        "SPEED_TO_DOUBLE": "Doubling threshold",
+        "STEAL_ATK": "Steal ability",
+        "STEAL_DEF": "Steal resistance",
+        "THRACIA_CRIT": "Multiplicative damage bonus on crits, before def/res",
+    }
+
     def data(self, index, role):
         if not index.isValid():
             return None
@@ -33,19 +57,25 @@ class EquationMultiModel(MultiAttrListModel):
             data = self._data[index.row()]
             attr = self._headers[index.column()]
             return getattr(data, attr)
+        elif role == Qt.ToolTipRole:
+            data = self._data[index.row()]
+            if data.nid in self.descs:
+                return self.descs[data.nid]
         return None
 
     def test_equation(self, equation) -> bool:
         try:
             from app.engine import equations as parse
-            parser = parse.Parser()
-            test_unit = level_units.UniqueUnit(DB.units[0].nid, 'player', None, (0, 0))
+            from app.engine.objects import unit
+            test_unit = unit.UnitObject.from_prefab(DB.units[0])
             test_unit.stats = {k: v for (k, v) in test_unit.bases.items()}
             test_unit.stat_bonus = lambda x: 0
+            parser = parse.Parser()
             result = parser.get(equation.nid, test_unit)
             result = parser.get_expression(equation.expression, test_unit)
             return True
         except Exception as e:
+            logging.exception(e)
             logging.error("TestEquation Error: %s" % e)
             return False
 
@@ -86,7 +116,7 @@ class EquationDialog(MultiAttrListDialog):
                    "DAMAGE", "DEFENSE", "MAGIC_DAMAGE", "MAGIC_DEFENSE",
                    "HITPOINTS", "MOVEMENT", "THRACIA_CRIT", "CRIT_ADD", "CRIT_MULT",
                    "SPEED_TO_DOUBLE", "STEAL_ATK", "STEAL_DEF",
-                   "HEAL", "RESCUE_AID", "RESCUE_WEIGHT", "RATING"}
+                   "HEAL", "RESCUE_AID", "RESCUE_WEIGHT", "RATING", "CONSTITUTION"}
 
     @classmethod
     def create(cls):

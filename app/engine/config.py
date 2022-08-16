@@ -8,8 +8,10 @@ def read_config_file():
     lines = OrderedDict([('debug', 1),
                          ('random_seed', -1),
                          ('screen_size', 2),
+                         ('fullscreen', 0),
                          ('sound_buffer_size', 4),
                          ('animation', 'Always'),
+                         ('display_fps', 0),
                          ('battle_bg', 0),
                          ('unit_speed', 120),
                          ('text_speed', 10),
@@ -21,6 +23,8 @@ def read_config_file():
                          ('music_volume', 0.3),
                          ('sound_volume', 0.3),
                          ('talk_boop', 1),
+                         ('show_bounds', 0),
+                         ('grid_opacity', 127),
                          ('autoend_turn', 1),
                          ('confirm_end', 1),
                          ('hp_map_team', 'All'),
@@ -63,7 +67,7 @@ def read_config_file():
             elif v.startswith('K_'):  # pygame key constant
                 lines[k] = getattr(engine.pygame, v)
         else:  # convert to int
-            lines[k] = int(v) 
+            lines[k] = int(v)
 
     return lines
 

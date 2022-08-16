@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QColor, QPixmap
 
 from app.data.database import DB
+from app.events.regions import RegionType
 
 from app.utilities import utils, str_utils
 from app.utilities.data import Data
@@ -130,10 +131,10 @@ class RegionModel(DragDropCollectionModel):
         if role == Qt.DisplayRole:
             reg = self._data[index.row()]
             text = reg.nid + ': ' + reg.region_type
-            if reg.region_type == 'status':
+            if reg.region_type == RegionType.STATUS:
                 if reg.sub_nid:
                     text += ' ' + reg.sub_nid
-            elif reg.region_type == 'event':
+            elif reg.region_type == RegionType.EVENT:
                 if reg.sub_nid:
                     text += ' ' + reg.sub_nid
                 if reg.condition:
@@ -183,7 +184,7 @@ class ModifyRegionWidget(QWidget):
         layout.addWidget(self.nid_box)
 
         self.region_type_box = PropertyBox("Region Type", ComboBox, self)
-        self.region_type_box.edit.addItems(regions.region_types)
+        self.region_type_box.edit.addItems(list(RegionType))
         # self.region_type_box.edit.setValue(self.current.region_type)
         self.region_type_box.edit.currentIndexChanged.connect(
             self.region_type_changed)
@@ -203,6 +204,10 @@ class ModifyRegionWidget(QWidget):
         self.only_once_box = PropertyCheckBox("Only once?", QCheckBox, self)
         self.only_once_box.edit.stateChanged.connect(self.only_once_changed)
         layout.addWidget(self.only_once_box)
+        
+        self.interrupt_move_box = PropertyCheckBox("Interrupts Movement?", QCheckBox, self)
+        self.interrupt_move_box.edit.stateChanged.connect(self.interrupt_move_changed)
+        layout.addWidget(self.interrupt_move_box)
 
         self.status_box = SkillBox(self)
         # if self.current.sub_nid and self.current.region_type == 'Status':
@@ -213,6 +218,7 @@ class ModifyRegionWidget(QWidget):
         self.sub_nid_box.hide()
         self.condition_box.hide()
         self.only_once_box.hide()
+        self.interrupt_move_box.hide()
         self.status_box.hide()
 
     def nid_changed(self, text):
@@ -238,21 +244,23 @@ class ModifyRegionWidget(QWidget):
         if not self.current:
             return
         self.current.region_type = self.region_type_box.edit.currentText().lower()
-        if self.current.region_type in ('normal', 'formation'):
-            self.sub_nid_box.hide()
-            self.condition_box.hide()
-            self.only_once_box.hide()
-            self.status_box.hide()
-        elif self.current.region_type == 'status':
-            self.sub_nid_box.hide()
-            self.condition_box.hide()
-            self.only_once_box.hide()
+        # Just hide them all
+        self.sub_nid_box.hide()
+        self.condition_box.hide()
+        self.only_once_box.hide()
+        self.interrupt_move_box.hide()
+        self.status_box.hide()
+        if self.current.region_type in (RegionType.NORMAL, RegionType.FORMATION):
+            pass
+        elif self.current.region_type == RegionType.STATUS:
             self.status_box.show()
-        elif self.current.region_type == 'event':
+        elif self.current.region_type == RegionType.EVENT:
             self.sub_nid_box.show()
             self.condition_box.show()
             self.only_once_box.show()
-            self.status_box.hide()
+            self.interrupt_move_box.show()
+        elif self.current.region_type == RegionType.TIME:
+            self.sub_nid_box.show()
 
     def sub_nid_changed(self, text):
         self.current.sub_nid = text
@@ -264,6 +272,9 @@ class ModifyRegionWidget(QWidget):
 
     def only_once_changed(self, state):
         self.current.only_once = bool(state)
+        
+    def interrupt_move_changed(self, state):
+        self.current.interrupt_move = bool(state)
 
     def status_changed(self, index):
         self.current.sub_nid = self.status_box.edit.currentText()
@@ -275,9 +286,10 @@ class ModifyRegionWidget(QWidget):
         self.region_type_box.edit.setValue(current.region_type)
         self.condition_box.edit.setText(current.condition)
         self.only_once_box.edit.setChecked(bool(current.only_once))
-        if current.region_type == 'status':
+        self.interrupt_move_box.edit.setChecked(bool(current.interrupt_move))
+        if current.region_type == RegionType.STATUS:
             self.status_box.edit.setValue(current.sub_nid)
-        elif current.region_type == 'event':
+        elif current.region_type == RegionType.EVENT:
             self.sub_nid_box.edit.setText(current.sub_nid)
         else:
             self.sub_nid_box.edit.setText('')

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from app.engine.sound import SOUNDTHREAD
+from app.engine.sound import get_sound_thread
 import app.engine.graphics.ui_framework as uif
 from app.engine import engine
 
@@ -87,7 +87,7 @@ class NarrationDialogue(uif.UIComponent):
             play_sound.time_since_last_sound += delta_time
             if cf.SETTINGS['talk_boop'] and play_sound.time_since_last_sound > 32:
                 play_sound.time_since_last_sound = 0
-                SOUNDTHREAD.play_sfx('Talk_Boop')
+                get_sound_thread().play_sfx('Talk_Boop')
 
         play_sound.time_since_last_sound = 0
 

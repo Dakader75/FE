@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Extravagant",
+        "name": "Extravagant",
+        "desc": "If foe could be defeated with +5 damage, unit gains +5 damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            3,
+            9
+        ],
+        "components": [
+            [
+                "dynamic_damage",
+                "30 if (mode in ('attack', 'splash') and combat_calcs.compute_damage(unit, target, item, target.get_weapon(), 'attack') >= target.get_hp()) else 0"
+            ]
+        ]
+    }
+]

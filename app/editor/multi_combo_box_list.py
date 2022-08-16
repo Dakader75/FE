@@ -125,7 +125,7 @@ class MultiComboBoxListWithCheckbox(MultiComboBoxList):
         check_box = item_box.check_box
         check_box.setChecked(droppable)
         check_box.toggled.connect(partial(self.on_item_change, idx))
-        
+
         return corrected_item_nid
 
     def remove_item(self, item_nid):

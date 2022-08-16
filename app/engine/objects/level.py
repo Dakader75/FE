@@ -1,19 +1,22 @@
+from app.engine.objects.difficulty_mode import DifficultyModeObject
 from app.utilities.data import Data
 
 from app.engine.objects.unit import UnitObject
 from app.engine.objects.tilemap import TileMapObject
 from app.events.regions import Region
 from app.data.level_units import UnitGroup
+from app.utilities.typing import NID
 
 # Main Level Object used by engine
 class LevelObject():
     def __init__(self):
-        self.nid: str = None
+        self.nid: NID = None
         self.name: str = None
-        self.tilemap: TileMapObject = None  # Actually the tilemap, not a nid
-        self.party: str = None  # Party Nid
+        self.tilemap: TileMapObject = None
+        self.bg_tilemap: TileMapObject = None
+        self.party: NID = None
         self.roam: bool = False
-        self.roam_unit: str = None  # Unit Nid
+        self.roam_unit: NID = None
 
         self.music = {}
         self.objective = {}
@@ -23,11 +26,12 @@ class LevelObject():
         self.unit_groups = Data()
 
     @classmethod
-    def from_prefab(cls, prefab, tilemap, unit_registry):
+    def from_prefab(cls, prefab, tilemap, bg_tilemap, unit_registry, current_mode: DifficultyModeObject):
         level = cls()
         level.nid = prefab.nid
         level.name = prefab.name
         level.tilemap = tilemap
+        level.bg_tilemap = bg_tilemap
         level.party = prefab.party
         level.roam = prefab.roam
         level.roam_unit = prefab.roam_unit
@@ -47,7 +51,7 @@ class LevelObject():
                     unit.position = None
                 level.units.append(unit)
             else:
-                new_unit = UnitObject.from_prefab(unit_prefab)
+                new_unit = UnitObject.from_prefab(unit_prefab, current_mode)
                 level.units.append(new_unit)
 
         level.regions = Data([p for p in prefab.regions])
@@ -59,6 +63,7 @@ class LevelObject():
         s_dict = {'nid': self.nid,
                   'name': self.name,
                   'tilemap': self.tilemap.save(),
+                  'bg_tilemap': self.bg_tilemap.save() if self.bg_tilemap else None,
                   'party': self.party,
                   'roam': self.roam,
                   'roam_unit': self.roam_unit,
@@ -71,20 +76,21 @@ class LevelObject():
         return s_dict
 
     @classmethod
-    def restore(cls, s_dict, game):
+    def restore(cls, s_dict: dict, game):
         level = cls()
         level.nid = s_dict['nid']
-        level.name = s_dict['name']
+        level.name = s_dict.get('name', "")
         level.tilemap = TileMapObject.restore(s_dict['tilemap'])
-        level.party = s_dict['party']
+        level.bg_tilemap = TileMapObject.restore(s_dict['bg_tilemap']) if s_dict.get('bg_tilemap', None) else None
+        level.party = s_dict.get('party', "")
         level.roam = s_dict.get('roam', False)
         level.roam_unit = s_dict.get('roam_unit')
 
-        level.music = s_dict['music']
-        level.objective = s_dict['objective']
+        level.music = s_dict.get('music', {})
+        level.objective = s_dict.get('objective', {})
 
-        level.units = Data([game.get_unit(unit_nid) for unit_nid in s_dict['units']])
-        level.regions = Data([Region.restore(region) for region in s_dict['regions']])
-        level.unit_groups = Data([UnitGroup.restore(unit_group) for unit_group in s_dict['unit_groups']])
+        level.units = Data([game.get_unit(unit_nid) for unit_nid in s_dict.get('units', [])])
+        level.regions = Data([Region.restore(region) for region in s_dict.get('regions', [])])
+        level.unit_groups = Data([UnitGroup.restore(unit_group) for unit_group in s_dict.get('unit_groups', [])])
 
         return level

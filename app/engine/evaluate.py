@@ -1,23 +1,38 @@
+import logging
 import random, re
+from typing import Dict
+from app.engine.query_engine import GameQueryEngine
 
 from app.utilities import utils
 from app.data.database import DB
 
 import app.engine.config as cf
-from app.engine import engine, item_funcs, item_system, skill_system, combat_calcs, unit_funcs
+from app.engine import engine, item_funcs, item_system, skill_system, combat_calcs, unit_funcs, target_system
 from app.engine import static_random
-from app.engine.game_state import game
 
 """
-Essentially just a repository that imports a lot of different things so that many different eval calls 
+Essentially just a repository that imports a lot of different things so that many different eval calls
 will be accepted
 """
 
-def evaluate(string: str, unit1=None, unit2=None, item=None, position=None,
-             region=None, mode=None, skill=None, attack_info=None, base_value=None) -> bool:
-    unit = unit1
-    target = unit2
-    
+_QUERY_ENGINE = None
+QUERY_ENGINE_FUNC_DICT = None
+
+def init_query_engine(game):
+    global _QUERY_ENGINE
+    global QUERY_ENGINE_FUNC_DICT
+    if not _QUERY_ENGINE:
+        _QUERY_ENGINE = GameQueryEngine(logging.Logger("query_engine"), game)
+    query_funcs = [funcname for funcname in dir(_QUERY_ENGINE) if not funcname.startswith('_')]
+    QUERY_ENGINE_FUNC_DICT = {funcname: getattr(_QUERY_ENGINE, funcname) for funcname in query_funcs}
+
+def evaluate(string: str, unit1=None, unit2=None, position=None,
+             local_args: Dict = None, game=None) -> bool:
+    if not game:
+        from app.engine.game_state import game
+    if not QUERY_ENGINE_FUNC_DICT:
+        init_query_engine(game)
+
     def check_pair(s1: str, s2: str) -> bool:
         """
         Determines whether two units are in combat with one another
@@ -26,7 +41,7 @@ def evaluate(string: str, unit1=None, unit2=None, item=None, position=None,
             return False
         return (unit1.nid == s1 and unit2.nid == s2) or (unit1.nid == s2 and unit2.nid == s1)
 
-    def check_default(s1: str, t1: tuple) -> bool:
+    def check_default(s1: str, t1: tuple = ()) -> bool:
         """
         Determines whether the default fight quote should be used
         t1 contains the nids of units that have unique fight quotes
@@ -40,18 +55,19 @@ def evaluate(string: str, unit1=None, unit2=None, item=None, position=None,
         else:
             return False
 
-    return eval(string)
-
-def eval_string(text: str) -> str:
-    to_evaluate = re.findall(r'\{eval:[^{}]*\}', text)
-    evaluated = []
-    for to_eval in to_evaluate:
-        try:
-            val = evaluate(to_eval[6:-1])
-            evaluated.append(str(val))
-        except Exception as e:
-            print("Could not evaluate %s (%s)" % (to_eval[1:-1], e))
-            evaluated.append('??')
-    for idx in range(len(to_evaluate)):
-        text = text.replace(to_evaluate[idx], evaluated[idx])
-    return text
+    temp_globals = globals().copy()
+    temp_globals.update({
+        'unit1': unit1,
+        'unit': unit1,
+        'unit2': unit2,
+        'target': unit2,
+        'position': position,
+        'check_pair': check_pair,
+        'check_default': check_default,
+        'game': game
+    })
+    temp_globals.update(QUERY_ENGINE_FUNC_DICT)
+    if local_args:
+        temp_globals.update(local_args)
+    string = string.strip()
+    return eval(string, temp_globals)

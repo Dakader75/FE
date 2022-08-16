@@ -1,10 +1,9 @@
 import sys, os, subprocess
 import urllib.request
 
-from app.constants import VERSION
-
-remote_repo = r"https://www.dropbox.com/s/q8ii1e4rd3e97et/lt_editor.zip?dl=1"
-remote_metadata = r"https://www.dropbox.com/s/3kilsxojvdiogvb/metadata.txt?dl=1"
+remote_repo = r"https://gitlab.com/rainlash/lt-maker/-/releases/permalink/latest/downloads/lex_talionis_maker"
+remote_latest = r"https://gitlab.com/rainlash/lt-maker/-/releases/permalink/latest"
+metadata = "version.txt"
 
 def check_version(a: str, b: str) -> bool:
     """
@@ -12,36 +11,41 @@ def check_version(a: str, b: str) -> bool:
     """
     a = a.replace('.', '').replace('-', '')
     b = b.replace('.', '').replace('-', '')
-    return a > b
+    return a != b
 
 def download_url(url, save_path):
     with urllib.request.urlopen(url) as dl_file:
         with open(save_path, 'wb') as out_file:
             out_file.write(dl_file.read())
-    
+
+def get_redirected_url(url): # https://stackoverflow.com/questions/5538280/determining-redirected-url-in-python
+    opener = urllib.request.build_opener(urllib.request.HTTPRedirectHandler)
+    request = opener.open(url)
+    return request.url
+
 # Check
 def check_for_update() -> bool:
-    metadata = 'metadata.txt.tmp'
-    try:
-        download_url(remote_metadata, metadata)
-    except:
-        print("Could not access internet!")
-        return False
+    version_url = get_redirected_url(remote_latest)
+    version_num = version_url.index("releases/") + len("releases/") # Will point to start of release ID
+    new_version = version_url[version_num:]
+    print(new_version, version_url)
+
     if os.path.exists(metadata):
         with open(metadata) as fp:
             lines = [l.strip() for l in fp.readlines()]
-            version = lines[0]
-        print(version)
-        print(VERSION)
-        if check_version(version, VERSION):
-            print("Needs update! %s %s" % (version, VERSION))
+            cur_version = lines[0]
+
+        print(new_version)
+        print(cur_version)
+        if check_version(new_version, cur_version):
+            print("Needs update! %s %s" % (new_version, cur_version))
             return True
         else:
-            print("Does not need update! %s %s" % (version, VERSION))
+            print("Does not need update! %s %s" % (new_version, cur_version))
             return False
     else:
-        print("Cannot find metadata loc: %s!" % metadata)
-        return None
+        print("Cannot find version.txt, so needs update: %s!" % metadata)
+        return True
 
 CREATE_NEW_CONSOLE = 0x00000010
 
@@ -59,3 +63,7 @@ def update() -> bool:
 
     print("pid: %d" % pid)
     return True
+
+
+if __name__ == '__main__':
+    check_for_update()

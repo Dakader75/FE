@@ -1,0 +1,132 @@
+[
+    {
+        "nid": "1",
+        "name": "Chapter 1",
+        "tilemap": "Test",
+        "bg_tilemap": null,
+        "party": "Eirika",
+        "music": {
+            "player_phase": null,
+            "enemy_phase": null,
+            "other_phase": null,
+            "enemy2_phase": null,
+            "player_battle": null,
+            "enemy_battle": null,
+            "other_battle": null,
+            "enemy2_battle": null
+        },
+        "objective": {
+            "simple": "",
+            "win": "",
+            "loss": ""
+        },
+        "roam": false,
+        "roam_unit": null,
+        "go_to_overworld": false,
+        "units": [
+            {
+                "nid": "Eirika",
+                "team": "player",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    3,
+                    3
+                ],
+                "starting_traveler": null,
+                "generic": false
+            },
+            {
+                "nid": "101",
+                "variant": null,
+                "level": 1,
+                "klass": "Brigand",
+                "faction": "Soldier",
+                "starting_items": [
+                    [
+                        "Vulnerary",
+                        false
+                    ]
+                ],
+                "team": "enemy",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    7,
+                    2
+                ],
+                "starting_traveler": null,
+                "generic": true
+            },
+            {
+                "nid": "Seth",
+                "team": "player",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    6,
+                    1
+                ],
+                "starting_traveler": null,
+                "generic": false
+            },
+            {
+                "nid": "102",
+                "variant": null,
+                "level": 1,
+                "klass": "Mage",
+                "faction": "Soldier",
+                "starting_items": [
+                    [
+                        "Aether",
+                        false
+                    ]
+                ],
+                "team": "player",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    4,
+                    2
+                ],
+                "starting_traveler": null,
+                "generic": true
+            }
+        ],
+        "regions": [
+            {
+                "nid": "Village",
+                "region_type": "event",
+                "position": [
+                    31,
+                    5
+                ],
+                "size": [
+                    1,
+                    1
+                ],
+                "sub_nid": "Destructible",
+                "condition": "True",
+                "only_once": true,
+                "interrupt_move": false
+            },
+            {
+                "nid": "Switch",
+                "region_type": "event",
+                "position": [
+                    2,
+                    0
+                ],
+                "size": [
+                    7,
+                    5
+                ],
+                "sub_nid": "Switch",
+                "condition": "True",
+                "only_once": true,
+                "interrupt_move": false
+            }
+        ],
+        "unit_groups": []
+    }
+]

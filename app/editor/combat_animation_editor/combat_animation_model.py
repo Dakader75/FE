@@ -19,7 +19,8 @@ def palette_swap(pixmap, palette_nid):
     if not palette:
         return pixmap.toImage()
     im = pixmap.toImage()
-    conv_dict = {qRgb(0, *coord): qRgb(*color[:3]) for coord, color in palette.colors.items()}
+    conv_dict = editor_utilities.get_coord_conversion(palette)
+    # print("palette_swap: %s" % editor_utilities.human_readable(conv_dict))
     im = editor_utilities.color_convert(im, conv_dict)
     im = editor_utilities.convert_colorkey(im)
     return im
@@ -45,8 +46,7 @@ def get_combat_anim_icon(combat_anim_nid: str):
     palette = RESOURCES.combat_palettes.get(palette_nid)
     if not palette:
         return None
-    colors = palette.colors
-    convert_dict = {qRgb(0, coord[0], coord[1]): qRgb(*color) for coord, color in colors.items()}
+    convert_dict = editor_utilities.get_coord_conversion(palette)
 
     # Get first command that displays a frame
     for command in pose.timeline:

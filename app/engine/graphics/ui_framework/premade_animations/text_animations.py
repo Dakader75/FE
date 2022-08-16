@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING, Text, Union
 
-from app.utilities.algorithms.interpolation import (lerp, log_interp)
+from app.utilities.algorithms.interpolation import (cubic_easing, lerp, log_interp)
 
 if TYPE_CHECKING:
     from ..premade_components import PlainTextComponent
@@ -44,8 +44,10 @@ def scroll_anim(start_scroll: Union[int, float, str, UIMetric], end_scroll: Unio
 
     if interp_mode == InterpolationType.LINEAR:
         lerp_func = lerp
-    else:
+    elif interp_mode == InterpolationType.LOGARITHMIC:
         lerp_func = lambda a, b, t: log_interp(a, b, t, skew)
+    else:
+        lerp_func = lambda a, b, t: cubic_easing(a, b, t)
 
     def before_scroll(c: PlainTextComponent, *args):
         c.set_scroll_height(sscroll)
@@ -81,8 +83,11 @@ def scroll_to_next_line_anim(duration: int=500, disable_after=False,
     """
     if interp_mode == InterpolationType.LINEAR:
         lerp_func = lerp
-    else:
+    elif interp_mode == InterpolationType.LOGARITHMIC:
         lerp_func = lambda a, b, t: log_interp(a, b, t, skew)
+    else:
+        lerp_func = lambda a, b, t: cubic_easing(a, b, t)
+
     def do_scroll(c: PlainTextComponent, anim_time, *args):
         original_line = math.floor(c.scrolled_line)
         next_line = original_line + 1

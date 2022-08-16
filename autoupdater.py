@@ -39,7 +39,7 @@ def autoupdate(local, remote_lnk):
         print("Failed to fully unzip remote %s to %s! %s" % (remote_dir, tmp, e))
         return
 
-    try:    
+    try:
         print("Copy projects and saves")
         tmp_lt_editor = os.path.join(tmp, 'lt_editor/lt_editor')
         copy_and_overwrite(os.path.join(local, 'saves'), os.path.join(tmp_lt_editor, 'saves'))
@@ -55,7 +55,7 @@ def autoupdate(local, remote_lnk):
     print("All .ltproj files have been copied as well.")
     print("You can delete the current directory, and then")
     print("rename the *.tmp directory, and you should be good to go.")
-    
+
 if __name__ == '__main__':
     print(sys.argv)
     if len(sys.argv) < 3:

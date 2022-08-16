@@ -1,0 +1,153 @@
+[
+    {
+        "nid": "DEBUG",
+        "name": "DEBUG",
+        "tilemap": "Chapter 2",
+        "party": "Eirika",
+        "music": {
+            "player_phase": "Shadow of the Enemy",
+            "enemy_phase": null,
+            "other_phase": null,
+            "enemy2_phase": null,
+            "player_battle": null,
+            "enemy_battle": null,
+            "other_battle": null,
+            "enemy2_battle": null
+        },
+        "objective": {
+            "simple": "DEBUG",
+            "win": "Don't Crash",
+            "loss": "Crash"
+        },
+        "roam": false,
+        "roam_unit": null,
+        "go_to_overworld": false,
+        "units": [
+            {
+                "nid": "Bone",
+                "team": "enemy",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    2,
+                    5
+                ],
+                "starting_traveler": null,
+                "generic": false
+            },
+            {
+                "nid": "Eirika",
+                "team": "player",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    2,
+                    6
+                ],
+                "starting_traveler": null,
+                "generic": false
+            },
+            {
+                "nid": "103",
+                "variant": null,
+                "level": 1,
+                "klass": "Soldier",
+                "faction": "Soldier",
+                "starting_items": [
+                    [
+                        "Iron Lance",
+                        false
+                    ],
+                    [
+                        "Slim Lance",
+                        false
+                    ],
+                    [
+                        "Vulnerary",
+                        false
+                    ]
+                ],
+                "team": "enemy",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    4,
+                    9
+                ],
+                "starting_traveler": null,
+                "generic": true
+            },
+            {
+                "nid": "Seth",
+                "team": "player",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    5,
+                    4
+                ],
+                "starting_traveler": null,
+                "generic": false
+            },
+            {
+                "nid": "Moulder",
+                "team": "player",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    1,
+                    2
+                ],
+                "starting_traveler": null,
+                "generic": false
+            },
+            {
+                "nid": "Vanessa",
+                "team": "player",
+                "ai": "None",
+                "ai_group": null,
+                "starting_position": [
+                    2,
+                    2
+                ],
+                "starting_traveler": null,
+                "generic": false
+            }
+        ],
+        "regions": [
+            {
+                "nid": "Armory",
+                "region_type": "event",
+                "position": [
+                    5,
+                    7
+                ],
+                "size": [
+                    1,
+                    1
+                ],
+                "sub_nid": "Armory",
+                "condition": "True",
+                "only_once": false,
+                "interrupt_move": false
+            },
+            {
+                "nid": "Door1",
+                "region_type": "event",
+                "position": [
+                    4,
+                    2
+                ],
+                "size": [
+                    1,
+                    1
+                ],
+                "sub_nid": "Door",
+                "condition": "unit.can_unlock(region)",
+                "only_once": true,
+                "interrupt_move": false
+            }
+        ],
+        "unit_groups": []
+    }
+]

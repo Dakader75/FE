@@ -1,0 +1,13 @@
+[
+    {
+        "nid": "Absolve",
+        "name": "Absolve",
+        "desc": "Unit is not affected by negative terrain.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            8,
+            5
+        ],
+        "components": []
+    }
+]

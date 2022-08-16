@@ -10,11 +10,16 @@ def get_weapon_rank_bonus(unit, item):
         return None
     rank_bonus = DB.weapons.get(weapon_type).rank_bonus
     wexp = unit.wexp[weapon_type]
+    best_combat_bonus = None
+    highest_requirement = -1
     for combat_bonus in rank_bonus:
-        if combat_bonus.weapon_rank == 'All' or \
-                DB.weapon_ranks.get(combat_bonus.weapon_rank).requirement >= wexp:
+        if combat_bonus.weapon_rank == 'All':
             return combat_bonus
-    return None
+        req = DB.weapon_ranks.get(combat_bonus.weapon_rank).requirement
+        if wexp >= req and req > highest_requirement:
+            highest_requirement = req
+            best_combat_bonus = combat_bonus
+    return best_combat_bonus
 
 def get_support_rank_bonus(unit, target=None):
     from app.engine import target_system
@@ -95,7 +100,8 @@ def can_counterattack(attacker, aweapon, defender, dweapon) -> bool:
                 item_system.can_counter(defender, dweapon):
             if not attacker.position or \
                     attacker.position in item_system.valid_targets(defender, dweapon) or \
-                    skill_system.distant_counter(defender):
+                    skill_system.distant_counter(defender) or \
+                    (skill_system.close_counter(defender) and utils.calculate_distance(attacker.position, defender.position) == 1):
                 return True
     return False
 
@@ -232,23 +238,23 @@ def damage(unit, item=None):
 
     return might
 
-def defense(unit, item, item_to_avoid=None):
+def defense(atk_unit, def_unit, item, item_to_avoid=None):
     if not item_to_avoid:
-        equation = skill_system.resist_formula(unit)
+        equation = skill_system.resist_formula(def_unit)
     else:
-        equation = item_system.resist_formula(unit, item_to_avoid)
+        equation = item_system.resist_formula(atk_unit, item_to_avoid)
         if equation == 'DEFENSE':
-            equation = skill_system.resist_formula(unit)
-    res = equations.parser.get(equation, unit)
+            equation = skill_system.resist_formula(def_unit)
+    res = equations.parser.get(equation, def_unit)
 
-    support_rank_bonuses, support_allies = get_support_rank_bonus(unit)
+    support_rank_bonuses, support_allies = get_support_rank_bonus(def_unit)
     for bonus in support_rank_bonuses:
         res += float(bonus.resist)
     res = int(res)
 
     if item:
-        res += item_system.modify_resist(unit, item)
-    res += skill_system.modify_resist(unit, item_to_avoid)
+        res += item_system.modify_resist(def_unit, item)
+    res += skill_system.modify_resist(def_unit, item_to_avoid)
     return res
 
 def attack_speed(unit, item=None):
@@ -439,18 +445,31 @@ def compute_damage(unit, target, item, def_item, mode, attack_info, crit=False, 
 
     total_might = might
 
-    might -= defense(target, def_item, item)
+    might -= defense(unit, target, def_item, item)
     might -= skill_system.dynamic_resist(target, item, unit, mode, attack_info, might)
 
     if assist:
         might //= 2
 
+    # So that crit can correctly multiply when the damage dealt would be less than min_damage
+    might = int(max(DB.constants.value('min_damage'), might))
+
     if crit or skill_system.crit_anyway(unit):
-        might *= equations.parser.crit_mult(unit)
-        if equations.parser.crit_add(unit):
-            might += equations.parser.crit_add(unit)
-        if equations.parser.get('THRACIA_CRIT', unit):
-            might += total_might * equations.parser.thracia_crit(unit)
+        # Multiply Damage
+        equation = skill_system.critical_multiplier_formula(unit)
+        crit_mult = equations.parser.get(equation, unit)
+        might *= crit_mult
+
+        # Add damage
+        equation = skill_system.critical_addition_formula(unit)
+        crit_add = equations.parser.get(equation, unit)
+        might += crit_add
+
+        # Thracia Crit
+        equation = skill_system.thracia_critical_multiplier_formula(unit)
+        thracia_crit = equations.parser.get(equation, unit)
+        if thracia_crit:
+            might += total_might * thracia_crit
 
     might *= skill_system.damage_multiplier(unit, item, target, mode, attack_info, might)
     might *= skill_system.resist_multiplier(target, item, unit, mode, attack_info, might)
@@ -459,15 +478,8 @@ def compute_damage(unit, target, item, def_item, mode, attack_info, crit=False, 
 
 def compute_assist_damage(unit, target, item, def_item, mode, attack_info, crit=False):
     return compute_damage(unit, target, item, def_item, mode, attack_info, crit, assist=True)
-    
-def outspeed(unit, target, item, def_item, mode, attack_info) -> bool:
-    if not item:
-        return 1
-    if not item_system.can_double(unit, item):
-        return 1
-    if skill_system.no_double(unit):
-        return 1
 
+def compute_true_speed(unit, target, item, def_item, mode, attack_info) -> int:
     speed = attack_speed(unit, item)
 
     # Handles things like effective damage
@@ -507,6 +519,17 @@ def outspeed(unit, target, item, def_item, mode, attack_info) -> bool:
 
     speed += skill_system.dynamic_attack_speed(unit, item, target, mode, attack_info, speed)
     speed -= skill_system.dynamic_defense_speed(target, item, unit, mode, attack_info, speed)
+    return speed
+
+def outspeed(unit, target, item, def_item, mode, attack_info) -> bool:
+    if not item:
+        return 1
+    if not item_system.can_double(unit, item):
+        return 1
+    if skill_system.no_double(unit):
+        return 1
+
+    speed = compute_true_speed(unit, target, item, def_item, mode, attack_info)
 
     return 2 if speed >= equations.parser.speed_to_double(unit) else 1
 

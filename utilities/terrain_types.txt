@@ -1,0 +1,40 @@
+# For Field
+Plains (needs grass shape -- use technology from sand)
+Sand (needs new technology, noise gradients?)
+Sandy Road Hybrid (maybe...)
+Road (complete)
+Forest (complete)
+Thicket (mostly complete, specify which ones are used at top of thickets and which ones are not)
+Cliff
+Hill (include Mountain tiles where appropriate (while within distance of mountain))
+Mountain
+River
+Sea
+BridgeH
+BridgeV
+House (complete)
+Castle (complete)
+Ruins (complete)
+
+Future Terrains:
+FenceWall
+House vs Village
+Dock
+Barrel
+Stairs
+
+Desert
+
+Snow Plains
+Snow Forest
+
+Inside:
+Floor1
+Floor2
+Floor3
+Carpet
+Pillar
+Wall
+Door
+Chest
+Throne

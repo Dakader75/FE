@@ -203,6 +203,9 @@ class MockCombat():
     def get_damage(self):
         return self.damage
 
+    def get_from_playback(self, s: str):
+        return []
+
     def left_team(self):
         return 'enemy'
 

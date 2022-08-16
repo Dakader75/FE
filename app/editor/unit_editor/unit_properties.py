@@ -144,7 +144,7 @@ class UnitProperties(QWidget):
         main_section.addWidget(self.nid_box, 0, 1)
 
         self.name_box = PropertyBox("Display Name", QLineEdit, self)
-        self.name_box.edit.setMaxLength(20)
+
         self.name_box.edit.textChanged.connect(self.name_changed)
         main_section.addWidget(self.name_box, 0, 2)
 

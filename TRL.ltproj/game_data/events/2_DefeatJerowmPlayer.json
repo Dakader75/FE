@@ -1,0 +1,52 @@
+[
+    {
+        "name": "DefeatJerowmPlayer",
+        "trigger": "unit_death",
+        "level_nid": "2",
+        "condition": "unit.nid == \"Jerowm\" and unit.team == \"player\"",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Innes",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "You dastard of a prince...|I was supposed to be...|so much more..."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Innes"
+                ]
+            ],
+            [
+                "move_cursor",
+                [
+                    "Damon"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Glen",
+                    "Left"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Glen",
+                    "Lord Aston!|...|Jerowm. I've failed you..."
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

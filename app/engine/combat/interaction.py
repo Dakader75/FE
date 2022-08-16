@@ -2,7 +2,7 @@ from app.utilities import utils
 
 from app.engine import item_system, skill_system, battle_animation
 from app.engine.game_state import game
-from app.engine.input_manager import INPUT
+from app.engine.input_manager import get_input_manager
 
 from app.engine.combat.simple_combat import SimpleCombat
 from app.engine.combat.map_combat import MapCombat
@@ -13,7 +13,7 @@ from app.engine import config as cf
 from app.engine.objects.unit import UnitObject
 from app.engine.objects.item import ItemObject
 
-def has_animation(attacker: UnitObject, item: ItemObject, main_target: tuple) -> bool:
+def has_animation(attacker: UnitObject, item: ItemObject, main_target: tuple, force_animation=False) -> bool:
     defender: UnitObject = game.board.get_unit(main_target)
     if not defender:
         return False
@@ -23,8 +23,9 @@ def has_animation(attacker: UnitObject, item: ItemObject, main_target: tuple) ->
             (cf.SETTINGS['animation'] == 'Your Turn' and attacker.team == 'player') or \
             (cf.SETTINGS['animation'] == 'Combat Only' and skill_system.check_enemy(attacker, defender))
 
-    toggle_anim = INPUT.is_pressed('START')
-    if attacker is not defender and animation_wanted(attacker, defender) != toggle_anim:
+    toggle_anim = get_input_manager().is_pressed('START')
+    anim = animation_wanted(attacker, defender) != toggle_anim
+    if attacker is not defender and (anim or force_animation):
         if attacker.position and defender.position:
             distance = utils.calculate_distance(attacker.position, defender.position)
         else:
@@ -36,7 +37,8 @@ def has_animation(attacker: UnitObject, item: ItemObject, main_target: tuple) ->
 
     return False
 
-def engage(attacker: UnitObject, positions: list, main_item: ItemObject, skip: bool = False, script: list = None):
+def engage(attacker: UnitObject, positions: list, main_item: ItemObject, skip: bool = False, script: list = None,
+           total_rounds: int = 1, force_animation: bool = False, arena_combat: bool = False):
     """
     Builds the correct combat controller for this interaction
 
@@ -70,27 +72,28 @@ def engage(attacker: UnitObject, positions: list, main_item: ItemObject, skip: b
 
     if target_positions[0] is None:
         # If we are targeting None, (which means we're in base using an item)
-        combat = BaseCombat(attacker, main_item, attacker, script)
+        combat = BaseCombat(attacker, main_item, attacker, script, total_rounds)
     elif skip:
         # If we are skipping
-        combat = SimpleCombat(attacker, main_item, items, target_positions, main_targets, splashes, script)
+        combat = SimpleCombat(attacker, main_item, items, target_positions, main_targets, splashes, script, total_rounds)
         game.highlight.remove_highlights()
     # If more than one target position or more than one item being used, cannot use animation combat
     elif len(positions) > 1 or len(items) > 1:
-        combat = MapCombat(attacker, main_item, items, target_positions, main_targets, splashes, script)
+        combat = MapCombat(attacker, main_item, items, target_positions, main_targets, splashes, script, total_rounds)
     # If affecting more than one target, cannot use animation combat
     elif not main_targets[0] or splashes[0]:
-        combat = MapCombat(attacker, main_item, items, target_positions, main_targets, splashes, script)
-    elif has_animation(attacker, item, main_target):
+        combat = MapCombat(attacker, main_item, items, target_positions, main_targets, splashes, script, total_rounds)
+    elif has_animation(attacker, item, main_target, force_animation):
         defender = game.board.get_unit(main_target)
         def_item = defender.get_weapon()
-        combat = AnimationCombat(attacker, item, defender, def_item, script)
+        combat = AnimationCombat(attacker, item, defender, def_item, script, total_rounds, arena_combat)
     else:
-        combat = MapCombat(attacker, main_item, items, target_positions, main_targets, splashes, script)
+        combat = MapCombat(attacker, main_item, items, target_positions, main_targets, splashes, script, total_rounds)
     return combat
 
 def start_combat(unit: UnitObject, target: tuple, item: ItemObject, skip: bool = False,
-                 ai_combat: bool = False, event_combat: bool = False, script: list = None):
+                 ai_combat: bool = False, event_combat: bool = False, script: list = None,
+                 total_rounds: int = 1, arena: bool = False, force_animation: bool = False):
     """
     Target is a position tuple
     """
@@ -110,8 +113,11 @@ def start_combat(unit: UnitObject, target: tuple, item: ItemObject, skip: bool =
         else:
             targets = [target]
 
-    combat = engage(unit, targets, item, skip=skip, script=script)
+    combat = engage(
+        unit, targets, item, skip=skip, script=script, total_rounds=total_rounds,
+        arena_combat=arena, force_animation=force_animation)
     combat.ai_combat = ai_combat # Must mark this so we can come back!
     combat.event_combat = event_combat # Must mark this so we can come back!
+    combat.arena_combat = arena
     game.combat_instance.append(combat)
     game.state.change('combat')

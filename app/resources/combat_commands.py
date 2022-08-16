@@ -12,6 +12,9 @@ class CombatAnimationCommand():
         self.tag: str = tag
         self.desc: str = desc
 
+    def __repr__(self):
+        return "%s: %s" % (self.nid, self.value)
+
     @classmethod
     def copy(cls, other):
         return cls(other.nid, other.name, other.attr, other.value, other.tag, other.desc)

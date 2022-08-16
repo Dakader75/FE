@@ -88,7 +88,7 @@ class PortraitModel(ResourceCollectionModel):
             if not portrait.pixmap:
                 portrait.pixmap = QPixmap(portrait.full_path)
             pixmap = portrait.pixmap
-            chibi = pixmap.copy(96, 16, 32, 32)
+            chibi = pixmap.copy(pixmap.width() - 32, 16, 32, 32)
             chibi = QPixmap.fromImage(editor_utilities.convert_colorkey(chibi.toImage()))
             return QIcon(chibi)
         elif role == Qt.EditRole:
