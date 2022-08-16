@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Defiant Str",
+        "name": "Defiant Str",
+        "desc": "User gains +6 damage when under 50% HP.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            9
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_damage",
+                "6 if ((unit.get_max_hp() // 2) >= unit.get_hp()) else 0"
+            ]
+        ]
+    }
+]

@@ -13,7 +13,8 @@
                     5
                 ],
                 "icon": "fort",
-                "level": "0"
+                "level": "0",
+                "menu_options": []
             },
             {
                 "nid": "1",
@@ -23,7 +24,8 @@
                     3
                 ],
                 "icon": "tower",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "2",
@@ -33,7 +35,8 @@
                     4
                 ],
                 "icon": "castle",
-                "level": "1"
+                "level": "1",
+                "menu_options": []
             },
             {
                 "nid": "3",
@@ -43,7 +46,8 @@
                     9
                 ],
                 "icon": "fort",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "4",
@@ -53,7 +57,8 @@
                     9
                 ],
                 "icon": "fort",
-                "level": "3"
+                "level": "3",
+                "menu_options": []
             },
             {
                 "nid": "5",
@@ -63,7 +68,8 @@
                     7
                 ],
                 "icon": "town",
-                "level": "2"
+                "level": "2",
+                "menu_options": []
             },
             {
                 "nid": "6",
@@ -73,7 +79,8 @@
                     9
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "7",
@@ -83,7 +90,8 @@
                     11
                 ],
                 "icon": "town",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "8",
@@ -93,7 +101,8 @@
                     12
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "9",
@@ -103,7 +112,8 @@
                     13
                 ],
                 "icon": "citadel",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "10",
@@ -113,7 +123,8 @@
                     14
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "11",
@@ -123,7 +134,8 @@
                     15
                 ],
                 "icon": "town",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "12",
@@ -133,7 +145,8 @@
                     16
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "13",
@@ -143,7 +156,8 @@
                     16
                 ],
                 "icon": "cathedral",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "14",
@@ -153,7 +167,8 @@
                     12
                 ],
                 "icon": "pyramid",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "15",
@@ -163,7 +178,8 @@
                     8
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "16",
@@ -173,7 +189,8 @@
                     6
                 ],
                 "icon": "woods",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "17",
@@ -183,7 +200,8 @@
                     6
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "18",
@@ -193,7 +211,8 @@
                     3
                 ],
                 "icon": "town",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "19",
@@ -203,7 +222,8 @@
                     2
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "20",
@@ -213,7 +233,8 @@
                     5
                 ],
                 "icon": "forest_temple",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "21",
@@ -223,7 +244,8 @@
                     5
                 ],
                 "icon": "castle",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "22",
@@ -233,7 +255,8 @@
                     7
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "23",
@@ -243,7 +266,8 @@
                     10
                 ],
                 "icon": "map_node",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "24",
@@ -253,7 +277,8 @@
                     11
                 ],
                 "icon": "ruins",
-                "level": null
+                "level": null,
+                "menu_options": []
             },
             {
                 "nid": "25",
@@ -263,7 +288,8 @@
                     9
                 ],
                 "icon": "palace",
-                "level": null
+                "level": null,
+                "menu_options": []
             }
         ],
         "map_paths": {

@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Deterence",
+        "name": "Deterence",
+        "desc": "Unit takes -1 damage from foes for every space moved.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            6,
+            3
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_resist",
+                "max(0, utils.calculate_distance(unit.position, unit.previous_position)) if unit.position and mode in ('attack', 'splash') else 0"
+            ]
+        ]
+    }
+]

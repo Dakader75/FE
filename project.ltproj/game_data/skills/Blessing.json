@@ -1,0 +1,34 @@
+[
+    {
+        "nid": "Blessing",
+        "name": "Blessing",
+        "desc": "When unit attacks, allies within 2 spaces are healed for 50% HP.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            2
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "combat_condition",
+                "if (mode == 'attack' or 'defense')"
+            ],
+            [
+                "aura",
+                "Blessing_aura"
+            ],
+            [
+                "aura_range",
+                2
+            ],
+            [
+                "aura_target",
+                "unit"
+            ]
+        ]
+    }
+]

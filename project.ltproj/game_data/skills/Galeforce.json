@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Galeforce",
+        "name": "Galeforce",
+        "desc": "Allow unit to move again after combat. Charge 3.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            8,
+            4
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "automatic_combat_art",
+                "Galeforce_proc"
+            ]
+        ]
+    }
+]

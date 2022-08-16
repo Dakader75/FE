@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Blessing_aura",
+        "name": "Blessing_aura",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            2
+        ],
+        "components": [
+            [
+                "hidden",
+                null
+            ]
+        ]
+    }
+]

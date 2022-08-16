@@ -1,0 +1,30 @@
+[
+    {
+        "nid": "Inhale",
+        "name": "Inhale",
+        "desc": "Unit will take no damage from attack. Charge 2.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            7,
+            1
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "build_charge",
+                2
+            ],
+            [
+                "combat_charge_increase",
+                1
+            ],
+            [
+                "automatic_combat_art",
+                "Inhale_proc"
+            ]
+        ]
+    }
+]

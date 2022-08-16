@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Spectre",
+        "name": "Spectre",
+        "desc": "Ultimate. Unit gains bonus to Avoid and Dodge. Bonus decreses every subsequent attack.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            3,
+            3
+        ],
+        "components": [
+            [
+                "combat_art",
+                "Spectre_proc"
+            ],
+            [
+                "drain_charge",
+                1
+            ]
+        ]
+    }
+]

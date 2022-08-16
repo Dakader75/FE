@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Adaptability",
+        "name": "Adaptability",
+        "desc": "If unit's Res is higher than foe's res, unit will deal damage based on Res or Def, whicher deals more damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            8,
+            8
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "combat_condition",
+                "unit.stats['RES'] > target.stats['RES']"
+            ],
+            [
+                "dynamic_damage",
+                "target.get_stat('DEF')-target.get_stat('RES') if target.get_stat('RES') < target.get_stat('DEF') else 0"
+            ]
+        ]
+    }
+]

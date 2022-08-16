@@ -1,0 +1,63 @@
+[
+    {
+        "nid": "Inhale_proc",
+        "name": "Inhale",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            7,
+            1
+        ],
+        "components": [
+            [
+                "hidden",
+                null
+            ],
+            [
+                "unit_flickering_tint",
+                [
+                    255,
+                    255,
+                    255
+                ]
+            ],
+            [
+                "resist",
+                999
+            ],
+            [
+                "lost_on_end_combat",
+                [
+                    [
+                        "LostOnSelf (T/F)",
+                        "T",
+                        "Lost after self combat (e.g. vulnerary)"
+                    ],
+                    [
+                        "LostOnAlly (T/F)",
+                        "T",
+                        "Lost after combat with an ally"
+                    ],
+                    [
+                        "LostOnEnemy (T/F)",
+                        "T",
+                        "Lost after combat with an enemy"
+                    ],
+                    [
+                        "LostOnSplash (T/F)",
+                        "T",
+                        "Lost after combat if using an AOE item"
+                    ]
+                ]
+            ],
+            [
+                "lost_on_endstep",
+                null
+            ],
+            [
+                "drain_charge",
+                2
+            ]
+        ]
+    }
+]

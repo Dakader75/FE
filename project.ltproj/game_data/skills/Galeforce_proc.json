@@ -1,0 +1,13 @@
+[
+    {
+        "nid": "Galeforce_proc",
+        "name": "Galeforce_proc",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            8,
+            4
+        ],
+        "components": []
+    }
+]

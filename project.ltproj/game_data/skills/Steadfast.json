@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Steadfast",
+        "name": "Steadfast",
+        "desc": "For every 4 HP below max HP, foes deal -1 damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            4,
+            4
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_resist",
+                "(unit.get_max_hp() - unit.get_hp()) // 4"
+            ]
+        ]
+    }
+]

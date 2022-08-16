@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Pass",
+        "name": "Pass",
+        "desc": "Allow unit to move through enemy occupied spaces.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            4
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "pass",
+                null
+            ]
+        ]
+    }
+]

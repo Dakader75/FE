@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Momentum",
+        "name": "Momentum",
+        "desc": "Unit gains +2 crit for every space moved.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            6,
+            3
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_crit_accuracy",
+                "max(0, utils.calculate_distance(unit.position, unit.previous_position) * 2) if unit.position and mode in ('attack', 'splash') else 0"
+            ]
+        ]
+    }
+]

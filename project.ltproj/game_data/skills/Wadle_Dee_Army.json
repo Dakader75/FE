@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Wadle Dee Army",
+        "name": "Wadle Dee Army",
+        "desc": "Ultimate. User summons 5 disposable units.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            4,
+            4
+        ],
+        "components": [
+            [
+                "ability",
+                "Waddle Dee Army"
+            ],
+            [
+                "drain_charge",
+                1
+            ]
+        ]
+    }
+]

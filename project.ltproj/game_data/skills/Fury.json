@@ -1,0 +1,47 @@
+[
+    {
+        "nid": "Fury",
+        "name": "Fury",
+        "desc": "Unit gains +2 Str, Skl, Spd, Def and Res, but unit takes 6 damage after every combat.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            6,
+            6
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "STR",
+                        2
+                    ],
+                    [
+                        "SKL",
+                        2
+                    ],
+                    [
+                        "SPD",
+                        2
+                    ],
+                    [
+                        "DEF",
+                        2
+                    ],
+                    [
+                        "RES",
+                        2
+                    ]
+                ]
+            ],
+            [
+                "recoil",
+                6
+            ]
+        ]
+    }
+]

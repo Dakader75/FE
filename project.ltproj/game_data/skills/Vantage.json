@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Vantage",
+        "name": "Vantage",
+        "desc": "User will always attack first, if under 50% HP.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            7
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "combat_condition",
+                "(unit.get_max_hp() // 2) >= unit.get_hp()"
+            ],
+            [
+                "vantage",
+                null
+            ]
+        ]
+    }
+]

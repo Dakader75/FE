@@ -1,0 +1,70 @@
+[
+    {
+        "nid": "Dragon Halberd",
+        "name": "Dragon Halberd",
+        "desc": "Reduces foe's Spd and Res by 4 on hit.",
+        "icon_nid": "Axe",
+        "icon_index": [
+            0,
+            15
+        ],
+        "components": [
+            [
+                "weapon",
+                null
+            ],
+            [
+                "value",
+                0
+            ],
+            [
+                "target_enemy",
+                null
+            ],
+            [
+                "min_range",
+                1
+            ],
+            [
+                "max_range",
+                1
+            ],
+            [
+                "damage",
+                10
+            ],
+            [
+                "hit",
+                75
+            ],
+            [
+                "crit",
+                5
+            ],
+            [
+                "weight",
+                8
+            ],
+            [
+                "level_exp",
+                null
+            ],
+            [
+                "weapon_type",
+                "Lance"
+            ],
+            [
+                "weapon_rank",
+                "E"
+            ],
+            [
+                "locked",
+                null
+            ],
+            [
+                "status_on_hit",
+                "Frost Lightning"
+            ]
+        ]
+    }
+]

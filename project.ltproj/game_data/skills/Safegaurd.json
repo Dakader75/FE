@@ -1,0 +1,35 @@
+[
+    {
+        "nid": "Safegaurd",
+        "name": "Safegaurd",
+        "desc": "If unit has more RES than foe, unit gains +6 Def and Res.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            8
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "combat_condition",
+                "unit.stats['RES'] > target.stats['RES']"
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "DEF",
+                        6
+                    ],
+                    [
+                        "RES",
+                        6
+                    ]
+                ]
+            ]
+        ]
+    }
+]

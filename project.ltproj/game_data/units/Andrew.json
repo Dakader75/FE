@@ -1,0 +1,98 @@
+[
+    {
+        "nid": "Andrew",
+        "name": "Andrew",
+        "desc": "A young commander of Renais.\nHe's calm, composed, and skilled.",
+        "variant": null,
+        "level": 1,
+        "klass": "Beater",
+        "tags": [],
+        "bases": {
+            "HP": 21,
+            "STR": 6,
+            "MAG": 2,
+            "SKL": 5,
+            "SPD": 8,
+            "LCK": 6,
+            "DEF": 3,
+            "CON": 5,
+            "MOV": 5,
+            "RES": 1
+        },
+        "growths": {
+            "HP": 55,
+            "STR": 69,
+            "MAG": 15,
+            "SKL": 40,
+            "SPD": 69,
+            "LCK": 50,
+            "DEF": 30,
+            "CON": 0,
+            "MOV": 0,
+            "RES": 15
+        },
+        "starting_items": [
+            [
+                "Iron Sword",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Starburst Stream"
+            ],
+            [
+                1,
+                "Death Blow"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                1
+            ],
+            "Lance": [
+                true,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "pngtree-banana-yellow-fruit-png-image_3312896",
+        "affinity": "Wind",
+        "fields": []
+    }
+]

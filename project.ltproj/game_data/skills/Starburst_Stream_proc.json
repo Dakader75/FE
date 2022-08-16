@@ -1,0 +1,71 @@
+[
+    {
+        "nid": "Starburst Stream_proc",
+        "name": "Starburst Stream",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            4,
+            1
+        ],
+        "components": [
+            [
+                "hidden",
+                null
+            ],
+            [
+                "lost_on_endstep",
+                null
+            ],
+            [
+                "lost_on_end_combat",
+                [
+                    [
+                        "LostOnSelf (T/F)",
+                        "T",
+                        "Lost after self combat (e.g. vulnerary)"
+                    ],
+                    [
+                        "LostOnAlly (T/F)",
+                        "T",
+                        "Lost after combat with an ally"
+                    ],
+                    [
+                        "LostOnEnemy (T/F)",
+                        "T",
+                        "Lost after combat with an enemy"
+                    ],
+                    [
+                        "LostOnSplash (T/F)",
+                        "T",
+                        "Lost after combat if using an AOE item"
+                    ]
+                ]
+            ],
+            [
+                "dynamic_multiattacks",
+                "50"
+            ],
+            [
+                "damage_multiplier",
+                0.5
+            ],
+            [
+                "cannot_double",
+                null
+            ],
+            [
+                "crit",
+                -1000
+            ],
+            [
+                "unit_flickering_tint",
+                [
+                    95,
+                    226,
+                    211
+                ]
+            ]
+        ]
+    }
+]

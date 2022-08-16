@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Frenzy",
+        "name": "Frenzy",
+        "desc": "For every 4 HP below max HP, unit will deal +1 damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            9
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_damage",
+                "(unit.get_max_hp() - unit.get_hp()) // 4"
+            ]
+        ]
+    }
+]

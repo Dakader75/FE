@@ -1,0 +1,102 @@
+[
+    {
+        "nid": "Nathan",
+        "name": "Nathan",
+        "desc": "An earnest and compassionate cavalier from Renais.",
+        "variant": null,
+        "level": 1,
+        "klass": "King",
+        "tags": [],
+        "bases": {
+            "HP": 26,
+            "STR": 8,
+            "MAG": 1,
+            "SKL": 4,
+            "SPD": 3,
+            "LCK": 6,
+            "DEF": 7,
+            "CON": 12,
+            "MOV": 5,
+            "RES": 4
+        },
+        "growths": {
+            "HP": 100,
+            "STR": 65,
+            "MAG": 10,
+            "SKL": 30,
+            "SPD": 25,
+            "LCK": 45,
+            "DEF": 40,
+            "CON": 0,
+            "MOV": 0,
+            "RES": 25
+        },
+        "starting_items": [
+            [
+                "Iron Axe",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ],
+            [
+                "Star Hammer",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Inhale"
+            ],
+            [
+                1,
+                "Wadle Dee Army"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                0
+            ],
+            "Lance": [
+                true,
+                0
+            ],
+            "Axe": [
+                false,
+                1
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Forde",
+        "affinity": "Anima",
+        "fields": []
+    }
+]

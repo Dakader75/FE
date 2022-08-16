@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Avoid +10",
+        "name": "Avoid +10",
+        "desc": "Grants user Avoid +10.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            9,
+            10
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "avoid",
+                10
+            ]
+        ]
+    }
+]

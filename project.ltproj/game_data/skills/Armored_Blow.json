@@ -1,0 +1,31 @@
+[
+    {
+        "nid": "Armored Blow",
+        "name": "Armored Blow",
+        "desc": "Unit gains +6 Def, when initiating combat.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            8,
+            5
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "combat_condition",
+                "mode == 'attack'"
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "DEF",
+                        6
+                    ]
+                ]
+            ]
+        ]
+    }
+]

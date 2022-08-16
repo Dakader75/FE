@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Defiant Avoid",
+        "name": "Defiant Avoid",
+        "desc": "User gains +6 damage when under 50% HP.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            9
+        ],
+        "components": [
+            [
+                "hidden",
+                null
+            ],
+            [
+                "dynamic_avoid",
+                "30 if ((unit.get_max_hp() // 2) >= unit.get_hp()) else 0"
+            ]
+        ]
+    }
+]

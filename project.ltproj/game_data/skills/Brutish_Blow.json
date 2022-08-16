@@ -1,0 +1,35 @@
+[
+    {
+        "nid": "Brutish Blow",
+        "name": "Brutish Blow",
+        "desc": "Unit deals +4 damage and gains +4 Def, when initiating combat.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            8,
+            5
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_damage",
+                "4 if (mode == 'attack') else 0"
+            ],
+            [
+                "combat_condition",
+                "mode == 'attack'"
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "DEF",
+                        4
+                    ]
+                ]
+            ]
+        ]
+    }
+]

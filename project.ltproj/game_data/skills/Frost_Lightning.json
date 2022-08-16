@@ -1,0 +1,31 @@
+[
+    {
+        "nid": "Frost Lightning",
+        "name": "Frost Lightning",
+        "desc": "Reduces Spd and Res by 4.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            5,
+            3
+        ],
+        "components": [
+            [
+                "negative",
+                null
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        -4
+                    ],
+                    [
+                        "RES",
+                        -4
+                    ]
+                ]
+            ]
+        ]
+    }
+]
