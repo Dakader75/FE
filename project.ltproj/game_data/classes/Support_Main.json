@@ -92,7 +92,7 @@
                 0
             ],
             "Light": [
-                false,
+                true,
                 0
             ],
             "Anima": [
@@ -104,6 +104,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Fire": [
                 false,
                 0
             ]

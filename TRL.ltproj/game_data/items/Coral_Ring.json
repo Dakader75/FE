@@ -3,10 +3,10 @@
         "nid": "Coral Ring",
         "name": "Coral Ring",
         "desc": "A ring with unique properties. Grants +10 Res and doubles terrain effects.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            8
+            5,
+            1
         ],
         "components": [
             [

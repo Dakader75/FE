@@ -1,6 +1,5 @@
 General:
 Skills: Scholar - check functionality
-Items: Accesories - find item icons for accessories
 Skills: Procrastionator - add functionailty
 Skills: Preperation - add functionaility
 Skills: Extravagant - add functionality

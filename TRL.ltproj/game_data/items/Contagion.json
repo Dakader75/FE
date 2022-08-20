@@ -3,9 +3,9 @@
         "nid": "Contagion",
         "name": "Contagion",
         "desc": "Poisons foe on hit. -4 Spd penalty. HP Cost: 4.",
-        "icon_nid": "Dark",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
+            1,
             2
         ],
         "components": [

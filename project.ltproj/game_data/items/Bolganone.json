@@ -1,12 +1,12 @@
 [
     {
-        "nid": "Excalibur",
-        "name": "Excalibur",
-        "desc": "Speed +5. Effective against monsters",
+        "nid": "Bolganone",
+        "name": "Bolganone",
+        "desc": "",
         "icon_nid": "Anima",
         "icon_index": [
             0,
-            5
+            2
         ],
         "components": [
             [
@@ -18,28 +18,56 @@
                 null
             ],
             [
+                "min_range",
+                1
+            ],
+            [
+                "max_range",
+                2
+            ],
+            [
+                "damage",
+                13
+            ],
+            [
+                "hit",
+                75
+            ],
+            [
+                "crit",
+                0
+            ],
+            [
+                "weight",
+                10
+            ],
+            [
                 "level_exp",
                 null
             ],
             [
-                "damage",
-                18
-            ],
-            [
-                "hit",
-                90
-            ],
-            [
                 "weapon_type",
-                "Anima"
+                "Fire"
             ],
             [
                 "weapon_rank",
-                "S"
+                "A"
+            ],
+            [
+                "map_hit_add_blend",
+                [
+                    224,
+                    96,
+                    0
+                ]
             ],
             [
                 "magic",
                 null
+            ],
+            [
+                "value",
+                1200
             ],
             [
                 "uses",
@@ -56,34 +84,8 @@
                 ]
             ],
             [
-                "weight",
-                13
-            ],
-            [
-                "crit",
-                10
-            ],
-            [
-                "status_on_equip",
-                "Speed +5"
-            ],
-            [
-                "min_range",
-                1
-            ],
-            [
-                "max_range",
+                "wexp",
                 2
-            ],
-            [
-                "effective",
-                36
-            ],
-            [
-                "effective_tag",
-                [
-                    "Monster"
-                ]
             ]
         ]
     }

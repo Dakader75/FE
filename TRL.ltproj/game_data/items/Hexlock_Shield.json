@@ -3,10 +3,10 @@
         "nid": "Hexlock Shield",
         "name": "Hexlock Shield",
         "desc": "A shield with protection against magic. Grants +7 Res when equipped. -3 Spd penalty.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            18
+            4,
+            0
         ],
         "components": [
             [

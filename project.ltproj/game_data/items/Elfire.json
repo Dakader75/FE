@@ -27,11 +27,11 @@
             ],
             [
                 "damage",
-                10
+                6
             ],
             [
                 "hit",
-                85
+                80
             ],
             [
                 "crit",
@@ -47,7 +47,7 @@
             ],
             [
                 "weapon_type",
-                "Anima"
+                "Fire"
             ],
             [
                 "weapon_rank",

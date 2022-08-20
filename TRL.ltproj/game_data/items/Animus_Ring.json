@@ -3,10 +3,10 @@
         "nid": "Animus Ring",
         "name": "Animus Ring",
         "desc": "A strange ring. Allows user to counterattack regardless of range.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            8
+            7,
+            1
         ],
         "components": [
             [

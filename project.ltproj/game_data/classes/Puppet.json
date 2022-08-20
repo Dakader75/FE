@@ -111,6 +111,10 @@
             "Default": [
                 false,
                 0
+            ],
+            "Fire": [
+                false,
+                0
             ]
         },
         "icon_nid": "Generic_Portrait_Soldier",

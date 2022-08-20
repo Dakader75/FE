@@ -83,6 +83,10 @@
             "Default": [
                 false,
                 0
+            ],
+            "Fire": [
+                true,
+                1
             ]
         },
         "alternate_classes": [],

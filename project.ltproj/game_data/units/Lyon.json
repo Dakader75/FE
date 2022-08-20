@@ -33,11 +33,11 @@
         },
         "starting_items": [
             [
-                "Nosferatu",
+                "Carreau",
                 false
             ],
             [
-                "Fenrir",
+                "Verrine",
                 false
             ]
         ],
@@ -66,7 +66,7 @@
             ],
             "Light": [
                 false,
-                0
+                181
             ],
             "Anima": [
                 false,
@@ -77,6 +77,10 @@
                 251
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Fire": [
                 false,
                 0
             ]

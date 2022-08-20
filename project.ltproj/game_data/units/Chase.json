@@ -88,6 +88,10 @@
             "Default": [
                 false,
                 0
+            ],
+            "Fire": [
+                false,
+                1
             ]
         },
         "alternate_classes": [],

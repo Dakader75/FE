@@ -3,10 +3,10 @@
         "nid": "Keepsake Ring",
         "name": "Keepsake Ring",
         "desc": "A ring worn by Berkut's mother. Grants +5 Skl/Luck/Res and restrores 10 HP very turn.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            8
+            8,
+            1
         ],
         "components": [
             [

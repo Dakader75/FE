@@ -108,8 +108,8 @@
                 31
             ],
             "Light": [
-                false,
-                0
+                true,
+                31
             ],
             "Anima": [
                 false,
@@ -120,6 +120,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Fire": [
                 false,
                 0
             ]

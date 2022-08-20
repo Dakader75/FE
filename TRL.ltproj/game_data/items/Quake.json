@@ -3,10 +3,10 @@
         "nid": "Quake",
         "name": "Quake",
         "desc": "Effective against all units except flying. Will always miss against flying units. -10 Spd penalty. HP Cost: 9.",
-        "icon_nid": "Anima",
+        "icon_nid": "Echoes_items",
         "icon_index": [
             0,
-            3
+            2
         ],
         "components": [
             [

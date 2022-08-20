@@ -5,7 +5,7 @@
         "desc": "",
         "tier": 2,
         "movement_group": "Light Cav",
-        "promotes_from": "Mage",
+        "promotes_from": "Tempest Mage",
         "turns_into": [],
         "tags": [
             "Mounted"
@@ -105,8 +105,8 @@
                 31
             ],
             "Light": [
-                false,
-                0
+                true,
+                31
             ],
             "Anima": [
                 2,
@@ -119,6 +119,10 @@
             "Default": [
                 false,
                 0
+            ],
+            "Fire": [
+                2,
+                71
             ]
         },
         "icon_nid": "Generic_Portrait_Mage_Knight",

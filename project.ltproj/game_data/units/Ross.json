@@ -5,7 +5,7 @@
         "desc": "A young villager. He longs to be a warrior, like his father.",
         "variant": null,
         "level": 1,
-        "klass": "Journeyman",
+        "klass": "Citizen",
         "tags": [],
         "bases": {
             "HP": 15,
@@ -77,6 +77,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Fire": [
                 false,
                 0
             ]

@@ -3,10 +3,10 @@
         "nid": "Medusa",
         "name": "Medusa",
         "desc": "Reduces foe's current HP to 1. -20 Spd penalty. HP Cost: 7.",
-        "icon_nid": "Dark",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            3
+            3,
+            2
         ],
         "components": [
             [

@@ -3,10 +3,10 @@
         "nid": "Silver Shield",
         "name": "Silver Shield",
         "desc": "A shield with great protection. Grants +8 Def when equipped. -2 Spd penalty.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            18
+            3,
+            0
         ],
         "components": [
             [

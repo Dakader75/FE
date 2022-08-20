@@ -6,7 +6,7 @@
         "icon_nid": "Light",
         "icon_index": [
             0,
-            1
+            2
         ],
         "components": [
             [
@@ -23,11 +23,11 @@
             ],
             [
                 "damage",
-                6
+                8
             ],
             [
                 "hit",
-                90
+                85
             ],
             [
                 "weapon_type",
@@ -35,7 +35,7 @@
             ],
             [
                 "weapon_rank",
-                "D"
+                "C"
             ],
             [
                 "magic",
@@ -43,7 +43,7 @@
             ],
             [
                 "uses",
-                30
+                25
             ],
             [
                 "uses_options",
@@ -57,19 +57,15 @@
             ],
             [
                 "weight",
-                8
+                12
             ],
             [
                 "crit",
-                8
-            ],
-            [
-                "wexp",
-                2
+                5
             ],
             [
                 "value",
-                900
+                2500
             ],
             [
                 "min_range",

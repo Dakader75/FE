@@ -1,34 +1,34 @@
 [
     {
-        "nid": "Shaman",
-        "name": "Shaman",
-        "desc": "Impulsive mages with a tenous grasp on their magic.",
-        "tier": 1,
+        "nid": "Fire Sage",
+        "name": "Fire Sage",
+        "desc": "Advanced wielders of the natural magics.",
+        "tier": 2,
         "movement_group": "Mages",
-        "promotes_from": null,
+        "promotes_from": "Tempest Mage",
         "turns_into": [],
         "tags": [],
         "max_level": 20,
         "bases": {
-            "HP": 16,
+            "HP": 20,
             "STR": 0,
-            "MAG": 3,
-            "SKL": 1,
-            "SPD": 2,
+            "MAG": 5,
+            "SKL": 6,
+            "SPD": 5,
             "LCK": 0,
-            "DEF": 2,
-            "RES": 5,
+            "DEF": 5,
+            "RES": 6,
             "CON": 7,
-            "MOV": 5,
+            "MOV": 6,
             "LEAD": 0
         },
         "growths": {
-            "HP": 50,
+            "HP": 45,
             "STR": 0,
-            "MAG": 50,
-            "SKL": 32,
-            "SPD": 30,
-            "LCK": 20,
+            "MAG": 45,
+            "SKL": 30,
+            "SPD": 25,
+            "LCK": 15,
             "DEF": 10,
             "RES": 40,
             "CON": 0,
@@ -49,38 +49,33 @@
             "LEAD": 0
         },
         "promotion": {
-            "HP": 1,
+            "HP": 4,
             "STR": 0,
-            "MAG": 2,
-            "SKL": 0,
-            "SPD": 1,
+            "MAG": 1,
+            "SKL": 1,
+            "SPD": 0,
             "LCK": 0,
-            "DEF": 1,
-            "RES": 2,
-            "CON": 2,
+            "DEF": 3,
+            "RES": 3,
+            "CON": 1,
             "MOV": -99,
             "LEAD": 0
         },
         "max_stats": {
             "HP": 60,
             "STR": 20,
-            "MAG": 20,
-            "SKL": 20,
-            "SPD": 20,
+            "MAG": 30,
+            "SKL": 30,
+            "SPD": 26,
             "LCK": 30,
-            "DEF": 20,
-            "RES": 20,
+            "DEF": 21,
+            "RES": 25,
             "CON": 20,
             "MOV": 15,
             "LEAD": 60,
             "New Stat": 30
         },
-        "learned_skills": [
-            [
-                1,
-                "Brutish Blow"
-            ]
-        ],
+        "learned_skills": [],
         "wexp_gain": {
             "Sword": [
                 false,
@@ -99,33 +94,37 @@
                 0
             ],
             "Staff": [
-                false,
-                0
+                true,
+                31
             ],
             "Light": [
                 false,
                 0
             ],
             "Anima": [
-                false,
-                0
-            ],
-            "Dark": [
                 true,
                 31
+            ],
+            "Dark": [
+                false,
+                0
             ],
             "Default": [
                 false,
                 0
+            ],
+            "Fire": [
+                true,
+                31
             ]
         },
-        "icon_nid": "Generic_Portrait_Shaman",
+        "icon_nid": "Generic_Portrait_Sage",
         "icon_index": [
             0,
             0
         ],
-        "map_sprite_nid": "Shaman",
-        "combat_anim_nid": "Shaman",
+        "map_sprite_nid": "Sage",
+        "combat_anim_nid": "Sage",
         "fields": []
     }
 ]

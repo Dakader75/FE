@@ -5,7 +5,7 @@
         "desc": "",
         "variant": null,
         "level": 131,
-        "klass": "Wyvern Knight",
+        "klass": "Wyvern Lord",
         "tags": [],
         "bases": {
             "HP": 48,
@@ -81,6 +81,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Fire": [
                 false,
                 0
             ]

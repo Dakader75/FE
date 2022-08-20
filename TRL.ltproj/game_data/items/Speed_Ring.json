@@ -3,10 +3,10 @@
         "nid": "Speed Ring",
         "name": "Speed Ring",
         "desc": "A ring with unique properties. Grants +5 Spd and +10 avoid.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            8
+            2,
+            1
         ],
         "components": [
             [

@@ -3,10 +3,10 @@
         "nid": "Death",
         "name": "Death",
         "desc": "-8 Spd penalty. HP Cost: 5.",
-        "icon_nid": "Dark",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            4
+            2,
+            2
         ],
         "components": [
             [

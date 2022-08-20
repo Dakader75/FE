@@ -5,7 +5,7 @@
         "desc": "A young monk from Renais. He is a very forthright and pious man.",
         "variant": null,
         "level": 2,
-        "klass": "Monk",
+        "klass": "Light Mage",
         "tags": [],
         "bases": {
             "HP": 19,
@@ -33,7 +33,7 @@
         },
         "starting_items": [
             [
-                "Lightning",
+                "Light",
                 false
             ],
             [
@@ -77,6 +77,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Fire": [
                 false,
                 0
             ]

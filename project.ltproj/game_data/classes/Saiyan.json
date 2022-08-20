@@ -111,6 +111,14 @@
             "Default": [
                 false,
                 0
+            ],
+            "Fire": [
+                false,
+                0
+            ],
+            "Thunder": [
+                true,
+                31
             ]
         },
         "icon_nid": "",

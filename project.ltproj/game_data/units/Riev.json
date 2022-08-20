@@ -5,7 +5,7 @@
         "desc": "",
         "variant": null,
         "level": 16,
-        "klass": "Cleric",
+        "klass": "Light Mage",
         "tags": [],
         "bases": {
             "HP": 51,
@@ -62,7 +62,7 @@
             ],
             "Light": [
                 false,
-                251
+                432
             ],
             "Anima": [
                 false,
@@ -73,6 +73,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Fire": [
                 false,
                 0
             ]

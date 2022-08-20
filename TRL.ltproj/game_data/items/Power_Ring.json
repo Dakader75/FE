@@ -3,10 +3,10 @@
         "nid": "Power Ring",
         "name": "Power Ring",
         "desc": "A ring with unique properties. Grants +5 damage and +10 hit to physical attacks.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
             0,
-            8
+            1
         ],
         "components": [
             [

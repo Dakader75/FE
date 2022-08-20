@@ -3,10 +3,10 @@
         "nid": "Emperor Shield",
         "name": "Emperor Shield",
         "desc": "A shield wielded by the Emperor of Rigel. Grants +4 Def/Res when equipped. -4 Spd penalty.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            18
+            7,
+            0
         ],
         "components": [
             [

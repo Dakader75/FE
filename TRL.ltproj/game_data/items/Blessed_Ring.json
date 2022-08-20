@@ -3,10 +3,10 @@
         "nid": "Blessed Ring",
         "name": "Blessed Ring",
         "desc": "A ring with unique properties. Restores 50% of HP every turn.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            8
+            3,
+            1
         ],
         "components": [
             [

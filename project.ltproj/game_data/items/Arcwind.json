@@ -1,12 +1,12 @@
 [
     {
-        "nid": "Divine",
-        "name": "Divine",
+        "nid": "Arcwind",
+        "name": "Arcwind",
         "desc": "",
-        "icon_nid": "Light",
+        "icon_nid": "Anima",
         "icon_index": [
             0,
-            2
+            4
         ],
         "components": [
             [
@@ -27,15 +27,15 @@
             ],
             [
                 "hit",
-                85
+                80
             ],
             [
                 "weapon_type",
-                "Light"
+                "Tempest"
             ],
             [
                 "weapon_rank",
-                "C"
+                "B"
             ],
             [
                 "magic",
@@ -43,7 +43,7 @@
             ],
             [
                 "uses",
-                25
+                45
             ],
             [
                 "uses_options",
@@ -57,7 +57,7 @@
             ],
             [
                 "weight",
-                12
+                4
             ],
             [
                 "crit",
@@ -65,7 +65,7 @@
             ],
             [
                 "value",
-                2500
+                6000
             ],
             [
                 "min_range",
@@ -74,14 +74,6 @@
             [
                 "max_range",
                 2
-            ],
-            [
-                "map_hit_add_blend",
-                [
-                    255,
-                    255,
-                    0
-                ]
             ]
         ]
     }

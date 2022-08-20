@@ -3,10 +3,10 @@
         "nid": "Leather Shield",
         "name": "Leather Shield",
         "desc": "A shield with light protection. Grants +2 Def when equipped.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
             0,
-            18
+            0
         ],
         "components": [
             [

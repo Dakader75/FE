@@ -3,10 +3,10 @@
         "nid": "Mire",
         "name": "Mire",
         "desc": "-6 Spd penalty. HP Cost: 3.",
-        "icon_nid": "Dark",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            1
+            4,
+            2
         ],
         "components": [
             [

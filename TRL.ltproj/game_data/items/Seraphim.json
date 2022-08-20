@@ -3,10 +3,10 @@
         "nid": "Seraphim",
         "name": "Seraphim",
         "desc": "Effective against terrors. -4 Spd penalty. HP Cost: 4.",
-        "icon_nid": "Light",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            1
+            6,
+            2
         ],
         "components": [
             [

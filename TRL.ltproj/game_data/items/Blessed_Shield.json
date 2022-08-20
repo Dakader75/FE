@@ -3,10 +3,10 @@
         "nid": "Blessed Shield",
         "name": "Blessed Shield",
         "desc": "A shield with protection gainst terrors. Restores 5 HP every turn. Grants +2 Def/Res when equipped.",
-        "icon_nid": "Boosters",
+        "icon_nid": "Echoes_items",
         "icon_index": [
-            0,
-            18
+            5,
+            0
         ],
         "components": [
             [

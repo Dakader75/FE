@@ -103,7 +103,8 @@
     "Blessing_aura.json": 101,
     "Sure_Strike.json": 102,
     "Sure_strike_proc.json": 103,
-    "Full_Heal.json": 104,
-    "Full_Heal_proc.json": 105,
-    "Summon.json": 106
+    "New_Skill.json": 104,
+    "Full_Heal.json": 105,
+    "Full_Heal_proc.json": 106,
+    "Summon.json": 107
 }

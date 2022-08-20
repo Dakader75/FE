@@ -7,8 +7,7 @@
         "movement_group": "Light Foot",
         "promotes_from": null,
         "turns_into": [
-            "Sniper",
-            "Ranger"
+            "Sniper"
         ],
         "tags": [],
         "max_level": 20,
@@ -113,6 +112,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Fire": [
                 false,
                 0
             ]
