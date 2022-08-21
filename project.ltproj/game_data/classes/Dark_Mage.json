@@ -79,6 +79,10 @@
             [
                 1,
                 "Brutish Blow"
+            ],
+            [
+                10,
+                "Lifesteal"
             ]
         ],
         "wexp_gain": {

@@ -77,8 +77,12 @@
         },
         "learned_skills": [
             [
-                1,
+                5,
                 "Sure_Strike"
+            ],
+            [
+                15,
+                "Certain Blow"
             ]
         ],
         "wexp_gain": {

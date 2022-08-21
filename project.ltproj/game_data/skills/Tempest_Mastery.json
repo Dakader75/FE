@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Tempest Mastery",
+        "name": "Tempest Mastery",
+        "desc": "Unit gains damage equal to (unit's SPD - foe's SPD) *.66",
+        "icon_nid": "Skills",
+        "icon_index": [
+            4,
+            4
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_damage",
+                "((unit.stats['SPD'] - target.stats['SPD']) * .66) if unit.stats['SPD'] > target.stats['SPD'] else 0"
+            ]
+        ]
+    }
+]

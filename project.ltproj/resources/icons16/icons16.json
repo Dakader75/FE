@@ -86,6 +86,11 @@
     },
     {
         "nid": "All_Icons",
-        "subicon_dict": {}
+        "subicon_dict": {
+            "All_Icons 2, 23": [
+                2,
+                23
+            ]
+        }
     }
 ]

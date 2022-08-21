@@ -88,7 +88,11 @@
             ],
             [
                 1,
-                "Charge"
+                "STR/DEF Solo"
+            ],
+            [
+                10,
+                "Deterence"
             ]
         ],
         "wexp_gain": {

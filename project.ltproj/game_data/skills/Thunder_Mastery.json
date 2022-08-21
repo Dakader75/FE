@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Thunder Mastery",
+        "name": "Thunder Mastery",
+        "desc": "Unit gains damage equal to (unit's SKL - foe's SKL).",
+        "icon_nid": "Skills",
+        "icon_index": [
+            4,
+            4
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_damage",
+                "(unit.stats['SKL'] - target.stats['SKL']) if unit.stats['SKL'] > target.stats['SKL'] else 0"
+            ]
+        ]
+    }
+]

@@ -84,12 +84,16 @@
                 "Flying"
             ],
             [
-                1,
-                "Canto"
+                15,
+                "Defiant Avoid"
+            ],
+            [
+                5,
+                "Moonbow"
             ],
             [
                 1,
-                "Moonbow"
+                "Canto"
             ]
         ],
         "wexp_gain": {

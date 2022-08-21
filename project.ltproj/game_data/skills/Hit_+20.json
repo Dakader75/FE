@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Hit +20",
+        "name": "Hit +20",
+        "desc": "Grant unit +20 hit.",
+        "icon_nid": "All_Icons",
+        "icon_index": [
+            2,
+            23
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "hit",
+                20
+            ]
+        ]
+    }
+]

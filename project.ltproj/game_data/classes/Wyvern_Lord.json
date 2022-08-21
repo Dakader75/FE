@@ -87,6 +87,14 @@
             [
                 1,
                 "Canto"
+            ],
+            [
+                5,
+                "Dragon Fang"
+            ],
+            [
+                15,
+                "Trample"
             ]
         ],
         "wexp_gain": {

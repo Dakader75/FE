@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Tempest Flare",
+        "name": "Tempest Flare",
+        "desc": "Unit negates 30% of foes Def/Res and unit gains +10 SPD. Charge 2.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            3,
+            3
+        ],
+        "components": [
+            [
+                "automatic_combat_art",
+                "Tempest Flare_child"
+            ],
+            [
+                "build_charge",
+                2
+            ],
+            [
+                "combat_charge_increase",
+                1
+            ]
+        ]
+    }
+]

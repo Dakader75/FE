@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Flame Mastery",
+        "name": "Flame Mastery",
+        "desc": "Unit gains damage equal to (unit's SPD - foe's SPD) *.5",
+        "icon_nid": "Skills",
+        "icon_index": [
+            4,
+            4
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_damage",
+                "((unit.stats['MAG'] - target.stats['MAG']) * .5) if unit.stats['MAG'] > target.stats['MAG'] else 0"
+            ]
+        ]
+    }
+]

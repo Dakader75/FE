@@ -82,7 +82,7 @@
             ],
             "Lance": [
                 2,
-                0
+                1
             ],
             "Axe": [
                 false,
@@ -115,6 +115,10 @@
             "Fire": [
                 false,
                 0
+            ],
+            "Tempest": [
+                true,
+                1
             ]
         },
         "icon_nid": "Generic_Portrait_Soldier",

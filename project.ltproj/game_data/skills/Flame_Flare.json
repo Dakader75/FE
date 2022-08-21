@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Flame Flare",
+        "name": "Flame Flare",
+        "desc": "Unit negates 30% of foes Def/Res and unit gains +5 MAG. Charge 2.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            5,
+            2
+        ],
+        "components": [
+            [
+                "automatic_combat_art",
+                "Flame Flare_child"
+            ],
+            [
+                "build_charge",
+                2
+            ],
+            [
+                "combat_charge_increase",
+                1
+            ]
+        ]
+    }
+]

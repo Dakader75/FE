@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Tempest Adept",
+        "name": "Tempest Adept",
+        "desc": "If unit's SPD > foe's SPD, unit gains +4 damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            6,
+            3
+        ],
+        "components": [
+            [
+                "dynamic_damage",
+                "4 if unit.stats['SPD'] > target.stats['SPD'] else 0"
+            ]
+        ]
+    }
+]

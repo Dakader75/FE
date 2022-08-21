@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Marksman",
+        "name": "Marksman",
+        "desc": "If unit's hit surpasses 100, extra hit is converted to crit.",
+        "icon_nid": "All_Icons",
+        "icon_index": [
+            3,
+            30
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "dynamic_crit_accuracy",
+                "(combat_calcs.accuracy(unit, unit.equipped_weapon) - combat_calcs.avoid(target, target.equipped_weapon, unit.equipped_weapon) - 100) if (combat_calcs.accuracy(unit, unit.equipped_weapon) - combat_calcs.avoid(target, target.equipped_weapon, unit.equipped_weapon) > 100) else 0"
+            ]
+        ]
+    }
+]

@@ -1,0 +1,27 @@
+[
+    {
+        "nid": "Millitant Accord",
+        "name": "Millitant Accord",
+        "desc": "Unit gains +3 Atk/Spd for every adjacent ally.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            10
+        ],
+        "components": [
+            [
+                "stat_change_expression",
+                [
+                    [
+                        "STR",
+                        "unit_funcs.check_focus(unit, 1) * 3"
+                    ],
+                    [
+                        "SPD",
+                        "unit_funcs.check_focus(unit, 1) * 3"
+                    ]
+                ]
+            ]
+        ]
+    }
+]

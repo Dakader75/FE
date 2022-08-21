@@ -2,7 +2,7 @@
     {
         "nid": "Corona",
         "name": "Corona",
-        "desc": "User deals 1.5x damage and negates foes Avoid and Dodge. Charge 2.",
+        "desc": "User deals 1.5x damage and negates foes counterattack. Charge 2.",
         "icon_nid": "Skills",
         "icon_index": [
             10,
@@ -15,7 +15,7 @@
             ],
             [
                 "automatic_combat_art",
-                "Canto"
+                "Corona_proc"
             ],
             [
                 "build_charge",

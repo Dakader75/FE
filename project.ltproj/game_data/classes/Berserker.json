@@ -77,8 +77,12 @@
         },
         "learned_skills": [
             [
-                1,
-                "Crit +15"
+                5,
+                "Colossus"
+            ],
+            [
+                15,
+                "Grudge"
             ]
         ],
         "wexp_gain": {

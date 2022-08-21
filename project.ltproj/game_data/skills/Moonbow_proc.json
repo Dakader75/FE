@@ -2,7 +2,7 @@
     {
         "nid": "Moonbow_proc",
         "name": "Moonbow",
-        "desc": "Def ingone percentage is not correct.",
+        "desc": "",
         "icon_nid": "Skills",
         "icon_index": [
             4,
@@ -23,7 +23,7 @@
             ],
             [
                 "dynamic_damage",
-                "combat_calcs.defense(target, None, None)"
+                "combat_calcs.defense(target, None, None) * .3"
             ],
             [
                 "lost_on_endstep",

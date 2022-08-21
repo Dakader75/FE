@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Curse",
+        "name": "Curse",
+        "desc": "If foe enters combat against unit, foes suffers -1 move and -2 to all stats. Debuffs can stack.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            10,
+            8
+        ],
+        "components": [
+            [
+                "give_status_after_combat_on_hit",
+                "Cursed"
+            ],
+            [
+                "class_skill",
+                null
+            ]
+        ]
+    }
+]

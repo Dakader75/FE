@@ -1,0 +1,31 @@
+[
+    {
+        "nid": "STR/DEF Unity",
+        "name": "STR/DEF Unity",
+        "desc": "Unit gains +4 Str/Def while adjacent to an ally.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            8,
+            1
+        ],
+        "components": [
+            [
+                "condition",
+                "unit_funcs.check_focus(unit, 1) > 0"
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "STR",
+                        4
+                    ],
+                    [
+                        "DEF",
+                        4
+                    ]
+                ]
+            ]
+        ]
+    }
+]

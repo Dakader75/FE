@@ -3,10 +3,10 @@
         "nid": "Death Blow",
         "name": "Death Blow",
         "desc": "Unit deals +6 damage, when initiating combat.",
-        "icon_nid": "Skills",
+        "icon_nid": "All_Icons",
         "icon_index": [
-            8,
-            5
+            0,
+            0
         ],
         "components": [
             [

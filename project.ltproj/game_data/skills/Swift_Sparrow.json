@@ -14,12 +14,21 @@
                 null
             ],
             [
-                "dynamic_damage",
-                "4 if (mode == 'attack') else 0"
+                "combat_condition",
+                "mode == 'attack'"
             ],
             [
-                "dynamic_attack_speed",
-                "4 if (mode == 'attack') else 0"
+                "damage",
+                4
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        4
+                    ]
+                ]
             ]
         ]
     }

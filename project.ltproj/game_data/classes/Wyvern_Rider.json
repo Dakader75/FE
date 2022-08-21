@@ -7,7 +7,6 @@
         "movement_group": "Fliers",
         "promotes_from": null,
         "turns_into": [
-            "Wyvern Lord",
             "Wyvern Lord"
         ],
         "tags": [
@@ -94,6 +93,10 @@
             [
                 1,
                 "Death Blow"
+            ],
+            [
+                1,
+                "Avoid +10"
             ]
         ],
         "wexp_gain": {

@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Thunder Adept",
+        "name": "Thunder Adept",
+        "desc": "If unit's SKL > foe's SKL, unit gains +4 damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            6,
+            3
+        ],
+        "components": [
+            [
+                "dynamic_damage",
+                "4 if unit.stats['MAG'] > target.stats['MAG'] else 0"
+            ]
+        ]
+    }
+]

@@ -77,8 +77,12 @@
         },
         "learned_skills": [
             [
-                1,
-                "Brutish Blow"
+                5,
+                "Vengence"
+            ],
+            [
+                15,
+                "Curse"
             ]
         ],
         "wexp_gain": {

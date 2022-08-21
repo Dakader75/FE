@@ -1,12 +1,12 @@
 [
     {
-        "nid": "Blessing",
-        "name": "Blessing",
-        "desc": "When unit attacks, allies within 2 spaces are healed for 50% HP.",
+        "nid": "Amataratsu",
+        "name": "Amataratsu",
+        "desc": "",
         "icon_nid": "Skills",
         "icon_index": [
-            1,
-            2
+            3,
+            7
         ],
         "components": [
             [
@@ -14,12 +14,8 @@
                 null
             ],
             [
-                "combat_condition",
-                "if (mode == 'attack' or 'defense')"
-            ],
-            [
                 "aura",
-                "Blessing_aura"
+                "Amataratsu_child"
             ],
             [
                 "aura_range",
@@ -27,7 +23,7 @@
             ],
             [
                 "aura_target",
-                "unit"
+                "ally"
             ]
         ]
     }

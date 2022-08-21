@@ -1,17 +1,21 @@
 [
     {
-        "nid": "Blessing_aura",
-        "name": "Blessing_aura",
+        "nid": "Amataratsu_child",
+        "name": "Amataratsu_child",
         "desc": "",
         "icon_nid": "Skills",
         "icon_index": [
-            1,
-            2
+            3,
+            7
         ],
         "components": [
             [
                 "hidden",
                 null
+            ],
+            [
+                "percent_regeneration",
+                0.2
             ]
         ]
     }

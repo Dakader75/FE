@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Shining Aura",
+        "name": "Shining Aura",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            10,
+            4
+        ],
+        "components": [
+            [
+                "aura",
+                "Shining Aura_child"
+            ],
+            [
+                "aura_range",
+                2
+            ],
+            [
+                "aura_target",
+                "ally"
+            ]
+        ]
+    }
+]

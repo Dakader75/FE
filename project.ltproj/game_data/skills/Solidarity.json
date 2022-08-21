@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Solidarity",
+        "name": "Solidarity",
+        "desc": "Unit gains +10 Crit/Dodge while adjacent to an ally",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            8
+        ],
+        "components": [
+            [
+                "condition",
+                "unit_funcs.check_focus(unit, 1) > 0"
+            ],
+            [
+                "crit",
+                10
+            ],
+            [
+                "crit_avoid",
+                10
+            ]
+        ]
+    }
+]

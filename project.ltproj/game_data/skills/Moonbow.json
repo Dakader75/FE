@@ -2,7 +2,7 @@
     {
         "nid": "Moonbow",
         "name": "Moonbow",
-        "desc": "Unit negates half of foes Def/Res. Charge 1.",
+        "desc": "Unit negates foe's Def/Res by 30%. Charge 1.",
         "icon_nid": "Skills",
         "icon_index": [
             4,

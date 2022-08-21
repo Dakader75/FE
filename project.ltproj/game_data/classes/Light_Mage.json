@@ -81,6 +81,10 @@
             [
                 1,
                 "Warding Blow"
+            ],
+            [
+                10,
+                "Amataratsu"
             ]
         ],
         "wexp_gain": {
