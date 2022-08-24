@@ -670,5 +670,29 @@
             56
         ],
         "info_offset": 0
+    },
+    {
+        "nid": "Dedede final",
+        "blinking_offset": [
+            24,
+            32
+        ],
+        "smiling_offset": [
+            16,
+            48
+        ],
+        "info_offset": 0
+    },
+    {
+        "nid": "mulan final",
+        "blinking_offset": [
+            24,
+            32
+        ],
+        "smiling_offset": [
+            16,
+            48
+        ],
+        "info_offset": 0
     }
 ]
