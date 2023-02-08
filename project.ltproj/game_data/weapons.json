@@ -150,7 +150,7 @@
         ],
         "disadvantage": [
             {
-                "weapon_type": "Fire",
+                "weapon_type": "Elemental",
                 "weapon_rank": "All",
                 "damage": "-1",
                 "resist": "0",
@@ -162,7 +162,7 @@
                 "defense_speed": "0"
             },
             {
-                "weapon_type": "Tempest",
+                "weapon_type": "Elemental",
                 "weapon_rank": "All",
                 "damage": -1,
                 "resist": 0,
@@ -174,7 +174,7 @@
                 "defense_speed": 0
             },
             {
-                "weapon_type": "Thunder",
+                "weapon_type": "Elemental",
                 "weapon_rank": "All",
                 "damage": -1,
                 "resist": 0,
@@ -193,25 +193,13 @@
         ]
     },
     {
-        "nid": "Tempest",
-        "name": "Tempest",
+        "nid": "Elemental",
+        "name": "Elemental",
         "force_melee_anim": false,
         "rank_bonus": [],
         "advantage": [
             {
                 "weapon_type": "Light",
-                "weapon_rank": "All",
-                "damage": 1,
-                "resist": 0,
-                "accuracy": 15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            },
-            {
-                "weapon_type": "Thunder",
                 "weapon_rank": "All",
                 "damage": 1,
                 "resist": 0,
@@ -235,150 +223,12 @@
                 "dodge": 0,
                 "attack_speed": 0,
                 "defense_speed": 0
-            },
-            {
-                "weapon_type": "Fire",
-                "weapon_rank": "All",
-                "damage": -1,
-                "resist": 0,
-                "accuracy": -15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
             }
         ],
         "icon_nid": "Affinity",
         "icon_index": [
             0,
-            7
-        ]
-    },
-    {
-        "nid": "Fire",
-        "name": "Fire",
-        "force_melee_anim": false,
-        "rank_bonus": [],
-        "advantage": [
-            {
-                "weapon_type": "Light",
-                "weapon_rank": "All",
-                "damage": 1,
-                "resist": 0,
-                "accuracy": 15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            },
-            {
-                "weapon_type": "Tempest",
-                "weapon_rank": "All",
-                "damage": 1,
-                "resist": 0,
-                "accuracy": 15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            }
-        ],
-        "disadvantage": [
-            {
-                "weapon_type": "Dark",
-                "weapon_rank": "All",
-                "damage": -1,
-                "resist": 0,
-                "accuracy": -15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            },
-            {
-                "weapon_type": "Thunder",
-                "weapon_rank": "All",
-                "damage": -1,
-                "resist": 0,
-                "accuracy": -15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            }
-        ],
-        "icon_nid": "Affinity",
-        "icon_index": [
-            0,
-            4
-        ]
-    },
-    {
-        "nid": "Thunder",
-        "name": "Thunder",
-        "force_melee_anim": false,
-        "rank_bonus": [],
-        "advantage": [
-            {
-                "weapon_type": "Light",
-                "weapon_rank": "All",
-                "damage": 1,
-                "resist": 0,
-                "accuracy": 15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            },
-            {
-                "weapon_type": "Fire",
-                "weapon_rank": "All",
-                "damage": 1,
-                "resist": 0,
-                "accuracy": 15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            }
-        ],
-        "disadvantage": [
-            {
-                "weapon_type": "Dark",
-                "weapon_rank": "All",
-                "damage": -1,
-                "resist": 0,
-                "accuracy": -15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            },
-            {
-                "weapon_type": "Tempest",
-                "weapon_rank": "All",
-                "damage": -1,
-                "resist": 0,
-                "accuracy": -15,
-                "avoid": 0,
-                "crit": 0,
-                "dodge": 0,
-                "attack_speed": 0,
-                "defense_speed": 0
-            }
-        ],
-        "icon_nid": "Affinity",
-        "icon_index": [
-            0,
-            0
+            8
         ]
     },
     {
@@ -388,7 +238,7 @@
         "rank_bonus": [],
         "advantage": [
             {
-                "weapon_type": "Fire",
+                "weapon_type": "Elemental",
                 "weapon_rank": "All",
                 "damage": "1",
                 "resist": "0",
@@ -400,7 +250,7 @@
                 "defense_speed": "0"
             },
             {
-                "weapon_type": "Tempest",
+                "weapon_type": "Elemental",
                 "weapon_rank": "All",
                 "damage": 1,
                 "resist": 0,
@@ -412,7 +262,7 @@
                 "defense_speed": 0
             },
             {
-                "weapon_type": "Thunder",
+                "weapon_type": "Elemental",
                 "weapon_rank": "All",
                 "damage": 1,
                 "resist": 0,

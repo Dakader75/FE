@@ -93,7 +93,7 @@
                 "nid": "101",
                 "variant": null,
                 "level": 2,
-                "klass": "Soldier",
+                "klass": "Lance Fighter",
                 "faction": "Soldier",
                 "starting_items": [
                     [
@@ -116,7 +116,7 @@
                 "nid": "102",
                 "variant": null,
                 "level": 2,
-                "klass": "Soldier",
+                "klass": "Lance Fighter",
                 "faction": "Soldier",
                 "starting_items": [
                     [
@@ -208,7 +208,7 @@
                 "nid": "106",
                 "variant": null,
                 "level": 3,
-                "klass": "Soldier",
+                "klass": "Lance Fighter",
                 "faction": "Soldier",
                 "starting_items": [
                     [
@@ -231,7 +231,7 @@
                 "nid": "107",
                 "variant": null,
                 "level": 2,
-                "klass": "Soldier",
+                "klass": "Lance Fighter",
                 "faction": "Soldier",
                 "starting_items": [
                     [
@@ -306,7 +306,7 @@
                 "nid": "GreenMerc",
                 "variant": null,
                 "level": 1,
-                "klass": "Mercenary",
+                "klass": "Sword Fighter",
                 "faction": "Soldier",
                 "starting_items": [
                     [

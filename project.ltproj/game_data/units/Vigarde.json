@@ -5,7 +5,7 @@
         "desc": "",
         "variant": "",
         "level": 13,
-        "klass": "Baron",
+        "klass": "Champion",
         "tags": [],
         "bases": {
             "HP": 54,
@@ -81,6 +81,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

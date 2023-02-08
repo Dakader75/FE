@@ -81,6 +81,10 @@
             "Fire": [
                 false,
                 0
+            ],
+            "Elemental": [
+                false,
+                0
             ]
         },
         "alternate_classes": [],

@@ -318,7 +318,7 @@
                 "nid": "107",
                 "variant": null,
                 "level": 2,
-                "klass": "Mercenary",
+                "klass": "Sword Fighter",
                 "faction": "Cutthroat",
                 "starting_items": [
                     [
@@ -368,7 +368,7 @@
                 "nid": "109",
                 "variant": null,
                 "level": 4,
-                "klass": "Thief",
+                "klass": "Citizen",
                 "faction": "Cutthroat",
                 "starting_items": [
                     [

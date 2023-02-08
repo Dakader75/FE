@@ -2,7 +2,7 @@
     {
         "nid": "Dragon Halberd",
         "name": "Dragon Halberd",
-        "desc": "Reduces foe's Spd and Res by 4 on hit.",
+        "desc": "Inflicts \"Frostbite\" on hit. SPD -3.",
         "icon_nid": "Axe",
         "icon_index": [
             0,
@@ -31,19 +31,15 @@
             ],
             [
                 "damage",
-                10
+                9
             ],
             [
                 "hit",
-                75
+                85
             ],
             [
                 "crit",
                 5
-            ],
-            [
-                "weight",
-                8
             ],
             [
                 "level_exp",
@@ -63,7 +59,16 @@
             ],
             [
                 "status_on_hit",
-                "Frost Lightning"
+                "Frostbite"
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        -3
+                    ]
+                ]
             ]
         ]
     }

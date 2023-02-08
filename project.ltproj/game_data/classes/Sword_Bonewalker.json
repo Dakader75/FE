@@ -120,6 +120,10 @@
             "Fire": [
                 false,
                 0
+            ],
+            "Elemental": [
+                false,
+                0
             ]
         },
         "icon_nid": "Generic_Portrait_Sword_Bonewalker",

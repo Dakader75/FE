@@ -44,10 +44,6 @@
         "learned_skills": [
             [
                 1,
-                "Starburst Stream"
-            ],
-            [
-                1,
                 "Death Blow"
             ]
         ],
@@ -90,6 +86,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

@@ -146,15 +146,19 @@
                 "nid": "105",
                 "variant": null,
                 "level": 10,
-                "klass": "Cantor",
+                "klass": "Sage",
                 "faction": "Soldier",
                 "starting_items": [
                     [
-                        "Death",
+                        "Fire",
                         false
                     ],
                     [
-                        "Fortify",
+                        "Heal",
+                        false
+                    ],
+                    [
+                        "Physic",
                         false
                     ]
                 ],
@@ -185,7 +189,7 @@
             {
                 "nid": "106",
                 "variant": null,
-                "level": 7,
+                "level": 5,
                 "klass": "Priestess",
                 "faction": "Soldier",
                 "starting_items": [
@@ -212,7 +216,7 @@
             {
                 "nid": "115",
                 "variant": null,
-                "level": 7,
+                "level": 5,
                 "klass": "Priestess",
                 "faction": "Soldier",
                 "starting_items": [
@@ -239,7 +243,7 @@
             {
                 "nid": "Cantor1",
                 "variant": null,
-                "level": 10,
+                "level": 5,
                 "klass": "Cantor",
                 "faction": "Soldier",
                 "starting_items": [
@@ -262,7 +266,7 @@
             {
                 "nid": "Cantor2",
                 "variant": null,
-                "level": 10,
+                "level": 5,
                 "klass": "Cantor",
                 "faction": "Soldier",
                 "starting_items": [
@@ -285,7 +289,7 @@
             {
                 "nid": "Cantor3",
                 "variant": null,
-                "level": 10,
+                "level": 5,
                 "klass": "Cantor",
                 "faction": "Soldier",
                 "starting_items": [
@@ -308,7 +312,7 @@
             {
                 "nid": "Cantor4",
                 "variant": null,
-                "level": 10,
+                "level": 5,
                 "klass": "Cantor",
                 "faction": "Soldier",
                 "starting_items": [
@@ -331,7 +335,7 @@
             {
                 "nid": "Cantor5",
                 "variant": null,
-                "level": 10,
+                "level": 5,
                 "klass": "Cantor",
                 "faction": "Soldier",
                 "starting_items": [
@@ -354,7 +358,7 @@
             {
                 "nid": "Cantor6",
                 "variant": null,
-                "level": 10,
+                "level": 5,
                 "klass": "Cantor",
                 "faction": "Soldier",
                 "starting_items": [
@@ -377,7 +381,7 @@
             {
                 "nid": "Cantor7",
                 "variant": null,
-                "level": 10,
+                "level": 5,
                 "klass": "Cantor",
                 "faction": "Soldier",
                 "starting_items": [
@@ -400,7 +404,7 @@
             {
                 "nid": "Cantor8",
                 "variant": null,
-                "level": 10,
+                "level": 5,
                 "klass": "Cantor",
                 "faction": "Soldier",
                 "starting_items": [

@@ -5,7 +5,7 @@
         "desc": "A sage from the village Caer Pelyn. He\u2019s Ewan\u2019s solemn, but kind, teacher.",
         "variant": null,
         "level": 1,
-        "klass": "Tempest Sage",
+        "klass": "Elemental Sage",
         "tags": [],
         "bases": {
             "HP": 30,
@@ -81,6 +81,10 @@
                 0
             ],
             "Fire": [
+                true,
+                181
+            ],
+            "Elemental": [
                 true,
                 181
             ]

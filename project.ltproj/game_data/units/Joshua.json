@@ -5,7 +5,7 @@
         "desc": "A wandering sword fighter from Jehanna. He loves to gamble.",
         "variant": "",
         "level": 5,
-        "klass": "Myrmidon",
+        "klass": "Citizen",
         "tags": [],
         "bases": {
             "HP": 24,
@@ -77,6 +77,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

@@ -73,10 +73,6 @@
             [
                 5,
                 "Galeforce"
-            ],
-            [
-                15,
-                "Pass"
             ]
         ],
         "wexp_gain": {
@@ -117,6 +113,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

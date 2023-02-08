@@ -3,7 +3,7 @@
         "nid": "Artur",
         "name": "Artur",
         "desc": "A young monk from Renais. He is a very forthright and pious man.",
-        "variant": null,
+        "variant": "",
         "level": 2,
         "klass": "Light Mage",
         "tags": [],
@@ -81,6 +81,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

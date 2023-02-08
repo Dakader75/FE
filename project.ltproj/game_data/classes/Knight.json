@@ -8,7 +8,7 @@
         "promotes_from": null,
         "turns_into": [
             "Great_Knight",
-            "Baron"
+            "Champion"
         ],
         "tags": [
             "Armor"
@@ -92,16 +92,16 @@
         ],
         "wexp_gain": {
             "Sword": [
-                false,
-                0
+                true,
+                1
             ],
             "Lance": [
                 true,
-                31
+                1
             ],
             "Axe": [
-                false,
-                0
+                true,
+                1
             ],
             "Bow": [
                 false,
@@ -128,6 +128,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

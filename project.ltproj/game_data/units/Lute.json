@@ -5,7 +5,7 @@
         "desc": "A young mage of Renais. She believes she is a prodigy.",
         "variant": "Female",
         "level": 1,
-        "klass": "Tempest Mage",
+        "klass": "Elemental Mage",
         "tags": [],
         "bases": {
             "HP": 17,
@@ -77,6 +77,10 @@
                 0
             ],
             "Fire": [
+                true,
+                71
+            ],
+            "Elemental": [
                 true,
                 71
             ]

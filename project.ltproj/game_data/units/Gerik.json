@@ -5,7 +5,7 @@
         "desc": "A mercenary leader from Jehanna. He's better known as the Desert Tiger.",
         "variant": null,
         "level": 10,
-        "klass": "Mercenary",
+        "klass": "Sword Fighter",
         "tags": [],
         "bases": {
             "HP": 32,
@@ -85,6 +85,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

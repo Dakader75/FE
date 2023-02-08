@@ -87,16 +87,8 @@
                 "Flying"
             ],
             [
-                1,
-                "Canto"
-            ],
-            [
-                1,
-                "Darting Blow"
-            ],
-            [
                 10,
-                "Avoid +10"
+                "Darting Blow"
             ]
         ],
         "wexp_gain": {
@@ -137,6 +129,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

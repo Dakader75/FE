@@ -45,10 +45,6 @@
             [
                 1,
                 "Frenzy"
-            ],
-            [
-                1,
-                "Spirit Bomb"
             ]
         ],
         "unit_notes": [],
@@ -90,6 +86,10 @@
                 0
             ],
             "Fire": [
+                false,
+                1
+            ],
+            "Elemental": [
                 false,
                 1
             ]

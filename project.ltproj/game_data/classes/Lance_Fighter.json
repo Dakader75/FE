@@ -1,36 +1,36 @@
 [
     {
-        "nid": "Fire Sage",
-        "name": "Fire Sage",
-        "desc": "Advanced wielders of the natural magics.",
-        "tier": 2,
-        "movement_group": "Mages",
-        "promotes_from": "Tempest Mage",
+        "nid": "Lance Fighter",
+        "name": "Lance Fighter",
+        "desc": "Average soldiers possessing\nno special abilities.",
+        "tier": 1,
+        "movement_group": "Light Foot",
+        "promotes_from": null,
         "turns_into": [],
         "tags": [],
         "max_level": 20,
         "bases": {
             "HP": 20,
-            "STR": 0,
-            "MAG": 5,
-            "SKL": 6,
-            "SPD": 5,
+            "STR": 3,
+            "MAG": 0,
+            "SKL": 0,
+            "SPD": 1,
             "LCK": 0,
-            "DEF": 5,
-            "RES": 6,
-            "CON": 7,
-            "MOV": 6,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 6,
+            "MOV": 5,
             "LEAD": 0
         },
         "growths": {
-            "HP": 45,
-            "STR": 0,
-            "MAG": 45,
+            "HP": 80,
+            "STR": 50,
+            "MAG": 0,
             "SKL": 30,
-            "SPD": 25,
-            "LCK": 15,
-            "DEF": 10,
-            "RES": 40,
+            "SPD": 20,
+            "LCK": 25,
+            "DEF": 12,
+            "RES": 15,
             "CON": 0,
             "MOV": 0,
             "LEAD": 0
@@ -49,27 +49,27 @@
             "LEAD": 0
         },
         "promotion": {
-            "HP": 4,
+            "HP": 0,
             "STR": 0,
-            "MAG": 1,
-            "SKL": 1,
+            "MAG": 0,
+            "SKL": 0,
             "SPD": 0,
             "LCK": 0,
-            "DEF": 3,
-            "RES": 3,
-            "CON": 1,
-            "MOV": -99,
+            "DEF": 0,
+            "RES": 0,
+            "CON": 0,
+            "MOV": 0,
             "LEAD": 0
         },
         "max_stats": {
             "HP": 60,
             "STR": 20,
-            "MAG": 30,
-            "SKL": 30,
-            "SPD": 26,
-            "LCK": 30,
-            "DEF": 21,
-            "RES": 25,
+            "MAG": 20,
+            "SKL": 20,
+            "SPD": 20,
+            "LCK": 20,
+            "DEF": 20,
+            "RES": 20,
             "CON": 20,
             "MOV": 15,
             "LEAD": 60,
@@ -77,12 +77,8 @@
         },
         "learned_skills": [
             [
-                5,
-                "Flame Flare"
-            ],
-            [
-                15,
-                "Flame Mastery"
+                10,
+                "STR/DEF Unity"
             ]
         ],
         "wexp_gain": {
@@ -91,8 +87,8 @@
                 0
             ],
             "Lance": [
-                false,
-                0
+                true,
+                1
             ],
             "Axe": [
                 false,
@@ -103,16 +99,16 @@
                 0
             ],
             "Staff": [
-                true,
-                31
+                false,
+                0
             ],
             "Light": [
                 false,
                 0
             ],
             "Anima": [
-                true,
-                31
+                false,
+                0
             ],
             "Dark": [
                 false,
@@ -123,17 +119,21 @@
                 0
             ],
             "Fire": [
-                true,
-                31
+                false,
+                0
+            ],
+            "Elemental": [
+                false,
+                0
             ]
         },
-        "icon_nid": "Generic_Portrait_Sage",
+        "icon_nid": "Generic_Portrait_Soldier",
         "icon_index": [
             0,
             0
         ],
-        "map_sprite_nid": "Sage",
-        "combat_anim_nid": "Sage",
+        "map_sprite_nid": "Soldier",
+        "combat_anim_nid": "Soldier",
         "fields": []
     }
 ]

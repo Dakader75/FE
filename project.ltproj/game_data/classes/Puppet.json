@@ -113,10 +113,14 @@
                 0
             ],
             "Fire": [
-                false,
-                0
+                true,
+                1
             ],
             "Tempest": [
+                true,
+                1
+            ],
+            "Elemental": [
                 true,
                 1
             ]

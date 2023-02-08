@@ -81,11 +81,7 @@
         },
         "learned_skills": [
             [
-                1,
-                "Canto"
-            ],
-            [
-                1,
+                5,
                 "Luna"
             ],
             [
@@ -95,8 +91,8 @@
         ],
         "wexp_gain": {
             "Sword": [
-                true,
-                1
+                false,
+                0
             ],
             "Lance": [
                 true,
@@ -104,7 +100,7 @@
             ],
             "Axe": [
                 true,
-                31
+                1
             ],
             "Bow": [
                 false,
@@ -131,6 +127,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

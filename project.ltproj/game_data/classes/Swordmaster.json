@@ -5,7 +5,7 @@
         "desc": "Swordfighters with superior speed and skill.",
         "tier": 2,
         "movement_group": "Light Foot",
-        "promotes_from": "Myrmidon",
+        "promotes_from": "Citizen",
         "turns_into": [],
         "tags": [
             "Sword"
@@ -81,10 +81,6 @@
             [
                 5,
                 "Astra"
-            ],
-            [
-                15,
-                "Defiant Crit"
             ]
         ],
         "wexp_gain": {
@@ -125,6 +121,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

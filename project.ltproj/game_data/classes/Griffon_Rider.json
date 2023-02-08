@@ -75,10 +75,6 @@
             [
                 1,
                 "Swift Sparrow"
-            ],
-            [
-                1,
-                "Avoid +10"
             ]
         ],
         "wexp_gain": {
@@ -119,6 +115,10 @@
                 0
             ],
             "Default": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

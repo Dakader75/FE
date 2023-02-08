@@ -93,13 +93,13 @@
             ],
             [
                 1,
-                "Canto"
+                "Swift Sparrow"
             ]
         ],
         "wexp_gain": {
             "Sword": [
-                true,
-                1
+                false,
+                0
             ],
             "Lance": [
                 true,
@@ -134,6 +134,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

@@ -83,15 +83,7 @@
         },
         "learned_skills": [
             [
-                1,
-                "Canto"
-            ],
-            [
-                1,
-                "STR/DEF Solo"
-            ],
-            [
-                1,
+                10,
                 "Charge"
             ]
         ],
@@ -133,6 +125,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

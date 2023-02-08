@@ -115,6 +115,10 @@
             "Fire": [
                 false,
                 0
+            ],
+            "Elemental": [
+                false,
+                0
             ]
         },
         "icon_nid": "",

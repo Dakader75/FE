@@ -3,7 +3,7 @@
         "nid": "Ross",
         "name": "Ross",
         "desc": "A young villager. He longs to be a warrior, like his father.",
-        "variant": null,
+        "variant": "",
         "level": 1,
         "klass": "Citizen",
         "tags": [],
@@ -81,6 +81,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]

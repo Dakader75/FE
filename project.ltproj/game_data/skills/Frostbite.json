@@ -1,8 +1,8 @@
 [
     {
-        "nid": "Frost Lightning",
-        "name": "Frost Lightning",
-        "desc": "Reduces Spd and Res by 4.",
+        "nid": "Frostbite",
+        "name": "Frostbite",
+        "desc": "Reduces SPD/DEF/RES by 3.",
         "icon_nid": "Skills",
         "icon_index": [
             5,
@@ -18,11 +18,15 @@
                 [
                     [
                         "SPD",
-                        -4
+                        -3
                     ],
                     [
                         "RES",
-                        -4
+                        -3
+                    ],
+                    [
+                        "DEF",
+                        -3
                     ]
                 ]
             ]

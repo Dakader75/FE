@@ -85,16 +85,8 @@
                 "Flying"
             ],
             [
-                1,
-                "Canto"
-            ],
-            [
                 5,
                 "Dragon Fang"
-            ],
-            [
-                15,
-                "Trample"
             ]
         ],
         "wexp_gain": {
@@ -135,6 +127,10 @@
                 0
             ],
             "Fire": [
+                false,
+                0
+            ],
+            "Elemental": [
                 false,
                 0
             ]
