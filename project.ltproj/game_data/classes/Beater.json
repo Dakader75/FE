@@ -69,7 +69,12 @@
             "CON": 25,
             "MOV": 15
         },
-        "learned_skills": [],
+        "learned_skills": [
+            [
+                1,
+                "Divine Speed"
+            ]
+        ],
         "wexp_gain": {
             "Sword": [
                 2,
