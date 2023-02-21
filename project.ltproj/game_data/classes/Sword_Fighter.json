@@ -15,27 +15,27 @@
         ],
         "max_level": 20,
         "bases": {
-            "HP": 18,
+            "HP": 20,
             "STR": 4,
-            "MAG": 2,
-            "SKL": 8,
-            "SPD": 8,
-            "LCK": 0,
+            "MAG": 1,
+            "SKL": 6,
+            "SPD": 6,
+            "LCK": 6,
             "DEF": 4,
-            "RES": 0,
+            "RES": 1,
             "CON": 9,
-            "MOV": 5,
+            "MOV": 4,
             "LEAD": 0
         },
         "growths": {
-            "HP": 80,
-            "STR": 40,
-            "MAG": 20,
-            "SKL": 40,
-            "SPD": 32,
-            "LCK": 30,
-            "DEF": 18,
-            "RES": 30,
+            "HP": 60,
+            "STR": 45,
+            "MAG": 5,
+            "SKL": 60,
+            "SPD": 60,
+            "LCK": 60,
+            "DEF": 40,
+            "RES": 20,
             "CON": 0,
             "MOV": 0,
             "LEAD": 0
@@ -80,7 +80,12 @@
             "LEAD": 60,
             "New Stat": 30
         },
-        "learned_skills": [],
+        "learned_skills": [
+            [
+                10,
+                "Avoid +10"
+            ]
+        ],
         "wexp_gain": {
             "Sword": [
                 true,

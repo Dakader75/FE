@@ -25,7 +25,7 @@
             "DEF": 3,
             "RES": 2,
             "CON": 5,
-            "MOV": 7,
+            "MOV": 5,
             "LEAD": 0
         },
         "growths": {
