@@ -1,7 +1,10 @@
 from functools import lru_cache
+from typing import List, Type
+
+from app.data.database.components import ComponentType
+from app.data.database.item_components import ItemComponent, ItemTags
 from app.utilities.data import Data
-from app.data.components import Type
-from app.data.item_components import ItemComponent, ItemTags
+
 
 @lru_cache(1)
 def get_cached_item_components(proj_dir: str):
@@ -9,24 +12,22 @@ def get_cached_item_components(proj_dir: str):
     # item components defined in item_components folder
     from app.engine import item_components
 
-    from app.engine import custom_component_access
-    if custom_component_access.get_components():
+    from app.data.resources.resources import RESOURCES
+    if RESOURCES.has_loaded_custom_components():
         # Necessary for get_item_components to find the item component subclasses
         # defined here
         import custom_components
-    # else:
-        # custom_component_access.clean()
 
     subclasses = ItemComponent.__subclasses__()
     # Sort by tag
     subclasses = sorted(subclasses, key=lambda x: list(ItemTags).index(x.tag) if x.tag in list(ItemTags) else 100)
     return Data(subclasses)
 
-def get_item_components():
-    from app.data.database import DB
+def get_item_components() -> Data[Type[ItemComponent]]:
+    from app.data.database.database import DB
     return get_cached_item_components(DB.current_proj_dir)
 
-def get_item_tags():
+def get_item_tags() -> List[ItemTags]:
     return list(ItemTags)
 
 def get_component(nid):
@@ -42,11 +43,11 @@ def restore_component(dat):
     base_class = _item_components.get(nid)
     if base_class:
         if isinstance(base_class.expose, tuple):
-            if base_class.expose[0] == Type.List:
+            if base_class.expose[0] == ComponentType.List:
                 # Need to make a copy
                 # so we don't keep the reference around
                 copy = base_class(value.copy())
-            elif base_class.expose[0] in (Type.Dict, Type.FloatDict):
+            elif base_class.expose[0] in (ComponentType.Dict, ComponentType.FloatDict):
                 val = [v.copy() for v in value]
                 copy = base_class(val)
             else:

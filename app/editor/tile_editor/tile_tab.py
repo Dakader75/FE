@@ -5,7 +5,7 @@ from PyQt5.QtCore import QSize
 from app.editor import tilemap_editor
 from app.editor import tileset_editor
 from app.editor.tileset_editor import TileSetEditor
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 from app.editor.data_editor import SingleResourceEditor, MultiResourceEditor
 
 from app.editor.tile_editor import tile_model
@@ -115,7 +115,8 @@ class TileTab(QWidget):
         return None
 
     def duplicate(self):
-        self.model.duplicate(self.current)
+        if self.current:
+            self.model.duplicate(self.current)
 
 class TileSetDatabase(TileTab):
     @classmethod

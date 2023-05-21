@@ -1,32 +1,55 @@
-from app.data.item_components import ItemComponent, ItemTags
-from app.data.components import Type
+from typing import Optional
+from app.data.database.item_components import ItemComponent, ItemTags
+from app.data.database.components import ComponentType
 
 from app.utilities import utils
 from app.engine import action, combat_calcs, image_mods, engine, item_system, skill_system
 from app.engine.combat import playback as pb
 
-class Effective(ItemComponent):
-    nid = 'effective'
-    desc = 'If this item is effective against an enemy its damage value will be increased by the integer chosen here instead. This is not a multiplier, but an addition.'
-    # requires = ['damage']
-    paired_with = ('effective_tag',)
+class EffectiveDamage(ItemComponent):
+    nid = 'effective_damage'
+    desc = 'If this item is effective against an enemy, its damage value will be multiplied and increased'
     tag = ItemTags.EXTRA
 
-    expose = Type.Int
-    value = 0
+    expose = ComponentType.NewMultipleOptions
 
-    def init(self, item):
-        item.data['effective'] = self.value
+    options = {
+        'effective_tags': (ComponentType.List, ComponentType.Tag),
+        'effective_multiplier': ComponentType.Float,
+        'effective_bonus_damage': ComponentType.Int,
+        'show_effectiveness_flash': ComponentType.Bool,
+    }
 
-class EffectiveTag(ItemComponent):
-    nid = 'effective_tag'
-    desc = "Item will be considered effective if the targeted enemy has any of the tags listed in this component."
-    # requires = ['damage']
-    paired_with = ('effective',)
-    tag = ItemTags.EXTRA
+    def __init__(self, value=None):
+        self.value = {
+            'effective_tags': [],
+            'effective_multiplier': 3,
+            'effective_bonus_damage': 0,
+            'show_effectiveness_flash': True,
+        }
+        if value:
+            self.value.update(value)
 
-    expose = (Type.List, Type.Tag)
-    value = []
+    @property
+    def tags(self):
+        return self.value['effective_tags']
+
+    @property
+    def multiplier(self):
+        return self.value['effective_multiplier']
+
+    @property
+    def bonus_damage(self):
+        return self.value['effective_bonus_damage']
+
+    @property
+    def show_flash(self):
+        return self.value['show_effectiveness_flash']
+
+    def _check_effective(self, target):
+        if self._check_negate(target):
+            return False
+        return any(tag in target.tags for tag in self.tags)
 
     def _check_negate(self, target) -> bool:
         # Returns whether it DOES negate the effectiveness
@@ -36,33 +59,28 @@ class EffectiveTag(ItemComponent):
         for skill in target.skills:
             # Do the tags match?
             if skill.negate_tags and skill.negate_tags.value and \
-                    any(tag in self.value for tag in skill.negate_tags.value):
+                    any(tag in self.tags for tag in skill.negate_tags.value):
                 return True
         # No negation, so proceed with effective damage
         return False
 
-    def dynamic_damage(self, unit, item, target, mode, attack_info, base_value) -> int:
-        if any(tag in target.tags for tag in self.value):
-            if self._check_negate(target):
-                return 0
-            return item.data.get('effective', 0)
-        return 0
-
     def item_icon_mod(self, unit, item, target, sprite):
-        if any(tag in target.tags for tag in self.value):
-            if self._check_negate(target):
-                return sprite
-            sprite = image_mods.make_white(sprite.convert_alpha(), abs(250 - engine.get_time()%500)/250)
+        if self.show_flash:
+            if self._check_effective(target):
+                sprite = image_mods.make_white(sprite.convert_alpha(), abs(250 - engine.get_time()%500)/250)
         return sprite
 
-    def target_icon(self, target, item, unit) -> bool:
-        if not skill_system.check_enemy(target, unit):
-            return None
-        if self._check_negate(target):
-            return None
-        if any(tag in target.tags for tag in self.value):
-            return 'danger'
+    def target_icon(self, target, item, unit) -> Optional[str]:
+        if skill_system.check_enemy(target, unit):
+            if self._check_effective(target):
+                return 'danger'
         return None
+
+    def dynamic_damage(self, unit, item, target, mode, attack_info, base_value) -> int:
+        if self._check_effective(target):
+            might = item_system.damage(unit, item) or 0
+            return int((self.multiplier - 1.0) * might + self.bonus_damage)
+        return 0
 
 class Brave(ItemComponent):
     nid = 'brave'
@@ -86,10 +104,10 @@ class Lifelink(ItemComponent):
     # requires = ['damage']
     tag = ItemTags.EXTRA
 
-    expose = Type.Float
+    expose = ComponentType.Float
     value = 0.5
 
-    def after_hit(self, actions, playback, unit, item, target, mode, attack_info):
+    def after_strike(self, actions, playback, unit, item, target, mode, attack_info, strike):
         total_damage_dealt = 0
         playbacks = [p for p in playback if p.nid in ('damage_hit', 'damage_crit') and p.attacker == unit]
         for p in playbacks:
@@ -106,7 +124,7 @@ class DamageOnMiss(ItemComponent):
     desc = "Item deals a percentage of it's normal damage on a miss."
     tag = ItemTags.EXTRA
 
-    expose = Type.Float
+    expose = ComponentType.Float
     value = 0.5
 
     def on_miss(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
@@ -123,7 +141,7 @@ class DamageOnMiss(ItemComponent):
             playback.append(pb.HitAnim('MapNoDamage', target))
 
 class Eclipse(ItemComponent):
-    nid = 'Eclipse'
+    nid = 'eclipse'
     desc = "Target loses half current HP on hit"
     tag = ItemTags.EXTRA
 
@@ -190,7 +208,7 @@ class CustomTriangleMultiplier(ItemComponent):
     desc = "Weapon advantage effects are multiplied by the provided value."
     tag = ItemTags.EXTRA
 
-    expose = Type.Float
+    expose = ComponentType.Float
     value = 1.0
 
     def modify_weapon_triangle(self, unit, item):
@@ -201,7 +219,7 @@ class StatusOnEquip(ItemComponent):
     desc = "A unit with this item equipped will receive the specified status."
     tag = ItemTags.EXTRA
 
-    expose = Type.Skill  # Nid
+    expose = ComponentType.Skill  # Nid
 
     def on_equip_item(self, unit, item):
         if self.value not in [skill.nid for skill in unit.skills]:
@@ -216,7 +234,7 @@ class MultiStatusOnEquip(ItemComponent):
     desc = "Item gives these statuses while equipped"
     tag = ItemTags.EXTRA
 
-    expose = (Type.List, Type.Skill)  # Nid
+    expose = (ComponentType.List, ComponentType.Skill)  # Nid
 
     def on_equip_item(self, unit, item):
         for skl in self.value:
@@ -233,7 +251,7 @@ class StatusOnHold(ItemComponent):
     desc = "Item gives status while in unit's inventory"
     tag = ItemTags.EXTRA
 
-    expose = Type.Skill  # Nid
+    expose = ComponentType.Skill  # Nid
 
     def on_add_item(self, unit, item):
         action.do(action.AddSkill(unit, self.value))
@@ -241,13 +259,29 @@ class StatusOnHold(ItemComponent):
     def on_remove_item(self, unit, item):
         action.do(action.RemoveSkill(unit, self.value))
 
+class MultiStatusOnHold(ItemComponent):
+    nid = 'multi_status_on_hold'
+    desc = "Item gives these statuses while in unit's inventory"
+    tag = ItemTags.EXTRA
+
+    expose = (ComponentType.List, ComponentType.Skill)  # Nid
+
+    def on_add_item(self, unit, item):
+        for skl in self.value:
+            act = action.AddSkill(unit, skl)
+            action.do(act)
+
+    def on_remove_item(self, unit, item):
+        for skl in self.value:
+            action.do(action.RemoveSkill(unit, skl))
+
 class GainManaAfterCombat(ItemComponent):
     nid = 'gain_mana_after_combat'
     desc = "Takes a string that will be evaluated by python. At the end of combat the string is evaluated if the item was used and the result is translated into mana gained by the unit. If you want a flat gain of X mana, enter X, where X is an integer."
     tag = ItemTags.EXTRA
     author = 'KD'
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def end_combat(self, playback, unit, item, target, mode):
         from app.engine import evaluate

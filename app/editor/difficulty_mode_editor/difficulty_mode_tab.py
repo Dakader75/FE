@@ -1,4 +1,4 @@
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.editor.base_database_gui import DatabaseTab
 from app.editor.data_editor import SingleDatabaseEditor
@@ -13,7 +13,7 @@ class DifficultyModeDatabase(DatabaseTab):
         right_frame = difficulty_mode_properties.DifficultyModeProperties
 
         def deletion_func(model, index):
-            return model.rowCount() > 1 
+            return model.rowCount() > 1
 
         collection_model = difficulty_mode_model.DifficultyModeModel
         return cls(data, title, right_frame, (deletion_func, None, None), collection_model, parent)
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     import sys
     from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)
-    from app.resources.resources import RESOURCES
+    from app.data.resources.resources import RESOURCES
     RESOURCES.load('default.ltproj')
     DB.load('default.ltproj')
     window = SingleDatabaseEditor(DifficultyModeDatabase)

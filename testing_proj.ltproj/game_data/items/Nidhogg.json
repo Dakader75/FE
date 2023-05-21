@@ -81,6 +81,10 @@
                     "Monster",
                     "Flying"
                 ]
+            ],
+            [
+                "effective_multiplier",
+                1
             ]
         ]
     }

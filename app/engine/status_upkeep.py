@@ -1,12 +1,14 @@
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+import logging
+
+from app.data.database.database import DB
+from app.engine import (action, animations, engine, gui, health_bar,
+                        item_funcs, item_system, skill_system)
+from app.engine.game_state import game
 from app.engine.sound import get_sound_thread
 from app.engine.state import MapState
-from app.engine.game_state import game
-from app.engine import engine, action, skill_system, \
-    health_bar, animations, item_system, item_funcs, gui
+from app.events import triggers
+from app.data.resources.resources import RESOURCES
 
-import logging
 
 class StatusUpkeepState(MapState):
     name = 'status_upkeep'
@@ -143,9 +145,16 @@ class StatusUpkeepState(MapState):
     def check_death(self):
         if self.cur_unit.get_hp() <= 0:
             # Handle death
+            if self.is_traveler(self.cur_unit):
+                # If you are a paired up unit which would die
+                # leave the pair up and sit in your current position
+                # until you do die!
+                owner = self.is_traveler(self.cur_unit)
+                action.execute(action.Separate(owner, self.cur_unit, owner.position))
             game.death.should_die(self.cur_unit)
             game.state.change('dying')
-            game.events.trigger('unit_death', self.cur_unit, position=self.cur_unit.position)
+            action.UpdateRecords('death', (None, self.cur_unit.nid)).do()
+            game.events.trigger(triggers.UnitDeath(self.cur_unit, None, position=self.cur_unit.position))
             skill_system.on_death(self.cur_unit)
         else:
             self.cur_unit.sprite.change_state('normal')

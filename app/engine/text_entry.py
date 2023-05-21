@@ -39,7 +39,7 @@ class TextEntryState(MapState):
             get_sound_thread().play_sfx('Error')
 
     def _add(self, selection):
-        if len(self.menu.name) < self.menu.character_limit:
+        if len(self.menu.name) < self.menu.character_limit and selection:
             self.menu.updateName(selection)
             get_sound_thread().play_sfx('Select 1')
         else:
@@ -84,7 +84,8 @@ class TextEntryState(MapState):
 
             elif event == 'SELECT':
                 selection = self.menu.get_current()
-                self._add(selection)
+                if selection:
+                    self._add(selection)
 
             elif event == 'START':
                 game.memory['text_entry_menu'] = (self.constant_id, self.menu.name)

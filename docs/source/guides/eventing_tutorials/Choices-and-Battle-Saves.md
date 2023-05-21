@@ -20,7 +20,7 @@ Example:
 The choice that the player chooses will be saved in the game_vars under the name you gave the choice. The most recent choice made is also saved in game_vars under `_last_choice`. So you can access their choice with `game.game_vars['fates']` or `game.game_vars['_last_choice']`. 
 
 ```
-if;'{v:last_choice}' == 'Smash'
+if;'{v:_last_choice}' == 'Smash'
     u;Corrin;Left
     s;Corrin;I choose to SMASH!
     r;Corrin

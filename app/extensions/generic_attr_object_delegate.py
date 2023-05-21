@@ -1,4 +1,4 @@
-from app.data.raw_data import RawListDataObjectBase
+from app.data.database.raw_data import RawListDataObjectBase
 from app.extensions.list_models import MultiAttrListModel
 from app.utilities import str_utils
 from PyQt5.QtCore import Qt
@@ -14,6 +14,18 @@ class GenericObjectListModel(MultiAttrListModel):
     """
     Handles rows of arbitrary size and header
     """
+    def new(self, idx):
+        self.create_new()
+        new_item = self._data.pop()
+        if idx + 1 <= len(self._data):
+            self._data.insert(idx + 1, new_item)
+        else:
+            self._data.append(new_item)
+        self.layoutChanged.emit()
+
+        new_index = self.index(idx + 1)
+        return new_index
+
     def create_new(self):
         nids = [d.nid for d in self._data]
         nid = str_utils.get_next_name("Key", nids)

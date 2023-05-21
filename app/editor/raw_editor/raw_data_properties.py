@@ -1,6 +1,8 @@
+from app.editor.lib.components.validated_line_edit import NidLineEdit
+from app.editor.lib.components.database_delegate import DBNamesDelegate
 from typing import List
 
-from app.data import raw_data
+from app.data.database import raw_data
 from app.extensions.custom_gui import ComboBox, PropertyBox
 from app.extensions.generic_attr_object_delegate import (
     GenericObjectDelegate, GenericObjectListModel)
@@ -24,7 +26,7 @@ class RawDataProperties(QWidget):
 
         right_section = QVBoxLayout()
 
-        self.nid_box = PropertyBox("Raw ID", QLineEdit, self)
+        self.nid_box = PropertyBox("Raw ID", NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         right_section.addWidget(self.nid_box)
@@ -40,14 +42,14 @@ class RawDataProperties(QWidget):
         self.str_box.edit.textChanged.connect(self.data_changed)
         self.str_box.hide()
 
-        self.kv_box = AppendMultiListWidget([], "Raw Data List", ("key", "value"), KeyValueDelegate, self, model=KeyValueDoubleListModel)
+        self.kv_box = AppendMultiListWidget([], "Raw Data List", ("key", "value"), DBNamesDelegate, self, model=KeyValueDoubleListModel)
         self.kv_box.hide()
 
         self.add_column_button = QPushButton("Add Column...")
         self.add_column_button.clicked.connect(self.add_column_dialog)
         self.add_column_button.hide()
 
-        self.sheet_box = MutableAppendMultiListWidget([], "Raw Data Sheet", tuple(self.current.oattrs) if self.current else (), GenericObjectDelegate, self, model=GenericObjectListModel,
+        self.sheet_box = MutableAppendMultiListWidget([], "Raw Data Sheet", tuple(self.current.oattrs) if self.current else (), DBNamesDelegate, self, model=GenericObjectListModel,
                                                       rename_column_action=self.rename_column_dialog, delete_column_action=self.remove_column)
         self.sheet_box.hide()
 
@@ -103,7 +105,7 @@ class RawDataProperties(QWidget):
 
     def rerender_sheet_widget(self):
         self.sheet_box.setParent(None)
-        self.sheet_box = MutableAppendMultiListWidget([], "Raw Data", tuple(self.current.oattrs), GenericObjectDelegate, self, model=GenericObjectListModel,
+        self.sheet_box = MutableAppendMultiListWidget([], "Raw Data", tuple(self.current.oattrs), DBNamesDelegate, self, model=GenericObjectListModel,
                                                       rename_column_action=self.rename_column_dialog, delete_column_action=self.remove_column)
         self.layout().addWidget(self.sheet_box)
         self.sheet_box.set_current(self.current.lovalue)

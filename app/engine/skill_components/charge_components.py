@@ -1,5 +1,5 @@
-from app.data.skill_components import SkillComponent, SkillTags
-from app.data.components import Type
+from app.data.database.skill_components import SkillComponent, SkillTags
+from app.data.database.components import ComponentType
 
 from app.engine import action
 
@@ -8,7 +8,7 @@ class BuildCharge(SkillComponent):
     desc = "Skill gains charges until full"
     tag = SkillTags.CHARGE
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 10
 
     ignore_conditional = True
@@ -17,7 +17,7 @@ class BuildCharge(SkillComponent):
         self.skill.data['charge'] = 0
         self.skill.data['total_charge'] = self.value
 
-    def condition(self, unit):
+    def condition(self, unit, item):
         return self.skill.data['charge'] >= self.skill.data['total_charge']
 
     def on_end_chapter(self, unit, skill):
@@ -40,7 +40,7 @@ class DrainCharge(SkillComponent):
     desc = "Skill will have a number of charges that are drained by 1 when activated"
     tag = SkillTags.CHARGE
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     ignore_conditional = True
@@ -49,7 +49,7 @@ class DrainCharge(SkillComponent):
         self.skill.data['charge'] = self.value
         self.skill.data['total_charge'] = self.value
 
-    def condition(self, unit):
+    def condition(self, unit, item):
         return self.skill.data['charge'] > 0
 
     def on_end_chapter(self, unit, skill):
@@ -70,7 +70,7 @@ class ChargesPerTurn(DrainCharge, SkillComponent):
     desc = "Skill will have a number of charges that are refreshed each turn"
     tag = SkillTags.CHARGE
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     ignore_conditional = True
@@ -79,8 +79,23 @@ class ChargesPerTurn(DrainCharge, SkillComponent):
         value = self.skill.data['total_charge']
         action.do(action.SetObjData(self.skill, 'charge', value))
 
+class UpkeepChargeIncrease(SkillComponent):
+    nid = 'upkeep_charge_increase'
+    desc = "Increases charge of skill each upkeep"
+    tag = SkillTags.CHARGE
+
+    expose = ComponentType.Int
+    value = 5
+
+    ignore_conditional = True
+
+    def on_upkeep(self, actions, playback, unit):
+        new_value = self.skill.data['charge'] + self.value
+        new_value = min(new_value, self.skill.data['total_charge'])
+        action.do(action.SetObjData(self.skill, 'charge', new_value))
+
 def get_marks(playback, unit, item):
-    from app.data.database import DB
+    from app.data.database.database import DB
     marks = [mark for mark in playback if mark.nid == 'mark_hit']
     marks += [mark for mark in playback if mark.nid == 'mark_crit']
     if DB.constants.value('miss_wexp'):
@@ -93,7 +108,7 @@ class CombatChargeIncrease(SkillComponent):
     desc = "Increases charge of skill each combat"
     tag = SkillTags.CHARGE
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 5
 
     ignore_conditional = True
@@ -110,7 +125,7 @@ class CombatChargeIncreaseByStat(SkillComponent):
     desc = "Increases charge of skill each combat"
     tag = SkillTags.CHARGE
 
-    expose = Type.Stat
+    expose = ComponentType.Stat
     value = 'SKL'
 
     ignore_conditional = True
@@ -124,11 +139,11 @@ class CombatChargeIncreaseByStat(SkillComponent):
 
 class GainMana(SkillComponent):
     nid = 'gain_mana'
-    desc = "Gain X Mana on use"
+    desc = "Gain mana at the beginning of each combat with a target."
     tag = SkillTags.CHARGE
     author = 'KD'
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def start_combat(self, playback, unit, item, target, mode):
         from app.engine import evaluate
@@ -146,12 +161,12 @@ class CostMana(SkillComponent):
     tag = SkillTags.CHARGE
     author = 'KD'
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 2
 
     ignore_conditional = True
 
-    def condition(self, unit):
+    def condition(self, unit, item):
         return unit.current_mana >= self.value
 
     def start_combat(self, playback, unit, item, target, mode):
@@ -164,10 +179,10 @@ class CheckMana(SkillComponent):
     tag = SkillTags.CHARGE
     author = 'KD'
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 2
 
     ignore_conditional = True
 
-    def condition(self, unit):
+    def condition(self, unit, item):
         return unit.current_mana >= self.value

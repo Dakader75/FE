@@ -1,6 +1,7 @@
-from app.data.database import DB
+from app.data.database.database import DB
 from app.engine import target_system, skill_system, action, equations
 from app.engine.game_state import game
+from app.events import triggers
 
 class Ability():
     @staticmethod
@@ -58,9 +59,12 @@ class TalkAbility(Ability):
         u = game.board.get_unit(game.cursor.position)
         game.state.back()
         action.do(action.HasTraded(unit))
-        did_trigger = game.events.trigger('on_talk', unit, u, unit.position)
-        if did_trigger:
-            action.do(action.RemoveTalk(unit.nid, u.nid))
+        game.events.trigger(triggers.OnTalk(unit, u, unit.position))
+        # Rely on the talk event itself to remove the trigger
+        # Behaves more like other things in the engine
+        # did_trigger = game.events.trigger(triggers.OnTalk(unit, u, unit.position))
+        # if did_trigger:
+            # action.do(action.RemoveTalk(unit.nid, u.nid))
 
 class SupportAbility(Ability):
     name = 'Support'
@@ -89,7 +93,7 @@ class SupportAbility(Ability):
         rank = pair.locked_ranks[0]
         game.state.back()
         action.do(action.HasTraded(unit))
-        did_trigger = game.events.trigger('on_support', unit, u, unit.position, {'support_rank_nid': rank})
+        did_trigger = game.events.trigger(triggers.OnSupport(unit, u, unit.position, rank, False))
         action.do(action.UnlockSupportRank(pair.nid, rank))
 
 class DropAbility(Ability):
@@ -298,9 +302,9 @@ class TradeAbility(Ability):
         if not DB.constants.value('trade'):
             return set()
 
-        adj_allies = target_system.get_adj_allies(unit)
-        adj = set([u.position for u in adj_allies if unit.team == u.team])
-        if unit.traveler:
+        adj_units = target_system.get_adj_units(unit)
+        adj = set([u.position for u in adj_units if skill_system.can_trade(unit, u)])
+        if unit.traveler and skill_system.can_trade(unit, game.get_unit(unit.traveler)):
             adj.add(unit.position)
         return adj
 

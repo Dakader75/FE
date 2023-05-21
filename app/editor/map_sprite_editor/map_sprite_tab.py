@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog
 
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 
 from app.extensions.custom_gui import ResourceListView
 from app.editor.data_editor import SingleResourceEditor

@@ -1,6 +1,6 @@
 from app.utilities.data import Data
 
-from app.data.database import DB
+from app.data.database.database import DB
 import app.engine.skill_component_access as SCA
 
 class SkillObject():

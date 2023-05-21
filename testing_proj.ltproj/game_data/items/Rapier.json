@@ -79,6 +79,10 @@
                     "Horse",
                     "Armor"
                 ]
+            ],
+            [
+                "effective_multiplier",
+                1
             ]
         ]
     }

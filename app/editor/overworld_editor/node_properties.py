@@ -1,9 +1,10 @@
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, \
     QWidget, QMessageBox, QLabel, QComboBox, QHBoxLayout
 from PyQt5.QtCore import Qt
 
-from app.data.database import DB
-from app.resources.resources import RESOURCES
+from app.data.database.database import DB
+from app.data.resources.resources import RESOURCES
 
 from app.editor.icons import MapIconButton
 
@@ -35,7 +36,7 @@ class NodePropertiesMenu(QWidget):
         if(self.current_node):
             node_data = self.current_node.menu_options
             self.event_box.set_data(node_data)
-            
+
             self.set_components_active(True)
             self.event_box.show()
             self.event_box.on_node_changed()
@@ -98,7 +99,7 @@ class NodePropertiesMenu(QWidget):
         self.layout = QVBoxLayout(self)
         self.layout.setAlignment(Qt.AlignTop)
 
-        self.nid_box = PropertyBox("Node ID", QLineEdit, self)
+        self.nid_box = PropertyBox("Node ID", NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         self.layout.addWidget(self.nid_box)
@@ -112,10 +113,10 @@ class NodePropertiesMenu(QWidget):
 
         self.map_icon_selector = NodeIconSelector(self.node_icon_changed)
         self.layout.addWidget(self.map_icon_selector)
-        
+
         self.event_box = NodeEventPropertiesMenu(self.state_manager, self)
         self.layout.addWidget(self.event_box)
-    
+
     def _populate_level_combo_box(self, level_combo_box):
         level_combo_box.clear()
         for level in DB.levels.values():

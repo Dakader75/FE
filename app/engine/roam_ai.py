@@ -1,11 +1,14 @@
-from app.utilities import utils
-from app.events.regions import RegionType
-
-from app.engine.game_state import game
-from app.engine import engine, evaluate, target_system, ai_controller, skill_system, equations, action, ai_state
-from app.data.database import DB
-
 import logging
+import math
+
+from app.data.database.database import DB
+from app.engine import (action, ai_controller, ai_state, engine, equations,
+                        evaluate, skill_system, target_system)
+from app.engine.game_state import game
+from app.events import triggers
+from app.events.regions import RegionType
+from app.utilities import utils
+
 
 class FreeRoamAIHandler():
     """Handles and selects all valid units with AI in free roam
@@ -18,19 +21,7 @@ class FreeRoamAIHandler():
     """
 
     def __init__(self):
-        self.targets = self.compose_target_list()
-
-    def reload(self):
-        self.targets = self.compose_target_list()
-
-    def compose_target_list(self):
-        targets = set()
-        for unit in game.get_all_units():
-            if unit.get_roam_ai() and DB.ai.get(unit.get_roam_ai()).roam_ai:
-                targets.add(FreeRoamUnit(unit, FreeRoamAIController(unit)))
-                if game.board.rationalize_pos(unit.position) == unit.position:
-                    game.leave(unit)
-        return targets
+        pass
 
     def update(self):
         for unit in self.targets:
@@ -128,37 +119,39 @@ class FreeRoamAIController(ai_controller.AIController):
             self.movement_manager.move()
 
     def get_targets(self):
-        all_targets = []
+        all_units = []
+        all_positions = []
         if self.behaviour.target == 'Unit':
-            all_targets = [u for u in game.units if u.position]
+            all_units = [u for u in game.units if u.position]
         elif self.behaviour.target == 'Enemy':
-            all_targets = [u for u in game.units if u.position and skill_system.check_enemy(self.unit, u)]
+            all_units = [u for u in game.units if u.position and skill_system.check_enemy(self.unit, u)]
         elif self.behaviour.target == 'Ally':
-            all_targets = [u for u in game.units if u.position and skill_system.check_ally(self.unit, u)]
+            all_units = [u for u in game.units if u.position and skill_system.check_ally(self.unit, u)]
         elif self.behaviour.target == 'Event':
             target_spec = self.behaviour.target_spec
-            all_targets = []
             for region in game.level.regions:
                 try:
                     if region.region_type == RegionType.EVENT and region.sub_nid == target_spec and (not region.condition or evaluate.evaluate(region.condition, self.unit, local_args={'region': region})):
-                        all_targets += region.get_all_positions()
+                        all_positions += region.get_all_positions()
                 except:
                     logging.warning("Region Condition: Could not parse %s" % region.condition)
-            all_targets = list(set(all_targets))  # Remove duplicates
+            all_positions = list(set(all_positions))  # Remove duplicates
         elif self.behaviour.target == 'Position':
             if self.behaviour.target_spec == "Starting":
                 if self.unit.starting_position:
-                    all_targets = [self.unit.starting_position]
-                else:
-                    all_targets = []
+                    all_positions = [self.unit.starting_position]
             else:
-                all_targets = [tuple(self.behaviour.target_spec)]
-        if self.behaviour.target in ('Unit', 'Enemy', 'Ally'):
-            all_targets = self.handle_roam_unit_spec(all_targets, self.behaviour)
+                all_positions = [tuple(self.behaviour.target_spec)]
 
-        if self.behaviour.target != 'Position':
+        if self.behaviour.target in ('Unit', 'Enemy', 'Ally'):
+            all_units = self.handle_roam_unit_spec(all_units, self.behaviour)
             if DB.constants.value('ai_fog_of_war'):
-                all_targets = [pos for pos in all_targets if game.board.in_vision(pos, self.unit.team)]
+                all_targets = [unit.position for unit in all_units if game.board.in_vision(game.board.rationalize_pos(unit.position), self.unit.team)]
+            else:
+                all_targets = [unit.position for unit in all_units]
+        else:
+            all_targets = all_positions
+        
         return all_targets
 
     def handle_roam_unit_spec(self, all_targets, behaviour):
@@ -232,9 +225,9 @@ class FreeRoamAIController(ai_controller.AIController):
                 except:
                     logging.warning("Could not evaluate region conditional %s" % r.condition)
         if region:
-            did_trigger = game.events.trigger(region.sub_nid, self.state.unit, position=rat_pos, local_args={'region': region})
+            did_trigger = game.events.trigger(triggers.RegionTrigger(region.sub_nid, self.state.unit, rat_pos, region))
             if not did_trigger:  # Just in case we need the generic one
-                did_trigger = game.events.trigger('on_region_interact', self.state.unit, position=rat_pos, local_args={'region': region})
+                did_trigger = game.events.trigger(triggers.OnRegionInteract(self.state.unit, rat_pos, region))
             if did_trigger and region.only_once:
                 action.do(action.RemoveRegion(region))
             if did_trigger:
@@ -367,7 +360,20 @@ class RoamMovementHandler():
             pause_time = 20
             if current_time - self.last_move > pause_time:
                 self.last_move = current_time
-                self.handle_direction(self.unit.position, self.path[-1])
+                if len(self.path) > 0:
+                    self.handle_direction(self.unit.position, self.path[-1])
+        else:
+            self.stop_unit()
+
+    def rationalization(self):
+        """We want to end up in the exact correct position"""
+        if self.goal_position != self.unit.position:
+            current_time = engine.get_time()
+            pause_time = 20
+            if current_time - self.last_move > pause_time:
+                self.last_move = current_time
+                if len(self.path) > 0:
+                    self.handle_direction(self.unit.position, self.path[-1], rationalizing=True)
         else:
             self.stop_unit()
 
@@ -383,7 +389,7 @@ class RoamMovementHandler():
         self.unit.sprite.change_state('normal')
         self.unit.sound.stop()
 
-    def handle_direction(self, pos, next_pos):
+    def handle_direction(self, pos, next_pos, rationalizing=False):
         """Sets speed values and calls the move if they reach a threshold"""
         base_speed = 0.008
         base_accel = 0.008
@@ -411,12 +417,13 @@ class RoamMovementHandler():
 
         self.dir_collides(next_pos)
 
+        rounded_pos = game.board.rationalize_pos(self.unit.position)
+
         # Actually move the unit
-        if abs(self.hspeed) > base_speed or abs(self.vspeed) > base_speed:
+        if abs(self.hspeed) > base_speed or abs(self.vspeed) > base_speed or rationalizing:
             self.handle_move()
 
-        rounded_pos = round(self.unit.position[0]), round(self.unit.position[1])
-        if self.path[-1] == rounded_pos:
+        if not rationalizing and self.path[-1] == rounded_pos:
             self.path.pop()
 
     def handle_move(self):
@@ -455,4 +462,15 @@ class RoamMovementHandler():
         """Changes the unit position"""
         x, y = self.unit.position
         self.unit.position = x + dx, y + dy
+
+        rounded_pos = game.board.rationalize_pos(self.unit.position)
+        if self.check_close(self.unit.position, rounded_pos):
+            self.unit.position = rounded_pos
+
         self.unit.sound.play()
+
+    def check_close(self, pos1, pos2):
+        dis = 0.1
+        if math.isclose(pos1[0], pos2[0], abs_tol=dis) and math.isclose(pos1[1], pos2[1], abs_tol=dis):
+            return True
+        return False

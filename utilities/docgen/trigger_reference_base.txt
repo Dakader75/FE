@@ -1,0 +1,5 @@
+# Trigger Reference
+
+This page contains a description of all triggers currently in the editor, along with their usable properties.
+
+Anywhere `unit1` is a supported field, you can also use `unit`. Anywhere `unit2` is a supported field, you can also use `target`.

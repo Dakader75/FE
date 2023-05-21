@@ -1,18 +1,20 @@
+import logging
 import os
 import sys
 import functools
+from typing import Optional
 
 from PyQt5.QtWidgets import QMainWindow, QAction, QMenu, QMessageBox, \
     QDesktopWidget, \
     QToolButton, QWidgetAction, QStackedWidget
 from PyQt5.QtGui import QIcon
 
-from app import autoupdate
+from app import autoupdate, dark_theme
 
 from app.editor.settings import MainSettingsController
 
 from app.constants import VERSION
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.editor import timer
 
@@ -43,8 +45,8 @@ from app.editor.faction_editor.faction_tab import FactionDatabase
 from app.editor.party_editor.party_tab import PartyDatabase
 from app.editor.class_editor.class_tab import ClassDatabase
 from app.editor.weapon_editor.weapon_tab import WeaponDatabase
-from app.editor.item_editor.item_tab import ItemDatabase
-from app.editor.skill_editor.skill_tab import SkillDatabase
+from app.editor.item_editor.new_item_tab import NewItemDatabase
+from app.editor.skill_editor.new_skill_tab import NewSkillDatabase
 from app.editor.terrain_editor.terrain_tab import TerrainDatabase
 from app.editor.stat_editor.stat_tab import StatTypeDatabase
 from app.editor.ai_editor.ai_tab import AIDatabase
@@ -68,6 +70,7 @@ from app.editor.support_editor import support_pair_tab
 from app.editor.portrait_editor.portrait_tab import PortraitDatabase
 from app.editor.panorama_editor.panorama_tab import PanoramaDatabase
 from app.editor.map_sprite_editor.map_sprite_tab import MapSpriteDatabase
+from app.editor.map_animation_editor.map_animation_tab import MapAnimationDatabase
 
 __version__ = VERSION
 
@@ -78,7 +81,7 @@ class MainEditor(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.window_title = 'LT Maker'
+        self.window_title = _('LT Maker')
         self.setWindowTitle(self.window_title)
         self.settings = MainSettingsController()
         # Will be overwritten by auto-open
@@ -122,7 +125,7 @@ class MainEditor(QMainWindow):
         self.create_actions()
         self.recreate_menus()
         # init toolbar
-        self.toolbar = Toolbar(self.addToolBar("Edit"))
+        self.toolbar = Toolbar(self.addToolBar(_("Edit")))
         self.create_toolbar()
         self.set_icons()
         self.create_statusbar()
@@ -160,15 +163,9 @@ class MainEditor(QMainWindow):
             self.window_title = title + ' -- LT Maker %s' % (__version__)
         self.setWindowTitle(self.window_title)
 
-    def set_icons(self, force_theme=None):
-        if force_theme is None:
-            theme = self.settings.get_theme(0)
-        else:
-            theme = force_theme
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+    def set_icons(self, force_theme: Optional[dark_theme.ThemeType] = None):
+        theme = dark_theme.get_theme(force_theme)
+        icon_folder = theme.icon_dir()
 
         self.new_act.setIcon(QIcon(f'{icon_folder}/file-plus.png'))
         self.open_act.setIcon(QIcon(f'{icon_folder}/folder.png'))
@@ -188,28 +185,30 @@ class MainEditor(QMainWindow):
 
     # === Create Menu ===
     def create_actions(self):
-        self.new_act = QAction("&New Project...", self,
+        self.new_act = QAction(_("&New Project..."), self,
                                shortcut="Ctrl+N", triggered=self.new)
-        self.open_act = QAction("&Open Project...", self,
+        self.open_act = QAction(_("&Open Project..."), self,
                                 shortcut="Ctrl+O", triggered=self.open)
-        self.save_act = QAction("&Save Project", self,
+        self.save_act = QAction(_("&Save Project"), self,
                                 shortcut="Ctrl+S", triggered=self.save)
         self.save_as_act = QAction(
-            "Save Project As...", self, shortcut="Ctrl+Shift+S", triggered=self.save_as)
+            _("Save Project As..."), self, shortcut="Ctrl+Shift+S", triggered=self.save_as)
         # self.build_act = QAction(QIcon(), "Build Project...", self, shortcut="Ctrl+B", triggered=self.build_project)
         self.quit_act = QAction(
-            "&Quit", self, shortcut="Ctrl+Q", triggered=self.close)
+            _("&Quit"), self, shortcut="Ctrl+Q", triggered=self.close)
 
         self.dump_csv = QAction(
             "Dump CSV data", self, triggered=lambda: self.project_save_load_handler.dump_csv(DB))
+        self.dump_script = QAction(
+            "Dump script", self, triggered=lambda: self.project_save_load_handler.dump_script(DB))
 
         self.preferences_act = QAction(
-            "&Preferences...", self, triggered=self.edit_preferences)
-        self.about_act = QAction("&About", self, triggered=self.about)
+            _("&Preferences..."), self, triggered=self.edit_preferences)
+        self.about_act = QAction(_("&About"), self, triggered=self.about)
         self.remove_unused_resources_act = QAction(
-            "Remove Unused Resources", self, triggered=self.remove_unused_resources)
+            _("Remove Unused Resources"), self, triggered=self.remove_unused_resources)
         self.check_for_updates_act = QAction(
-            "Check for updates...", self, triggered=self.check_for_updates)
+            _("Check for updates..."), self, triggered=self.check_for_updates)
 
         # Test actions
         self.test_current_act = QAction(
@@ -224,26 +223,26 @@ class MainEditor(QMainWindow):
         #     "Preload Units...", self, triggered=self.edit_preload_units)
 
         # Database actions
-        database_actions = {"Units": UnitDatabase.edit,
-                            "Factions": FactionDatabase.edit,
-                            "Parties": PartyDatabase.edit,
-                            "Classes": ClassDatabase.edit,
-                            "Tags": self.edit_tags,
-                            "Game Vars": self.edit_game_vars,
-                            "Weapon Types": WeaponDatabase.edit,
-                            "Items": ItemDatabase.edit,
-                            "Skills": SkillDatabase.edit,
+        database_actions = {_("Units"): UnitDatabase.edit,
+                            _("Factions"): FactionDatabase.edit,
+                            _("Parties"): PartyDatabase.edit,
+                            _("Classes"): ClassDatabase.edit,
+                            _("Tags"): self.edit_tags,
+                            _("Game Vars"): self.edit_game_vars,
+                            _("Weapon Types"): WeaponDatabase.edit,
+                            _("Items"): NewItemDatabase.edit,
+                            _("Skills"): NewSkillDatabase.edit,
                             "AI": AIDatabase.edit,
-                            "Terrain": TerrainDatabase.edit,
-                            "Movement Costs": self.edit_mcost,
-                            "Stats": StatTypeDatabase.edit,
-                            "Equations": self.edit_equations,
-                            "Constants": ConstantDatabase.edit,
-                            "Difficulty Modes": DifficultyModeDatabase.edit,
-                            "Supports": self.edit_supports,
-                            "Lore": LoreDatabase.edit,
-                            "Raw Data": RawDataDatabase.edit,
-                            "Translations": self.edit_translations
+                            _("Terrain"): TerrainDatabase.edit,
+                            _("Movement Costs"): self.edit_mcost,
+                            _("Stats"): StatTypeDatabase.edit,
+                            _("Equations"): self.edit_equations,
+                            _("Constants"): ConstantDatabase.edit,
+                            _("Difficulty Modes"): DifficultyModeDatabase.edit,
+                            _("Supports"): self.edit_supports,
+                            _("Lore"): LoreDatabase.edit,
+                            _("Raw Data"): RawDataDatabase.edit,
+                            _("Translations"): self.edit_translations
                             }
         self.database_actions = {}
         for name, func in database_actions.items():
@@ -252,7 +251,7 @@ class MainEditor(QMainWindow):
 
         resource_actions = {"Icons": self.edit_icons,
                             "Portraits": PortraitDatabase.edit,
-                            # "Map Animations": AnimationDatabase.edit_resource,
+                            "Map Animations": MapAnimationDatabase.edit,
                             "Backgrounds": PanoramaDatabase.edit,
                             "Map Sprites": MapSpriteDatabase.edit,
                             "Combat Animations": self.edit_combat_animations,
@@ -281,29 +280,30 @@ class MainEditor(QMainWindow):
 
     def recreate_menus(self):
         self.menuBar().clear()
-        file_menu = QMenu("File", self)
+        file_menu = QMenu(_("File"), self)
         file_menu.addAction(self.new_act)
         file_menu.addAction(self.open_act)
         file_menu.addSeparator()
         file_menu.addAction(self.save_act)
         file_menu.addAction(self.save_as_act)
         file_menu.addAction(self.dump_csv)
+        file_menu.addAction(self.dump_script)
         file_menu.addSeparator()
         file_menu.addAction(self.quit_act)
 
-        edit_menu = QMenu("Edit", self)
+        edit_menu = QMenu(_("Edit"), self)
         for action in self.database_actions.values():
             edit_menu.addAction(action)
         edit_menu.addSeparator()
         for action in self.resource_actions.values():
             edit_menu.addAction(action)
 
-        test_menu = QMenu("Test", self)
+        test_menu = QMenu(_("Test"), self)
         test_menu.addAction(self.test_current_act)
         test_menu.addAction(self.test_load_act)
         test_menu.addAction(self.test_full_act)
 
-        help_menu = QMenu("Extra", self)
+        help_menu = QMenu(_("Extra"), self)
         help_menu.addAction(self.about_act)
         help_menu.addAction(self.preferences_act)
         help_menu.addAction(self.remove_unused_resources_act)
@@ -323,7 +323,7 @@ class MainEditor(QMainWindow):
     def create_toolbar(self):
         self.database_button = QToolButton(self)
         self.database_button.setPopupMode(QToolButton.InstantPopup)
-        database_menu = QMenu("Database", self)
+        database_menu = QMenu(_("Database"), self)
         for action in self.database_actions.values():
             database_menu.addAction(action)
         self.database_button.setMenu(database_menu)
@@ -332,7 +332,7 @@ class MainEditor(QMainWindow):
 
         self.resource_button = QToolButton(self)
         self.resource_button.setPopupMode(QToolButton.InstantPopup)
-        resource_menu = QMenu("Resource", self)
+        resource_menu = QMenu(_("Resource"), self)
         for action in self.resource_actions.values():
             resource_menu.addAction(action)
         self.resource_button.setMenu(resource_menu)
@@ -341,7 +341,7 @@ class MainEditor(QMainWindow):
 
         self.test_button = QToolButton(self)
         self.test_button.setPopupMode(QToolButton.InstantPopup)
-        test_menu = QMenu("Test", self)
+        test_menu = QMenu(_("Test"), self)
         test_menu.addAction(self.test_current_act)
         test_menu.addAction(self.test_load_act)
         test_menu.addAction(self.test_full_act)
@@ -374,8 +374,8 @@ class MainEditor(QMainWindow):
 
     def closeEvent(self, event):
         if self.project_save_load_handler.maybe_save():
-            print("Setting current project %s" %
-                  self.settings.get_current_project())
+            logging.info("Setting current project %s" %
+                         self.settings.get_current_project())
             self.settings.set_current_project(
                 self.settings.get_current_project())
             event.accept()
@@ -455,8 +455,8 @@ class MainEditor(QMainWindow):
         if self.project_save_load_handler.open():
             title = os.path.split(self.settings.get_current_project())[-1]
             self.set_window_title(title)
-            print("Loaded project from %s" %
-                  self.settings.get_current_project())
+            logging.info("Loaded project from %s" %
+                         self.settings.get_current_project())
             self.status_bar.showMessage(
                 "Loaded project from %s" % self.settings.get_current_project())
             # Return to global
@@ -472,8 +472,8 @@ class MainEditor(QMainWindow):
         self.project_save_load_handler.auto_open()
         title = os.path.split(self.settings.get_current_project())[-1]
         self.set_window_title(title)
-        print("Loaded project from %s" %
-              self.settings.get_current_project())
+        logging.info("Loaded project from %s" %
+                     self.settings.get_current_project())
         self.status_bar.showMessage(
             "Loaded project from %s" % self.settings.get_current_project())
         # Return to global
@@ -588,29 +588,22 @@ class MainEditor(QMainWindow):
                           "<p>Check out <a href='https://lt-maker.readthedocs.io/'>https://lt-maker.readthedocs.io/</a> "
                           "for more information and helpful tutorials.</p>"
                           "<p>This program has been freely distributed under the MIT License.</p>"
-                          "<p>Copyright 2014-2022 rainlash.</p>")
+                          "<p>Copyright 2014-2023 rainlash.</p>")
 
     def check_for_updates(self):
         # Only check for updates in frozen version
-        if hasattr(sys, 'frozen'):
+        if hasattr(sys, 'frozen') or True:
             if autoupdate.check_for_update():
-                ret = QMessageBox.information(self, "Update Available", "A new update to LT-maker is available!\n"
-                                              "Do you want to download and install now?",
-                                              QMessageBox.Yes | QMessageBox.No)
-                if ret == QMessageBox.Yes:
-                    if self.project_save_load_handler.maybe_save():
-                        updating = autoupdate.update()
-                        if updating:
-                            # Force quit!!!
-                            sys.exit()
-                        else:
-                            QMessageBox.critical(
-                                self, "Error", "Failed to update?")
+                link = r"https://gitlab.com/rainlash/lt-maker/-/releases/permalink/latest/downloads/lex_talionis_maker"
+                QMessageBox.information(self, "Update Available", "A new update to LT-maker is available!\n"
+                                        "Copy this link to your browser to download it:\n"
+                                        f"{link}",
+                                        )
             else:
                 QMessageBox.information(
                     self, "Update not found", "No updates found.")
         else:
-            QMessageBox.warning(self, "Update unavailable", "<p>LT-maker can only automatically update the executable version.</p>"
+            QMessageBox.warning(self, "Update unavailable", "<p>This is a standard python version of LT-maker.</p>"
                                       "<p>Use <b>git fetch</b> and <b>git pull</b> to download the latest git repo updates instead.</p>")
 
 

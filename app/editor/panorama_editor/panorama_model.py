@@ -7,8 +7,8 @@ import os, glob, time
 from app.constants import WINWIDTH, WINHEIGHT
 from app.utilities import str_utils
 
-from app.resources.panoramas import Panorama
-from app.resources.resources import RESOURCES
+from app.data.resources.panoramas import Panorama
+from app.data.resources.resources import RESOURCES
 
 from app.editor.settings import MainSettingsController
 from app.editor.base_database_gui import ResourceCollectionModel

@@ -7,7 +7,7 @@ from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtCore import Qt, QSize
 
 from app.utilities.data import Data
-from app.data.database import DB
+from app.data.database.database import DB
 from app.utilities import str_utils
 
 from app.extensions.custom_gui import SimpleDialog, DeletionDialog
@@ -215,7 +215,7 @@ class RowHeaderView(QHeaderView):
         else:
             QMessageBox.critical(self.parent(), 'Error', 'Cannot delete when only one row left!')
 
-    def rename(self, idx):               
+    def rename(self, idx):
         old_row_name = DB.mcost.row_headers[idx]
         self.parent().model().change_row_header(idx)
         new_row_name = DB.mcost.row_headers[idx]

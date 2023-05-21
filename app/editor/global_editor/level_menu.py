@@ -3,9 +3,9 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
 
 from app.editor import tilemap_editor
-from app.resources.resources import RESOURCES
-from app.data.database import DB
-from app.data.levels import LevelPrefab
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
+from app.data.database.levels import LevelPrefab
 
 from app.editor.lib.state_editor.state_enums import MainEditorScreenStates
 

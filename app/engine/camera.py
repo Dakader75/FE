@@ -2,9 +2,9 @@ from __future__ import annotations
 from app.utilities.algorithms.interpolation import tcubic_easing
 
 import math
-from typing import TYPE_CHECKING, Callable, Tuple
+from typing import TYPE_CHECKING, Callable, Tuple, List
 
-from app.constants import TILEX, TILEY
+from app.constants import TILEX, TILEY, TILEWIDTH, TILEHEIGHT
 from app.engine import engine
 from app.utilities import utils
 
@@ -36,6 +36,12 @@ class Camera():
 
         self.last_at_rest_time: int = engine.get_time()
         self.last_at_rest_position: Tuple[float, float] = (self.current_x, self.current_y)
+
+        # For screenshake
+        self.no_shake = [(0, 0)]
+        self.shake = self.no_shake
+        self.shake_idx = 0
+        self.shake_end_at = 0
 
     def get_next_position(self) -> Tuple[float, float]:
         diff_x = self.target_x - self.current_x
@@ -153,7 +159,10 @@ class Camera():
         return self.current_y
 
     def get_xy(self):
-        return self.current_x, self.current_y
+        return self.get_x(), self.get_y()
+
+    def get_shake(self):
+        return self.shake[self.shake_idx]
 
     def at_rest(self):
         return self.current_x == self.target_x and self.current_y == self.target_y
@@ -181,6 +190,21 @@ class Camera():
     def do_slow_pan(self, duration):
         # queues up a slower algorithm for the next pan
         self.pan_algorithm = lambda a, b, t: tcubic_easing(a, b, t/duration)
+
+    def set_shake(self, shake: List[Tuple[int, int]], duration: int = 0):
+        """
+        shake - A List of camera offset tuples that will be looped over each frame to create the screen shake effect
+        duration - How long the effect should last (in milliseconds). If 0 or negative, effect is permanent until reset_shake is called
+        """
+        self.shake = shake
+        self.shake_idx = 0
+        if duration > 0:
+            self.shake_end_at = engine.get_time() + duration
+
+    def reset_shake(self):
+        self.shake = self.no_shake
+        self.shake_idx = 0
+        self.shake_end_at = 0
 
     def update(self):
         # Make sure target is within bounds
@@ -211,3 +235,9 @@ class Camera():
         # Make sure we do not go offscreen -- maybe shouldn't happen?
         # Could happen when map size changes?
         self.set_current_limits(self.game.tilemap)
+
+        # Update screenshake
+        self.shake_idx += 1
+        self.shake_idx %= len(self.shake)
+        if self.shake_end_at and engine.get_time() > self.shake_end_at:
+            self.reset_shake()

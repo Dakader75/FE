@@ -1,8 +1,26 @@
+from __future__ import annotations
 from functools import partial
+from typing import Any, Dict
 
-from app.utilities import utils
-from app.data.components import Type
-from app.data.database import DB
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QColor, QIcon, QPalette
+from PyQt5.QtWidgets import (QApplication, QDoubleSpinBox, QHBoxLayout,
+                             QItemDelegate, QLabel, QLineEdit, QListWidgetItem,
+                             QSpinBox, QToolButton, QVBoxLayout, QWidget)
+
+from app.data.database.components import ComponentType
+from app.data.database.database import DB
+from app.data.resources.resources import RESOURCES
+from app.editor.component_editor_delegates import (AffinityDelegate,
+                                                   ClassDelegate, ItemDelegate,
+                                                   SkillDelegate, StatDelegate,
+                                                   TagDelegate,
+                                                   TerrainDelegate,
+                                                   UnitDelegate,
+                                                   WeaponTypeDelegate)
+from app.editor.component_subcomponent_editors import get_editor_widget
+from app.editor.editor_constants import (DROP_DOWN_BUFFER, MAX_DROP_DOWN_WIDTH,
+                                         MIN_DROP_DOWN_WIDTH)
 from app.extensions import list_models
 from app.extensions.color_icon import AlphaColorIcon, ColorIcon
 from app.extensions.custom_gui import ComboBox
@@ -11,25 +29,29 @@ from app.extensions.key_value_delegate import (FixedKeyMutableValueDelegate,
 from app.extensions.list_widgets import (AppendMultiListWidget,
                                          AppendSingleListWidget,
                                          BasicMultiListWidget)
+from app.extensions.frame_layout import FrameLayout
 from app.extensions.widget_list import WidgetList
-from app.resources.resources import RESOURCES
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QIcon
-from PyQt5.QtWidgets import (QDoubleSpinBox, QHBoxLayout,
-                             QItemDelegate, QLabel, QLineEdit, QListWidgetItem,
-                             QSpinBox, QToolButton, QWidget)
+from app.utilities import utils
 
-MIN_DROP_DOWN_WIDTH = 120
-MAX_DROP_DOWN_WIDTH = 640
-DROP_DOWN_BUFFER = 24
 
 class ComponentList(WidgetList):
-    def add_component(self, component):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.order_swapped.connect(self.rerender)
+        palette = QApplication.palette()
+        self.bg_color = palette.color(QPalette.Base)
+        self.highlight_color = palette.color(QPalette.AlternateBase)
+
+    def add_component(self, component: BoolItemComponent):
         item = QListWidgetItem()
         item.setSizeHint(component.sizeHint())
         self.addItem(item)
         self.setItemWidget(item, component)
         self.index_list.append(component.data.nid)
+        if len(self.index_list) % 2 == 0:
+            item.setBackground(self.highlight_color)
+        else:
+            item.setBackground(self.bg_color)
         return item
 
     def remove_component(self, component):
@@ -38,6 +60,21 @@ class ComponentList(WidgetList):
             self.index_list.remove(component.data.nid)
             return self.takeItem(idx)
         return None
+
+    def updateGeometry(self):
+        for idx in range(self.count()):
+            item = self.item(idx)
+            component = self.itemWidget(item)
+            item.setSizeHint(component.sizeHint())
+        super().updateGeometry()
+
+    def rerender(self, start, row):
+        for idx in range(self.count()):
+            item = self.item(idx)
+            if idx % 2 == 0:
+                item.setBackground(self.highlight_color)
+            else:
+                item.setBackground(self.bg_color)
 
 class BoolItemComponent(QWidget):
     delegate = None
@@ -149,7 +186,7 @@ class DropDownItemComponent(BoolItemComponent):
     def on_value_changed(self, val):
         self._data.value = self.options[val]
 
-class OptionsItemComponent(BoolItemComponent):
+class DeprecatedOptionsItemComponent(BoolItemComponent):
     def create_editor(self, hbox):
         if not self._data.value:
             self._data.value = []
@@ -171,6 +208,37 @@ class OptionsItemComponent(BoolItemComponent):
                 return editor
             else:
                 return super().createEditor(parent, option, index)
+
+class BetterOptionsItemComponent(BoolItemComponent):
+    def create_editor(self, hbox):
+        options: Dict[str, ComponentType] = self._data.options
+        self.collapsible_frame_layout = FrameLayout(self, "Component Options")
+        self.editors_widget = QWidget(self)
+        vbox = QVBoxLayout(self.editors_widget)
+        # backwards compatability update
+        value = self._data.__class__().value.copy()
+        value.update(self._data.value)
+        self._data.value = value
+        for field_name, component_type in options.items():
+            editor = get_editor_widget(field_name, component_type, self._data.value)
+            vbox.addWidget(editor)
+        self.collapsible_frame_layout.addWidget(self.editors_widget)
+        self.collapsible_frame_layout.clicked.connect(self.updateGeometry)
+        self.orig_height = self.height()
+        hbox.addWidget(self.collapsible_frame_layout)
+
+    def sizeHint(self):
+        if self.collapsible_frame_layout.enabled():
+            h = self.editors_widget.sizeHint().height()
+            return QSize(self.width(), h)
+        else:
+            return QSize(self.width(), self.orig_height)
+
+    def updateGeometry(self):
+        size = self.sizeHint()
+        self.setFixedSize(size)
+        super().updateGeometry()
+        self.window.component_list.updateGeometry()
 
 class WeaponTypeItemComponent(BoolItemComponent):
     def create_editor(self, hbox):
@@ -411,59 +479,6 @@ class EventItemComponent(BoolItemComponent):
         self.editor.currentTextChanged.connect(self.on_value_changed)
         hbox.addWidget(self.editor)
 
-# Delegates
-class UnitDelegate(QItemDelegate):
-    data = DB.units
-    name = "Unit"
-    is_float = False
-    is_string = False
-
-    def createEditor(self, parent, option, index):
-        if index.column() == 0:
-            editor = ComboBox(parent)
-            for obj in self.data:
-                editor.addItem(obj.nid)
-            return editor
-        elif index.column() == 1:  # Integer value column
-            if self.is_string:
-                editor = QLineEdit(parent)
-            elif self.is_float:
-                editor = QDoubleSpinBox(parent)
-                editor.setRange(0, 10)
-            else:
-                editor = QSpinBox(parent)
-                editor.setRange(-1000, 1000)
-            return editor
-        else:
-            return super().createEditor(parent, option, index)
-
-class ClassDelegate(UnitDelegate):
-    data = DB.classes
-    name = "Class"
-
-class AffinityDelegate(UnitDelegate):
-    data = DB.affinities
-    name = "Affinity"
-
-class TagDelegate(UnitDelegate):
-    data = DB.tags
-    name = "Tag"
-
-class ItemDelegate(UnitDelegate):
-    data = DB.items
-    name = "Item"
-
-class StatDelegate(UnitDelegate):
-    data = DB.stats
-    name = "Stat"
-
-class WeaponTypeDelegate(UnitDelegate):
-    data = DB.weapons
-    name = "Weapon Type"
-
-class SkillDelegate(UnitDelegate):
-    data = DB.skills
-    name = "Skill"
 
 class ListItemComponent(BoolItemComponent):
     delegate = None
@@ -477,7 +492,6 @@ class ListItemComponent(BoolItemComponent):
         self.editor.model.nid_column = 0
 
         hbox.addWidget(self.editor)
-
 class DictItemComponent(BoolItemComponent):
     delegate = None
 
@@ -510,82 +524,86 @@ class StringDictItemComponent(DictItemComponent):
 def get_display_widget(component, parent):
     if not component.expose:
         c = BoolItemComponent(component, parent)
-    elif component.expose == Type.Int:
+    elif component.expose == ComponentType.Int:
         if component.nid == 'hit':
             c = HitItemComponent(component, parent)
         elif component.nid == 'value':
             c = ValueItemComponent(component, parent)
         else:
             c = IntItemComponent(component, parent)
-    elif component.expose == Type.Float:
+    elif component.expose == ComponentType.Float:
         c = FloatItemComponent(component, parent)
-    elif component.expose == Type.String:
+    elif component.expose == ComponentType.String:
         c = StringItemComponent(component, parent)
-    elif component.expose == Type.WeaponType:
+    elif component.expose == ComponentType.WeaponType:
         c = WeaponTypeItemComponent(component, parent)
-    elif component.expose == Type.WeaponRank:
+    elif component.expose == ComponentType.WeaponRank:
         c = WeaponRankItemComponent(component, parent)
-    elif component.expose == Type.Color3:
+    elif component.expose == ComponentType.Color3:
         c = Color3ItemComponent(component, parent)
-    elif component.expose == Type.Color4:
+    elif component.expose == ComponentType.Color4:
         c = Color4ItemComponent(component, parent)
-    elif component.expose == Type.Class:
+    elif component.expose == ComponentType.Class:
         c = ClassItemComponent(component, parent)
-    elif component.expose == Type.Affinity:
+    elif component.expose == ComponentType.Affinity:
         c = AffinityItemComponent(component, parent)
-    elif component.expose == Type.Item:
+    elif component.expose == ComponentType.Item:
         c = ItemItemComponent(component, parent)
-    elif component.expose == Type.Skill:
+    elif component.expose == ComponentType.Skill:
         c = SkillItemComponent(component, parent)
-    elif component.expose == Type.MapAnimation:
+    elif component.expose == ComponentType.MapAnimation:
         c = MapAnimationItemComponent(component, parent)
-    elif component.expose == Type.EffectAnimation:
+    elif component.expose == ComponentType.EffectAnimation:
         c = EffectAnimationItemComponent(component, parent)
-    elif component.expose == Type.Equation:
+    elif component.expose == ComponentType.Equation:
         c = EquationItemComponent(component, parent)
-    elif component.expose == Type.Music:
+    elif component.expose == ComponentType.Music:
         c = MusicItemComponent(component, parent)
-    elif component.expose == Type.Sound:
+    elif component.expose == ComponentType.Sound:
         c = SoundItemComponent(component, parent)
-    elif component.expose == Type.AI:
+    elif component.expose == ComponentType.AI:
         c = AIItemComponent(component, parent)
-    elif component.expose == Type.Stat:
+    elif component.expose == ComponentType.Stat:
         c = StatItemComponent(component, parent)
-    elif component.expose == Type.Event:
+    elif component.expose == ComponentType.Event:
         c = EventItemComponent(component, parent)
-    elif component.expose == Type.MovementType:
+    elif component.expose == ComponentType.MovementType:
         c = MovementTypeItemComponent(component, parent)
-    elif component.expose == Type.MultipleOptions:
-        c = OptionsItemComponent(component, parent)
+    elif component.expose == ComponentType.MultipleOptions:
+        c = DeprecatedOptionsItemComponent(component, parent)
+    elif component.expose == ComponentType.NewMultipleOptions:
+        c = BetterOptionsItemComponent(component, parent)
 
     elif isinstance(component.expose, tuple):
         delegate = None
-        if component.expose[1] == Type.Unit:
+        if component.expose[1] == ComponentType.Unit:
             delegate = UnitDelegate
-        elif component.expose[1] == Type.Class:
+        elif component.expose[1] == ComponentType.Class:
             delegate = ClassDelegate
-        elif component.expose[1] == Type.Affinity:
+        elif component.expose[1] == ComponentType.Affinity:
             delegate = AffinityDelegate
-        elif component.expose[1] == Type.Tag:
+        elif component.expose[1] == ComponentType.Tag:
             delegate = TagDelegate
-        elif component.expose[1] == Type.Item:
+        elif component.expose[1] == ComponentType.Item:
             delegate = ItemDelegate
-        elif component.expose[1] == Type.Stat:
+        elif component.expose[1] == ComponentType.Stat:
             delegate = StatDelegate
-        elif component.expose[1] == Type.WeaponType:
+        elif component.expose[1] == ComponentType.WeaponType:
             delegate = WeaponTypeDelegate
-        elif component.expose[1] == Type.Skill:
+        elif component.expose[1] == ComponentType.Skill:
             delegate = SkillDelegate
+        elif component.expose[1] == ComponentType.Terrain:
+            delegate = TerrainDelegate
 
-        if component.expose[0] == Type.List:
+        if component.expose[0] == ComponentType.List:
             c = ListItemComponent(component, parent, delegate)
-        elif component.expose[0] == Type.Dict:
+        elif component.expose[0] == ComponentType.Dict:
             c = DictItemComponent(component, parent, delegate)
-        elif component.expose[0] == Type.FloatDict:
+        elif component.expose[0] == ComponentType.FloatDict:
             c = FloatDictItemComponent(component, parent, delegate)
-        elif component.expose[0] == Type.StringDict:
+        elif component.expose[0] == ComponentType.StringDict:
             c = StringDictItemComponent(component, parent, delegate)
-        elif component.expose[0] == Type.MultipleChoice:
+        elif component.expose[0] == ComponentType.MultipleChoice:
             c = DropDownItemComponent(component, parent, component.expose[1])
 
     else:  # TODO

@@ -1,16 +1,16 @@
 from typing import List
 
-from app.engine.graphics.text.text_renderer import rendered_text_width
+from app.engine.graphics.text.text_renderer import text_width
 
 def translate(string):
-    from app.data.database import DB
+    from app.data.database.database import DB
     if string in DB.translations.keys():
         return DB.translations.get(string).text
     else:
         return string.replace('_', ' ')
 
-def get_max_width(font, text_list):
-    return max(font.width(t) for t in text_list)
+def get_max_width(font_name, text_list):
+    return max(text_width(font_name, t) for t in text_list)
 
 def split(font_name, string, num_lines, max_width):
     """
@@ -20,7 +20,7 @@ def split(font_name, string, num_lines, max_width):
     and no more than `max_width` pixels in length
     No method to force a skip: (`\n`, {br}) are ignored
     """
-    total_length = rendered_text_width([font_name], [string])
+    total_length = text_width(font_name, string)
     lines = []
     for line in range(num_lines):
         lines.append([])
@@ -38,7 +38,7 @@ def split(font_name, string, num_lines, max_width):
         if which_line >= len(lines):
             lines.append([]) # This shouldn't happen normally
         lines[which_line].append(character)
-        length_so_far = rendered_text_width([font_name], [''.join(lines[which_line])])
+        length_so_far = text_width(font_name, ''.join(lines[which_line]))
         if num_lines > 1 and length_so_far >= total_length // num_lines - 5:
             new_line = True
         elif length_so_far >= max_width:
@@ -62,7 +62,7 @@ def line_wrap(font_name, string: str, width: int, pad=False) -> List[str]:
     assert width > 0
     chunks = line_chunk(string)
     chunks.reverse()
-    space_length = rendered_text_width([font_name], [' '])
+    space_length = text_width(font_name, ' ')
 
     lines = []
     while chunks:
@@ -72,7 +72,7 @@ def line_wrap(font_name, string: str, width: int, pad=False) -> List[str]:
         cur_len = 0
 
         while chunks:
-            length = rendered_text_width([font_name], [chunks[-1]])
+            length = text_width(font_name, chunks[-1])
 
             # Can at least squeeze this chunk on the current line
             if cur_len + length <= width:

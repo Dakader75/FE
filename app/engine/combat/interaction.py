@@ -55,13 +55,13 @@ def engage(attacker: UnitObject, positions: list, main_item: ItemObject, skip: b
         items = [main_item]
     for idx, position in enumerate(positions):
         item = items[idx]
-        splash = set()
+        splash = []
         if isinstance(position, list):
             for pos in position:
                 main_target, s = item_system.splash(attacker, item, pos)
                 if main_target:
-                    splash.add(main_target)
-                splash |= set(s)
+                    splash.append(main_target)
+                splash += list(s)
             main_target = None
             target_positions.append(position[0])
         else:

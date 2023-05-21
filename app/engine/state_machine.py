@@ -36,12 +36,13 @@ class StateMachine():
     def load_states(self, starting_states=None, temp_state=None):
         from app.engine import (base, chapter_title, debug_mode, dialog_log,
                                 feat_choice, game_over, general_states,
-                                info_menu, level_up, minimap, objective_menu,
+                                level_up, minimap, objective_menu,
                                 player_choice, prep, promotion, roam_state,
                                 settings, status_upkeep, text_entry,
                                 title_screen, trade, transitions, turnwheel,
                                 victory_screen)
         from app.engine.game_menus.menu_states import unit_menu_state
+        from app.engine.info_menu import info_menu_state
         from app.engine.overworld import overworld_states
         from app.events import event_state
         self.all_states = \
@@ -63,6 +64,7 @@ class StateMachine():
              'transition_double_pop': transitions.TransitionDoublePopState,
              'transition_to': transitions.TransitionToState,
              'transition_to_with_pop': transitions.TransitionToWithPopState,
+             'start_level_asset_loading': general_states.LoadingState,
              'turn_change': general_states.TurnChangeState,
              'initiative_upkeep': general_states.InitiativeUpkeep,
              'free': general_states.FreeState,
@@ -71,7 +73,7 @@ class StateMachine():
              'settings_menu': settings.SettingsMenuState,
              'objective_menu': objective_menu.ObjectiveMenuState,
              'unit_menu': unit_menu_state.UnitMenuState,
-             'info_menu': info_menu.InfoMenuState,
+             'info_menu': info_menu_state.InfoMenuState,
              'phase_change': general_states.PhaseChangeState,
              'move': general_states.MoveState,
              'movement': general_states.MovementState,
@@ -142,8 +144,10 @@ class StateMachine():
              'base_guide': base.BaseGuideState,
              'base_records': base.BaseRecordsState,
              'base_sound_room': base.BaseSoundRoomState,
+             'base_achievement': base.BaseAchievementState,
              'extras_sound_room': base.BaseSoundRoomState,
              'free_roam': roam_state.FreeRoamState,
+             'rationalize': roam_state.RationalizeState,
              'debug': debug_mode.DebugState,
              'overworld': overworld_states.OverworldFreeState,
              'overworld_movement': overworld_states.OverworldMovementState,

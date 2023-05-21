@@ -1,11 +1,11 @@
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt
 
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 from app.utilities.data import Data
-from app.data.database import DB
-from app.data import units
-from app.data.level_units import UniqueUnit
+from app.data.database.database import DB
+from app.data.database import units
+from app.data.database.level_units import UniqueUnit
 
 from app.extensions.custom_gui import DeletionDialog
 
@@ -87,7 +87,7 @@ class UnitModel(DragDropCollectionModel):
                     unit.starting_traveler = None
         for party in DB.parties:
             if party.leader == old_nid:
-                party.leader == new_nid
+                party.leader = new_nid
 
     def on_nid_changed(self, old_nid, new_nid):
         for ai in DB.ai:

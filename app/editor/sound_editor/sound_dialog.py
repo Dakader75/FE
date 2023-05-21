@@ -1,3 +1,4 @@
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 import os
 
 from PyQt5.QtWidgets import QLineEdit, QMessageBox, QVBoxLayout, \
@@ -17,8 +18,8 @@ class ModifySFXDialog(Dialog):
 
         layout = QVBoxLayout()
         self.setLayout(layout)
-        
-        self.nid_box = PropertyBox("Name", QLineEdit, self)
+
+        self.nid_box = PropertyBox("Name", NidLineEdit, self)
         layout.addWidget(self.nid_box)
 
         if len(self.current) > 1:
@@ -70,8 +71,8 @@ class ModifyMusicDialog(Dialog):
 
         layout = QVBoxLayout()
         self.setLayout(layout)
-        
-        self.nid_box = PropertyBox("Name", QLineEdit, self)
+
+        self.nid_box = PropertyBox("Name", NidLineEdit, self)
         layout.addWidget(self.nid_box)
 
         self.nid_box.edit.setText(self.current.nid)

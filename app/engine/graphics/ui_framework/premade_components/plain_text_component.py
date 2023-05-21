@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.engine.graphics.text.text_renderer import render_text, text_width
 from app.engine.graphics.ui_framework.ui_framework_layout import ListLayoutStyle, UILayoutType
 from app.constants import WINHEIGHT, WINWIDTH
 from app.sprites import SPRITES
@@ -75,12 +76,12 @@ class PlainTextLine(UIComponent):
 
     def _reset(self, reason: str):
         """Pre-draw, basically; take all known props, and recalculate one last time."""
-        text_size = (self.props.font.width(self.text), self.props.font.height)
+        text_size = (text_width(self.props.font_name, self.text) + 1, self.props.font.height)
         self.size = text_size
         text_surf = engine.create_surface(text_size, True)
         if self.props.bg_color:
             text_surf.fill(self.props.bg_color)
-        self.props.font.blit(self.text, text_surf, (0, 0))
+        render_text(text_surf, [self.props.font_name], [self.text], None, (0, 0))
         self.props.bg = text_surf
 
 class PlainTextComponent(UIComponent):

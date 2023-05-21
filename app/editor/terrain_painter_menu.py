@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QGridLayout, QPushButton, QSlider, QLabel, QListView
     QWidget
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 # from app.editor.database_editor import DatabaseEditor
 from app.editor.terrain_editor.terrain_model import TerrainModel

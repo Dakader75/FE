@@ -38,6 +38,10 @@
                 "C"
             ],
             [
+                "alternate_resist_formula",
+                "ZERO"
+            ],
+            [
                 "magic",
                 null
             ],
@@ -74,10 +78,6 @@
             [
                 "max_range",
                 2
-            ],
-            [
-                "alternate_resist_formula",
-                "ZERO"
             ]
         ]
     }

@@ -62,10 +62,11 @@ class PaletteData():
             # So palette is a unique string of ints
 
 class AutotileMaker():
-    def __init__(self, parent=None, width=TILEWIDTH, height=TILEHEIGHT, fast=True):
+    def __init__(self, parent=None, fast=True):
         self.window = parent
-        self.tilewidth = width
-        self.tileheight = height
+        # Must be TILEWIDTH/TILEHEIGHT or the engine and editor don't display properly
+        self.tilewidth = TILEWIDTH
+        self.tileheight = TILEHEIGHT
         self.similar_func = similar_fast if fast else similar
 
         self.map_tiles = OrderedDict()
@@ -297,10 +298,10 @@ class AutotileMaker():
         return not no_changes
 
 AUTOTILEMAKER = None
-def get_maker(width=TILEWIDTH, height=TILEHEIGHT, fast=True):
+def get_maker(fast=True):
     global AUTOTILEMAKER
     if not AUTOTILEMAKER:
-        AUTOTILEMAKER = AutotileMaker(width=width, height=height, fast=fast)
+        AUTOTILEMAKER = AutotileMaker(fast=fast)
     return AUTOTILEMAKER
 
 if __name__ == '__main__':

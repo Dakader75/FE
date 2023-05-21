@@ -1,3 +1,5 @@
+<small>`Originally written by Hillgarm. Last Updated 2022-09-01`</small>
+
 # 1. Direct Passives - Hit +20, MAG +2 and Gamble
 Despite the name, skills are actually effects, which covers everything from statuses (buffs/debuffs) to skills and additional actions. They can be applied into units or terrain, and be triggered by other skills, items, or events. In this tutorial series we will focus on class skills as these can be less intuitive to make.
 

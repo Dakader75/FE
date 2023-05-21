@@ -1,6 +1,6 @@
 from __future__ import annotations
 from app.utilities.typing import NID
-from app.data.difficulty_modes import DifficultyModePrefab, GrowthOption, PermadeathOption
+from app.data.database.difficulty_modes import DifficultyModePrefab, GrowthOption, PermadeathOption
 from app.utilities.data import Prefab
 
 class DifficultyModeObject(Prefab):

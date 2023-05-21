@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Tuple
 from typing import TYPE_CHECKING
 
-from app.data.database import DB
+from app.data.database.database import DB
 from app.engine import engine, action
 from app.engine.game_state import game
 from app.engine.graphics.dialog.narration_dialogue import NarrationDialogue

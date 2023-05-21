@@ -1,9 +1,9 @@
 from app.utilities import utils
 
-from app.data.database import DB
+from app.data.database.database import DB
 
-from app.data.item_components import ItemComponent, ItemTags
-from app.data.components import Type
+from app.data.database.item_components import ItemComponent, ItemTags
+from app.data.database.components import ComponentType
 
 from app.engine import action, combat_calcs, equations, banner
 from app.engine import item_system, skill_system, item_funcs
@@ -15,7 +15,7 @@ class PermanentStatChange(ItemComponent):
     desc = "Using this item permanently changes the stats of the target in the specified ways. The target and user are often the same unit (think of normal FE stat boosters)."
     tag = ItemTags.SPECIAL
 
-    expose = (Type.Dict, Type.Stat)
+    expose = (ComponentType.Dict, ComponentType.Stat)
 
     _hit_count = 0
 
@@ -30,20 +30,15 @@ class PermanentStatChange(ItemComponent):
         # Ignore's splash
         defender = game.board.get_unit(def_pos)
         if not defender:
-            return False
+            return True
         return self._target_restrict(defender)
 
     def simple_target_restrict(self, unit, item):
         return self._target_restrict(unit)
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
-        stat_changes = {k: v for (k, v) in self.value}
-        klass = DB.classes.get(target.klass)
-        # clamp stat changes
-        stat_changes = {k: utils.clamp(v, -unit.stats[k], klass.max_stats.get(k, 30) - target.stats[k]) for k, v in stat_changes.items()}
-        actions.append(action.ApplyStatChanges(target, stat_changes))
-        playback.append(pb.StatHit(unit, item, target))
         self._hit_count += 1
+        playback.append(pb.StatHit(unit, item, target))
 
     def end_combat(self, playback, unit, item, target, mode):
         if self._hit_count > 0:
@@ -51,6 +46,7 @@ class PermanentStatChange(ItemComponent):
             klass = DB.classes.get(target.klass)
             # clamp stat changes
             stat_changes = {k: utils.clamp(v, -target.stats[k], klass.max_stats.get(k, 30) - target.stats[k]) for k, v in stat_changes.items()}
+            action.do(action.ApplyStatChanges(target, stat_changes))
             if any(v != 0 for v in stat_changes.values()):
                 game.memory['stat_changes'] = stat_changes
                 game.exp_instance.append((target, 0, None, 'stat_booster'))
@@ -62,7 +58,7 @@ class PermanentGrowthChange(ItemComponent):
     desc = "Using this item permanently changes the growth values of the target in the specified ways."
     tag = ItemTags.SPECIAL
 
-    expose = (Type.Dict, Type.Stat)
+    expose = (ComponentType.Dict, ComponentType.Stat)
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
         growth_changes = {k: v for (k, v) in self.value}
@@ -74,7 +70,7 @@ class WexpChange(ItemComponent):
     desc = "Using this item permanently changes the WEXP of the target. Can specify individual amounts for different weapon types. Useful for Arms Scroll."
     tag = ItemTags.SPECIAL
 
-    expose = (Type.Dict, Type.WeaponType)
+    expose = (ComponentType.Dict, ComponentType.WeaponType)
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
         wexp_changes = {k: v for (k, v) in self.value}
@@ -86,7 +82,7 @@ class FatigueOnHit(ItemComponent):
     desc = "If fatigue is enabled, increases the amount of fatigue a target suffers when hit by this item. Can be negative in order to remove fatigue."
     tag = ItemTags.SPECIAL
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
@@ -110,7 +106,7 @@ class StatusOnHit(ItemComponent):
     desc = "Target gains the specified status on hit. Applies instantly, potentially causing values to change mid-combat."
     tag = ItemTags.SPECIAL
 
-    expose = Type.Skill  # Nid
+    expose = ComponentType.Skill  # Nid
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
         act = action.AddSkill(target, self.value, unit)
@@ -127,7 +123,7 @@ class SelfStatusOnHit(ItemComponent):
     desc = "User gains the specified status on hit. Applies instantly, potentially causing values to change mid-combat."
     tag = ItemTags.SPECIAL
 
-    expose = Type.Skill  # Nid
+    expose = ComponentType.Skill  # Nid
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
         act = action.AddSkill(unit, self.value, unit)
@@ -144,7 +140,7 @@ class StatusesOnHit(ItemComponent):
     tag = ItemTags.SPECIAL
     author = 'BigMood'
 
-    expose = (Type.List, Type.Skill)  # Nid
+    expose = (ComponentType.List, ComponentType.Skill)  # Nid
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
         for status_nid in self.value:
@@ -164,7 +160,7 @@ class StatusAfterCombatOnHit(StatusOnHit, ItemComponent):
     desc = "If the target is hit they gain the specified status at the end of combat. Prevents changes being applied mid-combat."
     tag = ItemTags.SPECIAL
 
-    expose = Type.Skill  # Nid
+    expose = ComponentType.Skill  # Nid
 
     _did_hit = set()
 
@@ -186,7 +182,7 @@ class Shove(ItemComponent):
     desc = "Item shoves target on hit"
     tag = ItemTags.SPECIAL
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def _check_shove(self, unit_to_move, anchor_pos, magnitude):
@@ -214,7 +210,7 @@ class ShoveOnEndCombat(Shove):
     desc = "Item shoves target at the end of combat"
     tag = ItemTags.SPECIAL
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def end_combat(self, playback, unit, item, target, mode):
@@ -228,7 +224,7 @@ class ShoveTargetRestrict(Shove, ItemComponent):
     desc = "Works the same as shove but will not allow the item to be selected if the action cannot be performed."
     tag = ItemTags.SPECIAL
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def target_restrict(self, unit, item, def_pos, splash) -> bool:
@@ -260,7 +256,7 @@ class Swap(ItemComponent):
             playback.append(pb.SwapHit(unit, item, target))
 
 class SwapOnEndCombat(ItemComponent):
-    nid = 'swap'
+    nid = 'swap_on_end_combat'
     desc = "Item swaps user with target after initiated combat"
     tag = ItemTags.SPECIAL
 
@@ -276,7 +272,7 @@ class Pivot(ItemComponent):
     tag = ItemTags.SPECIAL
     author = "Lord Tweed"
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def _check_pivot(self, unit_to_move, anchor_pos, magnitude):
@@ -306,7 +302,7 @@ class PivotTargetRestrict(Pivot, ItemComponent):
     tag = ItemTags.SPECIAL
     author = "Lord Tweed"
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def target_restrict(self, unit, item, def_pos, splash) -> bool:
@@ -333,7 +329,7 @@ class DrawBack(ItemComponent):
     tag = ItemTags.SPECIAL
     author = "Lord Tweed"
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def _check_draw_back(self, target, user, magnitude):
@@ -369,17 +365,19 @@ class DrawBackTargetRestrict(DrawBack, ItemComponent):
     tag = ItemTags.SPECIAL
     author = "Lord Tweed"
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def target_restrict(self, unit, item, def_pos, splash) -> bool:
         defender = game.board.get_unit(def_pos)
-        positions = [result for result in self._check_draw_back(defender, unit, self.value)]
-        if defender and all(positions) and \
-                not skill_system.ignore_forced_movement(defender):
-            return True
+        if defender:
+            positions = [result for result in self._check_draw_back(defender, unit, self.value)]
+            if all(positions) and not skill_system.ignore_forced_movement(defender):
+                return True
         for s_pos in splash:
             s = game.board.get_unit(s_pos)
+            if not s:
+                continue
             splash_positions = [result for result in self._check_draw_back(s, unit, self.value)]
             if all(splash_positions) and not skill_system.ignore_forced_movement(s):
                 return True
@@ -454,7 +452,7 @@ class Steal(ItemComponent):
 
     def ai_priority(self, unit, item, target, move):
         if target:
-            steal_term = 0.75
+            steal_term = 0.075
             enemy_positions = utils.average_pos({other.position for other in game.units if other.position and skill_system.check_enemy(unit, other)})
             distance_term = utils.calculate_distance(move, enemy_positions)
             return steal_term + 0.01 * distance_term
@@ -479,7 +477,7 @@ class EventOnHit(ItemComponent):
     desc = "The selected event plays before a hit, if the unit will hit with this item. The event is triggered with args (unit1=attacking unit, unit2=target, item=item, position=attacking unit's position, target_pos=position of target, mode='attack' or 'defense', attack_info=a tuple containing which attack this is as the first element, and which subattack this is as the second element)"
     tag = ItemTags.SPECIAL
 
-    expose = Type.Event
+    expose = ComponentType.Event
 
     def on_hit(self, actions, playback, unit, item, target, target_pos, mode, attack_info):
         event_prefab = DB.events.get_from_nid(self.value)
@@ -492,7 +490,7 @@ class EventAfterCombatOnHit(ItemComponent):
     desc = "The selected event plays at the end of combat so long as an attack in combat hit."
     tag = ItemTags.SPECIAL
 
-    expose = Type.Event
+    expose = ComponentType.Event
 
     _did_hit = False
 
@@ -513,7 +511,7 @@ class EventAfterCombatEvenMiss(ItemComponent):
     desc = "The selected event plays at the end of combat."
     tag = ItemTags.SPECIAL
 
-    expose = Type.Event
+    expose = ComponentType.Event
 
     def end_combat(self, playback, unit, item, target, mode):
         event_prefab = DB.events.get_from_nid(self.value)

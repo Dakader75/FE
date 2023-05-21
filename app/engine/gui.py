@@ -161,12 +161,12 @@ class SkillIcon():
             surf.blit(self.image, (x_pos, 32))
 
 class ScrollArrow():
-    images = {'up': SPRITES.get('scroll_arrows'),
-              'down': engine.flip_horiz(engine.flip_vert(SPRITES.get('scroll_arrows'))),
-              'left': SPRITES.get('page_arrows'),
-              'right': engine.flip_horiz(engine.flip_vert(SPRITES.get('page_arrows')))}
-
     def __init__(self, direction, topleft, offset=0):
+        self.images = {'up': SPRITES.get('scroll_arrows'),
+                       'down': engine.flip_horiz(engine.flip_vert(SPRITES.get('scroll_arrows'))),
+                       'left': SPRITES.get('page_arrows'),
+                       'right': engine.flip_horiz(engine.flip_vert(SPRITES.get('page_arrows')))}
+
         self.x, self.y = topleft
         self.direction = direction
         self.arrow_counter = counters.arrow_counter(offset)
@@ -192,28 +192,28 @@ class ScrollArrow():
             surf.blit(engine.subsurface(self.images['right'], (self.arrow_counter.get() * 8, 0, 8, 14)), pos)
 
 class ScrollBar():
-    top = engine.subsurface(SPRITES.get('scroll_bar'), (0, 0, 7, 1))
-    bottom = engine.subsurface(SPRITES.get('scroll_bar'), (0, 2, 7, 1))
-    middle = engine.subsurface(SPRITES.get('scroll_bar'), (0, 1, 7, 1))
-    fill = engine.subsurface(SPRITES.get('scroll_bar'), (0, 3, 7, 1))
-
     def __init__(self):
+        self.top = engine.subsurface(SPRITES.get('scroll_bar'), (0, 0, 7, 1))
+        self.bottom = engine.subsurface(SPRITES.get('scroll_bar'), (0, 2, 7, 1))
+        self.middle = engine.subsurface(SPRITES.get('scroll_bar'), (0, 1, 7, 1))
+        self.fill = engine.subsurface(SPRITES.get('scroll_bar'), (0, 3, 7, 1))
         self.arrow_counter = counters.arrow_counter()
 
-    def draw(self, surf, topright, scroll, limit, num_options):
+    def draw(self, surf, topright, scroll, limit, num_options, option_height=16):
         """
         surf -- Surface to draw the scroll bar on
         topright -- Topright coordinate to display scroll bar
         scroll -- How far down the menu has scrolled
         limit -- How many options can be displayed at once
         num_options -- Total number of options in menu
+        option_height -- height of each option
         """
         self.arrow_counter.update()
 
         # Get properties
         x = topright[0] - 9
         y = topright[1] + 12
-        height = limit * 16 - 20
+        height = limit * option_height - 20
         start_fraction = scroll / num_options
         end_fraction = min(1, (scroll + limit) / num_options)
 
@@ -341,10 +341,11 @@ class PopUpDisplay():
                 surf.blit(my_surf, (self.topright[0] - self.width + 8, self.topright[1]))
 
 class MouseIndicator():
-    mouse_indicator_right = SPRITES.get('mouse_indicator_right')
-    mouse_indicator_left = engine.flip_horiz(SPRITES.get('mouse_indicator_right'))
-    mouse_indicator_top = SPRITES.get('mouse_indicator_top')
-    mouse_indicator_bottom = engine.flip_vert(SPRITES.get('mouse_indicator_top'))
+    def __init__(self) -> None:
+        self.mouse_indicator_right = SPRITES.get('mouse_indicator_right')
+        self.mouse_indicator_left = engine.flip_horiz(SPRITES.get('mouse_indicator_right'))
+        self.mouse_indicator_top = SPRITES.get('mouse_indicator_top')
+        self.mouse_indicator_bottom = engine.flip_vert(SPRITES.get('mouse_indicator_top'))
 
     def draw(self, surf):
         mouse_position = get_input_manager().get_real_mouse_position()

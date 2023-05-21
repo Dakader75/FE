@@ -1,14 +1,18 @@
+from __future__ import annotations
+import logging
+from typing import TYPE_CHECKING, Optional
+
+import app.engine.item_component_access as ICA
+from app.data.database.database import DB
 from app.utilities.data import Data
 
-from app.data.database import DB
-import app.engine.item_component_access as ICA
-
-import logging
+if TYPE_CHECKING:
+    from app.data.database.item_components import ItemComponent
 
 class ItemObject():
     next_uid = 100
 
-    def __init__(self, nid, name, desc, icon_nid=None, icon_index=(0, 0), components=None):
+    def __init__(self, nid, name, desc, icon_nid=None, icon_index=(0, 0), components: Optional[Data[ItemComponent]]=None):
         self.uid = ItemObject.next_uid
         ItemObject.next_uid += 1
 
@@ -23,7 +27,7 @@ class ItemObject():
 
         self.droppable = False
 
-        self.components = components or Data()
+        self.components: Data[ItemComponent] = components or Data()
         for component_key, component_value in self.components.items():
             self.__dict__[component_key] = component_value
             # Assign parent to component

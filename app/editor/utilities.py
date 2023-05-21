@@ -2,11 +2,11 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 
 from app.constants import COLORKEY
-from app.data.palettes import enemy_colors, other_colors, enemy2_colors, \
+from app.data.database.palettes import enemy_colors, other_colors, enemy2_colors, \
     player_dark_colors, enemy_dark_colors, other_dark_colors
 
-from app.resources.combat_palettes import Palette
-from app.resources.combat_anims import Frame
+from app.data.resources.combat_palettes import Palette
+from app.data.resources.combat_anims import Frame
 
 qCOLORKEY = QtGui.qRgb(*COLORKEY)
 qAlpha = QtGui.qRgba(0, 0, 0, 0)

@@ -1,3 +1,5 @@
+<small>`Originally written by Hillgarm. Last Updated 2022-09-01`</small>
+
 # 3. Auras - Hex, Bond and Focus
 Auras are passive effects that apply to all units of a given type within a radius, targeting either allies or enemies. Once the unit leaves the radius, they no longer get the effects from the aura.
 

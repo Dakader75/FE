@@ -1,5 +1,5 @@
-from app.data.skill_components import SkillComponent, SkillTags
-from app.data.components import Type
+from app.data.database.skill_components import SkillComponent, SkillTags
+from app.data.database.components import ComponentType
 
 class Hidden(SkillComponent):
     nid = 'hidden'
@@ -23,7 +23,7 @@ class TerrainSkill(SkillComponent):
 
     ignore_conditional = True
 
-    def condition(self, unit):
+    def condition(self, unit, item):
         return not 'Flying' in unit.tags
 
 class ClassSkill(SkillComponent):
@@ -36,7 +36,7 @@ class Stack(SkillComponent):
     desc = "Skill can be applied to a unit multiple times"
     tag = SkillTags.ATTRIBUTE
 
-    expose = Type.Int
+    expose = ComponentType.Int
 
     value = 999
 
@@ -65,11 +65,11 @@ class NegateTags(SkillComponent):
     desc = "Skill negates Effective component on specific Tags"
     tag = SkillTags.ATTRIBUTE
 
-    expose = (Type.List, Type.Tag)
+    expose = (ComponentType.List, ComponentType.Tag)
 
 class HasTags(SkillComponent):
     nid = 'has_tags'
     desc = 'Skill grants the following tags to the unit'
     tag = SkillTags.ATTRIBUTE
 
-    expose = (Type.List, Type.Tag)
+    expose = (ComponentType.List, ComponentType.Tag)

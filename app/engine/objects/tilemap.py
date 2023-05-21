@@ -3,7 +3,7 @@ from typing import List
 from app.constants import TILEWIDTH, TILEHEIGHT, AUTOTILE_FRAMES, COLORKEY
 from app.utilities.data import Data, Prefab
 
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 
 from app.engine import engine, image_mods, particles, animations
 
@@ -115,8 +115,9 @@ class LayerObject():
 class TileMapObject(Prefab):
     def __init__(self):
         super().__init__()
-        self.weather: List[particles.ParticleSystem] = []
+        self.weather: List[particles.SimpleParticleSystem] = []
         self.animations: List[animations.MapAnimation] = []
+        self.high_animations: List[animations.MapAnimation] = []
         self.width: int = 0
         self.height: int = 0
         self.nid: NID = None
@@ -225,6 +226,17 @@ class TileMapObject(Prefab):
                     image.blit(autotile_image, (0, 0))
         return image
 
+    def save_screenshot(self):
+        import os
+        from datetime import datetime
+
+        if not os.path.isdir('screenshots'):
+            os.mkdir('screenshots')
+        current_time = str(datetime.now()).replace(' ', '_').replace(':', '.')
+
+        image = self.get_full_image((0, 0, self.width * TILEWIDTH, self.height * TILEHEIGHT))
+        engine.save_surface(image, 'screenshots/LT_%s_tilemap.png' % current_time)
+
     def update(self):
         for layer in self.layers:
             in_state = layer.update()
@@ -266,7 +278,11 @@ class TileMapObject(Prefab):
                 reverse=anim['reverse'],
                 speed_adj=anim['speed_adj'],
                 contingent=anim.get('contingent', False))
-            new_anim.set_tint(anim.get('tint', False))
+            # @todo(mag): remove this eventually, this is just a stopgap to prevent crashes on load
+            try:
+                new_anim.set_tint(engine.BlendMode(anim.get('tint', 0)))
+            except:
+                pass
             self.animations.append(new_anim)
 
         return self

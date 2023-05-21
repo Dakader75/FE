@@ -1,5 +1,5 @@
-from app.data.skill_components import SkillComponent, SkillTags
-from app.data.components import Type
+from app.data.database.skill_components import SkillComponent, SkillTags
+from app.data.database.components import ComponentType
 
 import logging
 
@@ -8,7 +8,7 @@ class DynamicDamage(SkillComponent):
     desc = "Gives +X damage solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_damage(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate
@@ -24,7 +24,7 @@ class DynamicResist(SkillComponent):
     desc = "Gives +X resist solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_resist(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate
@@ -40,7 +40,7 @@ class DynamicAccuracy(SkillComponent):
     desc = "Gives +X hit solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_accuracy(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate
@@ -56,7 +56,7 @@ class DynamicAvoid(SkillComponent):
     desc = "Gives +X avoid solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_avoid(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate
@@ -72,7 +72,7 @@ class DynamicCritAccuracy(SkillComponent):
     desc = "Gives +X crit solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_crit_accuracy(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate
@@ -88,7 +88,7 @@ class DynamicCritAvoid(SkillComponent):
     desc = "Gives +X crit avoid solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_crit_avoid(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate
@@ -104,7 +104,7 @@ class DynamicAttackSpeed(SkillComponent):
     desc = "Gives +X attack speed solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_attack_speed(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate
@@ -120,7 +120,7 @@ class DynamicDefenseSpeed(SkillComponent):
     desc = "Gives +X defense speed solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_defense_speed(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate
@@ -136,7 +136,7 @@ class DynamicMultiattacks(SkillComponent):
     desc = "Gives +X extra attacks per phase solved dynamically"
     tag = SkillTags.DYNAMIC
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def dynamic_multiattacks(self, unit, item, target, mode, attack_info, base_value) -> int:
         from app.engine import evaluate

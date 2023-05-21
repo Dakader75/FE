@@ -1,7 +1,7 @@
 from app.constants import WINWIDTH, WINHEIGHT
 
-from app.data.database import DB
-from app.resources.resources import RESOURCES
+from app.data.database.database import DB
+from app.data.resources.resources import RESOURCES
 from app.utilities import utils
 
 from app.engine.fonts import FONT
@@ -23,7 +23,8 @@ class PromotionChoiceState(State):
         self.bg = background.create_background('settings_background')
 
     def _get_choices(self):
-        self.class_options = self.unit_klass.turns_into
+        self.class_options = game.memory.get('promo_options', None) or self.unit_klass.turns_into
+        game.memory['promo_options'] = None
         return [DB.classes.get(c).name for c in self.class_options]
 
     def _proceed(self, next_class):
@@ -39,7 +40,6 @@ class PromotionChoiceState(State):
         game.memory['can_go_back'] = None
         self.combat_item = game.memory.get('combat_item')
         game.memory['combat_item'] = None
-
         self.unit = game.memory['current_unit']
         self.unit_klass = DB.classes.get(self.unit.klass)
         display_options = self._get_choices()
@@ -51,7 +51,7 @@ class PromotionChoiceState(State):
         self.animations = []
         self.weapon_icons = []
         for option in self.class_options:
-            anim = battle_animation.get_battle_anim(self.unit, None, klass=option, default_variant=True)
+            anim = battle_animation.get_battle_anim(self.unit, None, klass=option)
             if anim:
                 anim.pair(self, None, True, 0)
             self.animations.append(anim)
@@ -117,7 +117,7 @@ class PromotionChoiceState(State):
                 get_sound_thread().play_sfx('Select 4')
                 game.state.back()
                 if self.combat_item:
-                    action.do(action.Reset(self.unit))
+                    action.do(action.HasNotAttacked(self.unit))
                     item_system.reverse_use(self.unit, self.combat_item)
             else:
                 # Can't go back...
@@ -207,7 +207,10 @@ class ClassChangeChoiceState(PromotionChoiceState):
     name = 'class_change_choice'
 
     def _get_choices(self):
-        if not self.unit.generic:
+        if game.memory.get('promo_options', None):
+            self.class_options = game.memory['promo_options']
+            game.memory['promo_options'] = None
+        elif not self.unit.generic:
             unit_prefab = DB.units.get(self.unit.nid)
             self.class_options = [c for c in unit_prefab.alternate_classes if c != self.unit.klass]
         else:  # Just every class, lol?
@@ -248,7 +251,7 @@ class PromotionState(State, MockCombat):
         self.right_battle_anim = battle_animation.get_battle_anim(self.unit, None)
         # New Left Animation
         next_class = game.memory['next_class']
-        self.left_battle_anim = battle_animation.get_battle_anim(self.unit, None, klass=next_class, default_variant=True)
+        self.left_battle_anim = battle_animation.get_battle_anim(self.unit, None, klass=next_class)
         self.current_battle_anim = self.right_battle_anim
 
         platform_type = 'Floor'

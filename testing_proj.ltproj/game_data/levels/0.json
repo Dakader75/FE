@@ -28,6 +28,7 @@
                 "nid": "Eirika",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     4,
@@ -40,6 +41,7 @@
                 "nid": "Seth",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     4,
@@ -60,8 +62,10 @@
                         false
                     ]
                 ],
+                "starting_skills": [],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     9,
@@ -82,8 +86,10 @@
                         false
                     ]
                 ],
+                "starting_skills": [],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     8,
@@ -96,6 +102,7 @@
                 "nid": "O'Neill",
                 "team": "enemy",
                 "ai": "Guard",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     10,

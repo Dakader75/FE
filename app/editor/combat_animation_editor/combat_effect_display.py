@@ -1,3 +1,5 @@
+from app import dark_theme
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 import os, glob
 import json
 
@@ -7,8 +9,8 @@ from PyQt5.QtWidgets import QVBoxLayout, \
 from PyQt5.QtGui import QImage, QPixmap, QPainter
 
 from app.constants import WINWIDTH, WINHEIGHT
-from app.resources import combat_anims
-from app.resources.resources import RESOURCES
+from app.data.resources import combat_anims
+from app.data.resources.resources import RESOURCES
 
 from app.editor.settings import MainSettingsController
 
@@ -24,8 +26,12 @@ from app.utilities import str_utils
 # Game interface
 import app.editor.game_actions.game_actions as GAME_ACTIONS
 
-def populate_effect_pixmaps(effect_anim):
-    effect_anim.pixmap = QPixmap(effect_anim.full_path)
+def populate_effect_pixmaps(effect_anim, force=False):
+    if not effect_anim.pixmap or force:
+        if effect_anim.full_path and os.path.exists(effect_anim.full_path):
+            effect_anim.pixmap = QPixmap(effect_anim.full_path)
+        else:
+            return
     for frame in effect_anim.frames:
         x, y, width, height = frame.rect
         frame.pixmap = effect_anim.pixmap.copy(x, y, width, height)
@@ -45,16 +51,13 @@ class CombatEffectProperties(CombatAnimProperties):
 
         self.info_form = QFormLayout()
 
-        self.nid_box = QLineEdit()
+        self.nid_box = NidLineEdit()
         self.nid_box.textChanged.connect(self.nid_changed)
         self.nid_box.editingFinished.connect(self.nid_done_editing)
 
         self.settings = MainSettingsController()
-        theme = self.settings.get_theme(0)
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
 
         pose_row = self.set_up_pose_box(icon_folder)
 
@@ -302,9 +305,11 @@ class CombatEffectProperties(CombatAnimProperties):
             effect = RESOURCES.combat_effects.get(effect_nid)
             if not effect:
                 continue
+            populate_effect_pixmaps(effect)
             # Store all of this in effect_nid.lteffect folder
             # Gather reference to images for this effect
-            RESOURCES.combat_effects.save_image(path, effect)
+            if effect.pixmap:  # Some effects don't have pixmaps of their own
+                RESOURCES.combat_effects.save_image(path, effect, temp=True)
             # Serialize into json form
             serialized_data = effect.save()
             serialized_path = os.path.join(path, '%s_effect.json' % effect_nid)

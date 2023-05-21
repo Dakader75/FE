@@ -71,6 +71,12 @@ class MainSettingsController():
     def get_should_make_backup_save(self, fallback=False):
         return self.state.value("should_make_backup_save", fallback)
 
+    def set_should_save_as_chunks(self, value):
+        self.state.setValue("should_save_as_chunks", value)
+
+    def get_should_save_as_chunks(self, fallback=True):
+        return self.state.value("should_save_as_chunks", fallback)
+
     """========== General Control Settings =========="""
 
     def set_place_button(self, value):

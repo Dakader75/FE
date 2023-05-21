@@ -6,6 +6,8 @@ from PyQt5.QtCore import Qt
 from app.extensions.custom_gui import RightClickTreeView
 from app.extensions.list_models import SingleListModel, DefaultMultiAttrListModel
 
+MIN_NID_COLUMN_WIDTH = 80
+
 class BasicSingleListWidget(QWidget):
     def __init__(self, data, title, dlgate, parent=None):
         super().__init__(parent)
@@ -18,6 +20,7 @@ class BasicSingleListWidget(QWidget):
         delegate = dlgate(self.view)
         self.view.setItemDelegate(delegate)
         self.view.resizeColumnToContents(0)
+        self.view.setColumnWidth(0, max(MIN_NID_COLUMN_WIDTH, self.view.columnWidth(0)))
 
         self.placement(data, title)
 
@@ -41,6 +44,7 @@ class BasicSingleListWidget(QWidget):
         self.model.set_new_data(self.current)
         for col in range(self.model.columnCount()):
             self.view.resizeColumnToContents(col)
+            self.view.setColumnWidth(0, max(MIN_NID_COLUMN_WIDTH, self.view.columnWidth(0)))
 
 class AppendSingleListWidget(BasicSingleListWidget):
     def __init__(self, data, title, dlgate, parent=None):
@@ -54,6 +58,7 @@ class AppendSingleListWidget(BasicSingleListWidget):
         delegate = dlgate(self.view)
         self.view.setItemDelegate(delegate)
         self.view.resizeColumnToContents(0)
+        self.view.setColumnWidth(0, max(MIN_NID_COLUMN_WIDTH, self.view.columnWidth(0)))
 
         self.placement(data, title)
 
@@ -75,6 +80,7 @@ class BasicMultiListWidget(BasicSingleListWidget):
         self.view.setItemDelegate(delegate)
         for col in range(len(attrs)):
             self.view.resizeColumnToContents(col)
+            self.view.setColumnWidth(0, max(MIN_NID_COLUMN_WIDTH, self.view.columnWidth(0)))
 
         self.placement(data, title)
 
@@ -91,6 +97,7 @@ class MultiDictWidget(BasicSingleListWidget):
         self.view.setItemDelegate(delegate)
         for col in range(len(attrs)):
             self.view.resizeColumnToContents(col)
+            self.view.setColumnWidth(0, max(MIN_NID_COLUMN_WIDTH, self.view.columnWidth(0)))
 
         self.placement(data, title)
 

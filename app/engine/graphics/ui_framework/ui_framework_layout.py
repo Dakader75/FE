@@ -3,6 +3,7 @@ from app.utilities.enums import Alignments
 from app.utilities.typing import Point
 from functools import lru_cache
 import logging
+from app.utilities.enums import HAlignment, VAlignment
 
 from typing import TYPE_CHECKING, Callable, Dict, List, Tuple, Union
 
@@ -31,17 +32,6 @@ def convert_align(align: Alignments) -> Tuple[HAlignment, VAlignment]:
     if align == Alignments.BOT_RIGHT:
         return (HAlignment.RIGHT, VAlignment.BOTTOM)
 
-class HAlignment(Enum):
-    LEFT = 'left'
-    CENTER = 'center'
-    RIGHT = 'right'
-    NONE = 'none'
-
-class VAlignment(Enum):
-    TOP = 'top'
-    CENTER = 'center'
-    BOTTOM = 'bottom'
-    NONE = 'none'
 
 class UILayoutType(Enum):
     """Enum for distinguishing the types of layouts for a component.

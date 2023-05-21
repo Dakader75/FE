@@ -140,6 +140,14 @@
         "text": "Whether text should make a sound."
     },
     {
+        "nid": "show_bounds_desc",
+        "text": "Display playable area bounds?"
+    },
+    {
+        "nid": "grid_opacity_desc",
+        "text": "Change grid opacity."
+    },
+    {
         "nid": "keymap_desc",
         "text": "Change keyboard bindings."
     },
@@ -330,26 +338,6 @@
     {
         "nid": "Wait_desc",
         "text": "Take no further action this phase."
-    },
-    {
-        "nid": "Take_desc",
-        "text": "Take held unit from adjacent ally."
-    },
-    {
-        "nid": "Give_desc",
-        "text": "Give held unit to adjacent ally."
-    },
-    {
-        "nid": "Rescue_desc",
-        "text": "Pick up adjacent ally, but incur a SPD/SKL penalty."
-    },
-    {
-        "nid": "Trade_desc",
-        "text": "Give, take, or exchange items with adjacent ally."
-    },
-    {
-        "nid": "Drop_desc",
-        "text": "Release held unit onto adjacent tile."
     },
     {
         "nid": "Visit_desc",

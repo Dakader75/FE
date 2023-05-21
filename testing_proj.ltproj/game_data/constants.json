@@ -64,6 +64,10 @@
         true
     ],
     [
+        "overworld_start",
+        false
+    ],
+    [
         "unit_notes",
         true
     ],
@@ -78,6 +82,10 @@
     [
         "growth_info",
         true
+    ],
+    [
+        "glancing_hit",
+        false
     ],
     [
         "backpropagate_difficulty_growths",
@@ -120,6 +128,10 @@
         false
     ],
     [
+        "promote_skill_inheritance",
+        true
+    ],
+    [
         "promote_level_reset",
         true
     ],
@@ -154,6 +166,10 @@
     [
         "roam_hide_hp",
         false
+    ],
+    [
+        "autogenerate_grey_map_sprites",
+        true
     ],
     [
         "convoy_on_death",
@@ -313,10 +329,6 @@
     ],
     [
         "dark_sprites",
-        false
-    ],
-    [
-        "glancing_hit",
         false
     ]
 ]

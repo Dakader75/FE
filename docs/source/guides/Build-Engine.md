@@ -19,6 +19,10 @@ If are working with the Python version of the **Lex Talionis** engine, follow th
 
 First, make sure that you have everything installed from the [Python Installation](PyInstall) guide, including PyInstaller.
 
+Next, go to your `/saves/config.ini` file and set debug to 0. Make sure it says `debug=0` at the top. This will remove the debug menu and some other small things from your game that you probably don't want the player to have access to.
+
+Make sure that your .ltproj folder is located directly in the `lt-maker` directory. For instance, I put my `lion_throne.ltproj` folder right next to the other folders, like `app`, `saves`, `sprites`, etc.
+
 Now from **Git Bash** in the `lt-maker` directory, run:
 
 `./utilities/build_tools/engine_build.sh lion_throne`

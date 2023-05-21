@@ -1,12 +1,13 @@
 from app.constants import WINWIDTH, WINHEIGHT
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.engine.sound import get_sound_thread
 from app.engine.fonts import FONT
+from app.engine.game_menus import menu_options
 from app.engine.state import MapState
 
 from app.engine import engine, text_funcs, menus, action, \
-    menu_options, icons, help_menu, banner, base_surf
+    icons, help_menu, banner, base_surf
 from app.engine.game_state import game
 
 class SkillOption(menu_options.BasicOption):
@@ -104,8 +105,8 @@ class FeatChoiceState(MapState):
 
         elif event == 'INFO':
             get_sound_thread().play_sfx('Select 2')
-            game.memory['next_state'] = 'info_menu'
             game.memory['current_unit'] = self.unit
+            game.memory['next_state'] = 'info_menu'
             game.state.change('transition_to')
 
         elif event == 'SELECT':

@@ -1,5 +1,6 @@
 # Binary-compiled files
 *.py[co]
+__pycache__
 
 # test project
 test.ltproj
@@ -18,10 +19,12 @@ screenshots/
 
 # Builds
 build/
+_build/
 dist/
 *.exe
 venv/
 venv_editor/
+venv_web/
 
 # Windows image file caches
 Thumbs.db
@@ -79,7 +82,7 @@ Temporary Items
 # vscode config
 .vscode
 
-# metadata
-project.ltproj/metadata.json
-project.ltproj/metadata.json
-project.ltproj/metadata.json
+# Cython compilation results
+*.c
+*.pyd
+

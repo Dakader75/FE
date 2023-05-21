@@ -1,5 +1,5 @@
-from app.data.components import Component
-from app.data.database import DB
+from app.data.database.components import Component
+from app.data.database.database import DB
 from app.engine.game_state import GameState
 from app.engine import evaluate
 import re
@@ -102,7 +102,7 @@ class TextEvaluator():
                         search_keys: List[Tuple[str, str]] = []
                         general_search_keys: List[str] = []
                         for term in searches:
-                            searchl = term.split('-')
+                            searchl = term.split('=')
                             if len(searchl) == 1: # single search term, if any match we're good
                                 general_search_keys.append(searchl[0].strip())
                             elif len(searchl) == 2: # search key set to value
@@ -139,22 +139,31 @@ class TextEvaluator():
                 field_text, fallback = to_eval, " "
 
             if '.' in to_eval: # possible unit tag?
-                unit_nid, field = field_text.split('.', 1)
+                nid, field = field_text.split('.', 1)
             else:
-                unit_nid, field = '_unit', field_text
+                nid, field = '_unit', field_text
 
-            if unit_nid == '_unit':
+            if nid == '_unit':
                 unit = self.unit
-            elif unit_nid == '_unit2':
+            elif nid == '_unit2':
                 unit = self.unit2
             elif self.game:
-                unit = self.game.get_unit(unit_nid)
+                unit = self.game.get_unit(nid)
 
-            if not unit:
-                self.logger.error("eval of {f:%s} failed, unknown unit: %s", to_eval, unit_nid)
-                evaluated.append('??')
-                continue
-            field_value = unit.get_field(field, fallback)
+            if not unit: # maybe class?
+                klass = DB.classes.get(nid)
+                if not klass:
+                    self.logger.error("eval of {f:%s} failed, unknown unit or class: %s", to_eval, nid)
+                    evaluated.append('??')
+                    continue
+                found_vals = [val for (name, val) in klass.fields if name == field]
+                if not any(found_vals):
+                    self.logger.error("eval of {f:%s} failed, no such field %s on class %s: %s", to_eval, field, nid)
+                    evaluated.append('??')
+                    continue
+                field_value = found_vals[0]
+            else:
+                field_value = unit.get_field(field, fallback)
             evaluated.append(self._object_to_str(field_value))
         for idx in range(len(to_evaluate)):
             text = text.replace(to_evaluate[idx], evaluated[idx])

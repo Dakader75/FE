@@ -5,10 +5,11 @@ from PyQt5.QtWidgets import QVBoxLayout, QWidget, QAction, QWidgetAction, \
     QAbstractItemView
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
+from app import dark_theme
 
 from app.editor.settings import MainSettingsController
 
-from app.resources import combat_commands
+from app.data.resources import combat_commands
 
 from app.editor import combat_command_widgets
 from app.extensions.widget_list import WidgetList
@@ -179,7 +180,7 @@ class TimelineMenu(QWidget):
         try:
             text = self.entry.text()
             command = combat_commands.parse_text(text)
-            self.add_command(command)                
+            self.add_command(command)
             self.entry.clear()
         except Exception:
             # play error sound
@@ -198,11 +199,8 @@ class TimelineMenu(QWidget):
         self.menus = {}
 
         self.settings = MainSettingsController()
-        theme = self.settings.get_theme(0)
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
 
         for command in combat_commands.anim_commands:
             if command.tag not in self.menus:
@@ -221,7 +219,13 @@ class TimelineMenu(QWidget):
     def create_input(self):
         self.entry = QLineEdit(self)
         self.entry.setPlaceholderText("Enter command here")
-        self.entry.returnPressed.connect(self.add_text)
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == Qt.Key_Return or key == Qt.Key_Enter:
+            self.add_text()
+        else:
+            super().keyPressEvent(event)
 
     def get_current_command(self):
         if self.current_pose and self.current_pose.timeline and \

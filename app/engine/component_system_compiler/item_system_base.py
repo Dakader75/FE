@@ -59,7 +59,7 @@ class Defaults():
         return None
 
     @staticmethod
-    def exp(playback, unit, item, target) -> int:
+    def exp(playback, unit, item) -> int:
         return 0
 
     @staticmethod
@@ -126,6 +126,14 @@ def available(unit, item) -> bool:
                 if not component.available(unit, item.parent_item):
                     return False
     return True
+
+def exp(playback, unit, item):
+    all_components = get_all_components(unit, item)
+    val = 0
+    for component in all_components:
+        if component.defines('exp'):
+            val += component.exp(playback, unit, item)
+    return val
 
 def stat_change(unit, item, stat_nid) -> int:
     bonus = 0
@@ -300,15 +308,15 @@ def find_hp(actions, target):
             starting_hp += subaction.num
     return starting_hp
 
-def after_hit(actions, playback, unit, item, target, mode, attack_info):
+def after_strike(actions, playback, unit, item, target, mode, attack_info, strike):
     all_components = get_all_components(unit, item)
     for component in all_components:
-        if component.defines('after_hit'):
-            component.after_hit(actions, playback, unit, item, target, mode, attack_info)
+        if component.defines('after_strike'):
+            component.after_strike(actions, playback, unit, item, target, mode, attack_info, strike)
     if item.parent_item:
         for component in item.parent_item.components:
-            if component.defines('after_hit'):
-                component.after_hit(actions, playback, unit, item.parent_item, target, mode, attack_info)
+            if component.defines('after_strike'):
+                component.after_strike(actions, playback, unit, item.parent_item, target, mode, attack_info, strike)
 
 def on_hit(actions, playback, unit, item, target, target_pos, mode, attack_info, first_item):
     all_components = get_all_components(unit, item)

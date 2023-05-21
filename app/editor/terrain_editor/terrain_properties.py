@@ -5,14 +5,15 @@ from PyQt5.QtGui import QImage, QIcon, QPixmap, QColor
 from PyQt5.QtCore import Qt, QSize
 
 from app.sprites import SPRITES
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import ComboBox, PropertyBox
 from app.editor.custom_widgets import MovementCostBox
 from app.editor.mcost_dialog import McostDialog
 from app.editor.skill_editor import skill_model
 from app.extensions.color_icon import ColorIcon
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 from app.utilities import str_utils
 
 class TerrainProperties(QWidget):
@@ -34,12 +35,12 @@ class TerrainProperties(QWidget):
 
         name_section = QVBoxLayout()
 
-        self.nid_box = PropertyBox("Unique ID", QLineEdit, self)
+        self.nid_box = PropertyBox(_("Unique ID"), NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         name_section.addWidget(self.nid_box)
 
-        self.name_box = PropertyBox("Display Name", QLineEdit, self)
+        self.name_box = PropertyBox(_("Display Name"), QLineEdit, self)
 
         self.name_box.edit.textChanged.connect(self.name_changed)
         name_section.addWidget(self.name_box)
@@ -48,7 +49,7 @@ class TerrainProperties(QWidget):
 
         main_section = QVBoxLayout()
 
-        self.minimap_box = PropertyBox("Minimap Type", ComboBox, self)
+        self.minimap_box = PropertyBox(_("Minimap Type"), ComboBox, self)
         minimap_tiles = QImage(SPRITES['Minimap_Tiles'].full_path)
         sf = 4
         for text, sprite_coord in DB.minimap.get_minimap_types():
@@ -57,14 +58,14 @@ class TerrainProperties(QWidget):
             self.minimap_box.edit.addItem(icon, text)
         self.minimap_box.edit.currentIndexChanged.connect(self.minimap_changed)
 
-        self.platform_box = PropertyBox("Combat Platform Type", ComboBox, self)
+        self.platform_box = PropertyBox(_("Combat Platform Type"), ComboBox, self)
         for text, sprite_name in RESOURCES.get_platform_types():
             icon = QIcon(RESOURCES.platforms[sprite_name])
             self.platform_box.edit.addItem(icon, text)
         self.platform_box.edit.setIconSize(QSize(87, 40))
         self.platform_box.edit.currentIndexChanged.connect(self.platform_changed)
 
-        self.background_box = PropertyBox("Combat Background", ComboBox, self)
+        self.background_box = PropertyBox(_("Combat Background"), ComboBox, self)
         self.background_box.edit.addItem(QIcon(), 'None')
         for panorama in RESOURCES.panoramas:
             icon = QIcon(panorama.get_all_paths()[0])
@@ -81,8 +82,8 @@ class TerrainProperties(QWidget):
         self.opaque_box = PropertyBox("Blocks line of sight?", QCheckBox, self)
         self.opaque_box.edit.stateChanged.connect(self.opacity_changed)
 
-        self.status_box = PropertyBox("Status", ComboBox, self)
-        self.status_box.edit.addItem("None")
+        self.status_box = PropertyBox(_("Status"), ComboBox, self)
+        self.status_box.edit.addItem(_("None"))
         for skill in DB.skills:
             pixmap = skill_model.get_pixmap(skill)
             if pixmap:
@@ -139,7 +140,7 @@ class TerrainProperties(QWidget):
 
     def status_changed(self, index):
         status = self.status_box.edit.currentText()
-        if status == 'None':
+        if status == _('None'):
             self.current.status = None
         else:
             self.current.status = status

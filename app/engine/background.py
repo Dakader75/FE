@@ -1,5 +1,7 @@
+from typing import List, Tuple
+
 from app.constants import WINWIDTH, WINHEIGHT
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 from app.engine import engine, image_mods
 from app.engine.sprites import SPRITES
 from app.utilities import utils
@@ -57,7 +59,43 @@ class PanoramaBackground():
 
         self.last_update = engine.get_time()
 
+        # For screenshake
+        self.no_shake = [(0, 0)]
+        self.shake_idx = 0
+        self.shake_offset = self.no_shake
+        self.shake_to_end = 0
+
+        # For pause
+        self.paused = False
+        self.pause_at = None
+
+    def set_shake(self, shake_offset: List[Tuple[int, int]], duration: int = 0):
+        self.shake_offset = shake_offset
+        self.shake_idx = 0
+        if duration > 0:
+            self.shake_to_end = engine.get_time() + duration
+
+    def reset_shake(self):
+        self.shake_offset = self.no_shake
+        self.shake_idx = 0
+        self.shake_to_end = 0
+
+    def pause(self, at: int = None):
+        if at is None:
+            self.paused = True
+        else:
+            self.pause_at = at
+
+    def unpause(self):
+        self.pause_at = None
+        self.paused = False
+
     def update(self):
+        self.shake_idx += 1
+        self.shake_idx %= len(self.shake_offset)
+        if self.shake_to_end and engine.get_time() > self.shake_to_end:
+            self.reset_shake()
+
         if self.fade_state == 'normal' or self.fade_state == 'off':
             pass
         else:
@@ -74,17 +112,23 @@ class PanoramaBackground():
                     self.fade_state = 'off'
 
         # For procession of frames
-        if engine.get_time() - self.last_update > self.speed:
+        if not self.paused and engine.get_time() - self.last_update > self.speed:
             self.counter += 1
             if self.counter >= self.panorama.num_frames:
                 self.counter = 0
             self.last_update = engine.get_time()
             if self.counter == 0 and not self.loop:
                 return True
+            # Check if we should pause here
+            if self.pause_at is not None and self.counter == self.pause_at:
+                self.paused = True
+                self.pause_at = None
         return False
 
     def _draw(self, surf, image):
-        engine.blit_center(surf, image)
+        x = WINWIDTH//2 - image.get_width()//2 + self.shake_offset[self.shake_idx][0]
+        y = WINHEIGHT//2 - image.get_height()//2 + self.shake_offset[self.shake_idx][1]
+        surf.blit(image, (x, y))
 
     def draw(self, surf):
         image = self.panorama.images[self.counter]

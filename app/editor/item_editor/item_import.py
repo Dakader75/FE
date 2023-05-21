@@ -1,13 +1,13 @@
 import os
 import xml.etree.ElementTree as ET
-from app.editor.lib.csv.csv_exporter import update_db_with_item_csv
+from app.editor.lib.csv.csv_data_exporter import update_db_with_item_csv
 
 from app.utilities import str_utils, utils
 from app.utilities.data import Data
-from app.data.database import DB, Database
-from app.data import items
+from app.data.database.database import DB, Database
+from app.data.database import items
 
-from app.data.components import Type
+from app.data.database.components import ComponentType
 
 import app.engine.item_component_access as ICA
 
@@ -204,11 +204,11 @@ def load_item(item, parent_dir):
             if comp:
                 try:
                     value = item.find(component).text
-                    if comp.expose == Type.Int:
+                    if comp.expose == ComponentType.Int:
                         value = int(value)
-                    elif comp.expose == Type.Float:
+                    elif comp.expose == ComponentType.Float:
                         value = float(value)
-                    elif comp.expose == Type.Color3 or comp.expose == Type.Color4:
+                    elif comp.expose == ComponentType.Color3 or comp.expose == ComponentType.Color4:
                         value = [utils.clamp(int(c), 0, 255) for c in value.split(',')]
                     elif isinstance(comp.expose, tuple):
                         logging.warning("%s: Could not determine value for component %s" % (nid, component))

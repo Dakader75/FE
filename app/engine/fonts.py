@@ -1,5 +1,5 @@
 from typing import Dict
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 from app.engine import bmpfont, image_mods
 from app.utilities.typing import NID
 
@@ -35,6 +35,7 @@ info.colors['white'] = ((248, 248, 248, 255), (184, 176, 176, 255))
 
 convo = FontType('convo', 'black')
 convo.colors['black'] = ((40, 40, 40, 255), (184, 184, 184, 255))
+convo.colors['brown'] = ((86, 69, 43, 255), (216, 190, 127, 255))
 convo.colors['red'] = ((160, 0, 0, 255), (248, 200, 168, 255))
 convo.colors['white'] = ((248, 248, 248, 255), (136, 144, 144, 255))
 convo.colors['orange'] = ((255, 128, 0, 255), (255, 204, 153, 255))
@@ -65,7 +66,11 @@ chapter.colors['green'] = ((232, 232, 232, 255), (144, 224, 160, 255), (128, 208
                            (104, 184, 120, 255), (112, 160, 104, 255), (56, 112, 64, 255),
                            (16, 8, 8, 255))
 
-font_types = [text, narrow, small, info, nconvo, convo, chapter]
+stat = FontType('stat', 'white')
+stat.colors['white'] = ((248, 248, 200, 255), (248, 112, 40, 255), (152, 32, 0, 255), (80, 56, 32, 255))
+stat.colors['purple'] = ((184, 184, 248, 255), (104, 156, 184, 255), (0, 120, 152, 255), (80, 56, 32, 255))
+
+font_types = [text, narrow, small, info, nconvo, convo, chapter, stat]
 
 # Load in default, uncolored fonts
 FONT: Dict[NID, bmpfont.BmpFont] = {}

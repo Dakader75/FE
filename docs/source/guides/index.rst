@@ -15,6 +15,7 @@ These pages will contain various guides.
     Shop-Portraits
     Title-Screen
     Roaming-AI
+    Achievements
 
 .. toctree::
     :maxdepth: 2

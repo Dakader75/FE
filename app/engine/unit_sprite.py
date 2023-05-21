@@ -1,13 +1,16 @@
+from __future__ import annotations
 from typing import Dict
+from app.data.database.units import UnitPrefab
 from app.engine.game_counters import ANIMATION_COUNTERS
 import math
 
 from app.constants import TILEWIDTH, TILEHEIGHT, COLORKEY
-from app.data.palettes import gray_colors, enemy_colors, other_colors, enemy2_colors, black_colors, \
+from app.data.database.palettes import gray_colors, enemy_colors, other_colors, enemy2_colors, black_colors, \
     player_dark_colors, enemy_dark_colors, other_dark_colors, gray_dark_colors
+from app.engine.objects.unit import UnitObject
 
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 
 from app.utilities import utils
 
@@ -20,6 +23,8 @@ from app.engine.animations import Animation
 from app.engine.game_state import game
 from app.utilities.typing import NID
 
+import logging
+
 class MapSprite():
     def __init__(self, map_sprite, team):
         self.nid = map_sprite.nid
@@ -27,14 +32,17 @@ class MapSprite():
         self.resource = map_sprite
         if not map_sprite.standing_image:
             map_sprite.standing_image = engine.image_load(map_sprite.stand_full_path)
-        gray_stand = map_sprite.standing_image.copy()
         if not map_sprite.moving_image:
             map_sprite.moving_image = engine.image_load(map_sprite.move_full_path)
         stand, move = self.convert_to_team_colors(map_sprite)
         engine.set_colorkey(stand, COLORKEY, rleaccel=True)
         engine.set_colorkey(move, COLORKEY, rleaccel=True)
         self.passive = [engine.subsurface(stand, (num*64, 0, 64, 48)) for num in range(3)]
-        self.gray = self.create_gray([engine.subsurface(gray_stand, (num*64, 0, 64, 48)) for num in range(3)])
+        if DB.constants.value('autogenerate_grey_map_sprites'):
+            gray_stand = map_sprite.standing_image.copy()
+            self.gray = self.create_gray([engine.subsurface(gray_stand, (num*64, 0, 64, 48)) for num in range(3)])
+        else:
+            self.gray = [engine.subsurface(stand, (num*64, 48, 64, 48)) for num in range(3)]
         self.active = [engine.subsurface(stand, (num*64, 96, 64, 48)) for num in range(3)]
         self.down = [engine.subsurface(move, (num*48, 0, 48, 40)) for num in range(4)]
         self.left = [engine.subsurface(move, (num*48, 40, 48, 40)) for num in range(4)]
@@ -75,11 +83,12 @@ class MapSprite():
             engine.set_colorkey(img, COLORKEY, rleaccel=True)
         return imgs
 
-def load_map_sprite(unit, team='player'):
+def load_map_sprite(unit: UnitObject | UnitPrefab, team='player'):
     klass = DB.classes.get(unit.klass)
     nid = klass.map_sprite_nid
-    if unit.variant:
-        nid += unit.variant
+    variant = skill_system.change_variant(unit) if isinstance(unit, UnitObject) else unit.variant
+    if variant:
+        nid += variant
     res = RESOURCES.map_sprites.get(nid)
     if not res:  # Try without unit variant
         res = RESOURCES.map_sprites.get(klass.map_sprite_nid)
@@ -115,6 +124,8 @@ class UnitSprite():
         self.particles = []
         self.damage_numbers = []
 
+        self.speed = cf.SETTINGS['unit_speed']
+
         self.map_sprite = load_map_sprite(self.unit, self.unit.team)
 
         self.health_bar = health_bar.MapHealthBar(self.unit)
@@ -128,8 +139,12 @@ class UnitSprite():
         return self.transition_state != 'normal' or self.particles
 
     def reset(self):
+        self.speed = cf.SETTINGS['unit_speed']
         self.offset = [0, 0]
         ANIMATION_COUNTERS.attack_movement_counter.reset()
+
+    def set_speed(self, speed):
+        self.speed = speed
 
     def get_round_fake_pos(self):
         if self.fake_position:
@@ -170,21 +185,28 @@ class UnitSprite():
             anim_trans.sprite = image_mods.make_translucent(anim_trans.sprite, .33)
             self.animations[nid] = anim_trans
             anim_blend = Animation(anim, (-7, -24), reverse=reverse)
-            anim_blend.set_tint(True)
-            self.animations[nid] = anim_blend
+            anim_blend.set_tint(engine.BlendMode.BLEND_RGB_ADD)
+            self.animations[nid + '_blend'] = anim_blend
 
     def add_warp_flowers(self, reverse=False):
-        ps = particles.ParticleSystem('warp_flower', particles.WarpFlower, -1, (-1, -1, -1, -1), (-1, -1))
+        ps = particles.SimpleParticleSystem('warp_flower', particles.WarpFlower, self.unit.position, (-1, -1, -1, -1), 0)
         angle_frac = math.pi / 8
-        true_pos_x = self.unit.position[0] * TILEWIDTH + TILEWIDTH//2
-        true_pos_y = self.unit.position[1] * TILEHEIGHT + TILEHEIGHT//2
+        if self.unit.position:
+            pos = self.unit.position
+        elif self.fake_position:
+            pos = self.fake_position
+        else:
+            logging.error("No position for sprite found during add warp flowers!")
+            return
+        true_pos_x = pos[0] * TILEWIDTH + TILEWIDTH//2
+        true_pos_y = pos[1] * TILEHEIGHT + TILEHEIGHT//2
         for idx, speed in enumerate((4.5, )):
             for num in range(0, 16):
                 angle = num * angle_frac + (angle_frac / 2 if idx == 0 else 0)
                 if reverse:
-                    new_particle = particles.ReverseWarpFlower((true_pos_x, true_pos_y), speed, angle)
+                    new_particle = particles.ReverseWarpFlower().reset((true_pos_x, true_pos_y), speed, angle)
                 else:
-                    new_particle = particles.WarpFlower((true_pos_x, true_pos_y), speed, angle)
+                    new_particle = particles.WarpFlower().reset((true_pos_x, true_pos_y), speed, angle)
                 ps.particles.append(new_particle)
         self.particles.append(ps)
 
@@ -300,6 +322,19 @@ class UnitSprite():
         self.update_transition()
         self.health_bar.update()
 
+        # update animations
+        self.animations = {k: v for (k, v) in self.animations.items() if not v.update()}
+
+        # update personal particles
+        self.particles = [ps for ps in self.particles if not ps.remove_me_flag]
+        for particle_system in self.particles:
+            particle_system.update()
+
+        # update damage numbers
+        self.damage_numbers = [d for d in self.damage_numbers if not d.done]
+        for damage_num in self.damage_numbers:
+            damage_num.update()
+
     def update_state(self):
         if self.state == 'normal':
             if self.unit.finished and not self.unit.is_dying:
@@ -334,8 +369,8 @@ class UnitSprite():
             last_update = game.movement.get_last_update(self.unit.nid)
             current_time = engine.get_time()
             dt = current_time - last_update
-            self.offset[0] = int(TILEWIDTH * dt / cf.SETTINGS['unit_speed'] * self.net_position[0])
-            self.offset[1] = int(TILEHEIGHT * dt / cf.SETTINGS['unit_speed'] * self.net_position[1])
+            self.offset[0] = int(TILEWIDTH * dt / max(self.speed, 1) * self.net_position[0])
+            self.offset[1] = int(TILEHEIGHT * dt / max(self.speed, 1) * self.net_position[1])
             self.handle_net_position(self.net_position)
         elif self.state == 'fake_transition_in':
             if self.offset[0] > 0:
@@ -505,22 +540,17 @@ class UnitSprite():
         # Draw animations
 
         valid_anims: list = skill_system.should_draw_anim(self.unit)
-        self.animations = {k: v for (k, v) in self.animations.items() if not v.update()}
         for animation in self.animations.values():
             if not animation.contingent or animation.nid in valid_anims:
                 animation.draw(surf, (left, anim_top))
 
         # Draw personal particles
-        self.particles = [ps for ps in self.particles if not ps.remove_me_flag]
         for particle_system in self.particles:
-            particle_system.update()
             particle_system.draw(surf, cull_rect[0], cull_rect[1])
 
         # Draw damage numbers
         for damage_num in self.damage_numbers:
-            damage_num.update()
             damage_num.draw(surf, (left + 4, anim_top))
-        self.damage_numbers = [d for d in self.damage_numbers if not d.done]
 
         return surf
 
@@ -592,6 +622,15 @@ class UnitSprite():
                 icon = SPRITES.get('boss_icon')
             elif 'Elite' in self.unit.tags:
                 icon = SPRITES.get('elite_icon')
+            elif 'Protect' in self.unit.tags:
+                if self.unit.team == 'other':
+                    icon = SPRITES.get('protect_green_icon')
+                elif self.unit.team == 'player':
+                    icon = SPRITES.get('protect_icon')
+                elif self.unit.team == 'enemy':
+                    icon = SPRITES.get('protect_red_icon')
+                elif self.unit.team == 'enemy2':
+                    icon = SPRITES.get('protect_purple_icon')
             if icon:
                 surf.blit(icon, (left - 8, top - 8))
 

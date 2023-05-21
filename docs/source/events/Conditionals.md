@@ -167,7 +167,7 @@ get_max_mana() -> int
 get_fatigue() -> int
 get_exp() -> int
 get_stat(str) -> int  # Takes in the stat nid as the only argument
-get_weapon() -> ItemObject
+get_weapon() -> Optional[ItemObject]
 get_internal_level() -> int
 ```
 
@@ -181,6 +181,7 @@ size: tuple[int, int]
 sub_nid: str
 condition: str
 only_once: bool
+interrupt_move: bool
 
 area: int
 center: tuple[int, int]
@@ -205,7 +206,7 @@ tilemap: TileMapObject  # The current tilemap
 party: PartyObject  # the current party
 
 get_unit(str) -> UnitObject  # Returns a Unit with the given nid
-get_region(str) -> Region  # Returns a Region with the given nid
+get_region(str) -> RegionObject  # Returns a Region with the given nid
 get_party(str) -> PartyObject # Returns the party with the given nid
 get_all_units() -> list  # Returns all alive units on the map
 get_player_units() -> list  # All alive player units on the map

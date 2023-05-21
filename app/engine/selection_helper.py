@@ -32,6 +32,12 @@ class SelectionHelper():
         else:
             return None
 
+    def get_least_hp(self, position):
+        if self.pos_list:
+            return min(self.pos_list, key=lambda pos: game.board.get_unit(pos).get_hp() / game.board.get_unit(pos).get_max_hp())
+        else:
+            return None
+
     # For a given position, get the next in the list
     def get_next(self, position):
         if position in self.pos_list:

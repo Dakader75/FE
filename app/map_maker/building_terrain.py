@@ -50,17 +50,16 @@ class BuildingTerrain(Terrain):
             position in positions and \
             (position[0] + 1, position[1]) in positions
 
-    def determine_sprite_coords(self, tilemap, pos: tuple) -> tuple:
+    def determine_sprite(self, tilemap, pos: tuple, autotile_num: int):
         sprite_type, offset = self.organization[pos]
-        coord = [(c[0] + offset[0], c[1] + offset[1]) for c in self.data[sprite_type]]
+        coords = [(c[0] + offset[0], c[1] + offset[1]) for c in self.data[sprite_type]]
 
         # So it always uses the same set of coords...
-        new_coords1 = [random_choice([(c[0]*2, c[1]*2) for c in coord], (pos[0] - offset[0], pos[1] - offset[1]))]
-        new_coords2 = [random_choice([(c[0]*2 + 1, c[1]*2) for c in coord], (pos[0] - offset[0], pos[1] - offset[1]))]
-        new_coords3 = [random_choice([(c[0]*2 + 1, c[1]*2 + 1) for c in coord], (pos[0] - offset[0], pos[1] - offset[1]))]
-        new_coords4 = [random_choice([(c[0]*2, c[1]*2 + 1) for c in coord], (pos[0] - offset[0], pos[1] - offset[1]))]
-
-        return new_coords1, new_coords2, new_coords3, new_coords4
+        base_pos = (pos[0] - offset[0], pos[1] - offset[1])
+        coord = random_choice(coords, base_pos)
+        
+        pix = self.get_pixmap(coord, autotile_num)
+        return pix
 
 class CastleTerrain(BuildingTerrain):
     data = {'single': [(4, 27), (4, 29)], '3x3': [(13, 26), (10, 29), (19, 26), (22, 26), (25, 26), (28, 26)]}

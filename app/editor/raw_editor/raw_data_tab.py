@@ -1,4 +1,4 @@
-from app.data.database import DB
+from app.data.database.database import DB
 from app.editor.base_database_gui import DatabaseTab
 from app.editor.data_editor import SingleDatabaseEditor
 from app.editor.raw_editor import raw_data_model, raw_data_properties
@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)
-    from app.resources.resources import RESOURCES
+    from app.data.resources.resources import RESOURCES
     RESOURCES.load('default.ltproj')
     DB.load('default.ltproj')
     window = SingleDatabaseEditor(RawDataDatabase)

@@ -2,9 +2,9 @@ import os
 import xml.etree.ElementTree as ET
 
 from app.utilities import str_utils, utils
-from app.resources.resources import RESOURCES
-from app.data.database import DB
-from app.data.klass import Klass
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
+from app.data.database.klass import Klass
 
 import logging
 
@@ -22,7 +22,7 @@ def get_from_xml(parent_dir: str, xml_fn: str) -> list:
         if len(DB.mcost.unit_types) > mgroup_idx:
             movement_group = DB.mcost.unit_types[mgroup_idx]
         else:
-            movement_group = DB.mcost.unit_types[0] 
+            movement_group = DB.mcost.unit_types[0]
         promotes_from = klass.find('promotes_from').text if klass.find('promotes_from') is not None else None
         turns_into = klass.find('turns_into').text.split(',') if klass.find('turns_into').text is not None else []
         tags = klass.find('tags').text.split(',') if klass.find('tags').text is not None else []
@@ -87,8 +87,8 @@ def get_from_xml(parent_dir: str, xml_fn: str) -> list:
             map_sprite_nid = None
 
         new_class = Klass(
-            nid, name, desc, tier, movement_group, promotes_from, turns_into, 
-            tags, max_level, bases, growths, growth_bonus, promotion, maxes, 
+            nid, name, desc, tier, movement_group, promotes_from, turns_into,
+            tags, max_level, bases, growths, growth_bonus, promotion, maxes,
             learned_skills, wexp_gain, icon_nid, icon_index, map_sprite_nid, None, [])
         class_list.append(new_class)
 

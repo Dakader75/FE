@@ -1,3 +1,4 @@
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, \
     QWidget, QPushButton, QMessageBox, QLabel, QComboBox, QHBoxLayout, QDialog, QCheckBox
 from PyQt5.QtCore import Qt, QEvent
@@ -7,7 +8,7 @@ from app.editor.custom_widgets import EventBox
 from app.utilities.data import Data
 from app.utilities import str_utils
 from app.extensions.custom_gui import ComboBox, SimpleDialog, PropertyBox, PropertyCheckBox, QHLine, RightClickListView
-from app.data.database import DB
+from app.data.database.database import DB
 
 class NodeEventPropertiesMenu(QWidget):
     def __init__(self, state_manager, parent=None):
@@ -32,18 +33,18 @@ class NodeEventPropertiesMenu(QWidget):
 
         self.modify_option_widget = ModifyOptionsWidget(self._data, self)
         _layout.addWidget(self.modify_option_widget)
-            
+
         self.setLayout(_layout)
-        
+
         self.state_manager.subscribe_to_key(
             NodeEventPropertiesMenu.__name__, 'ui_refresh_signal', self._refresh_view)
-    
+
     def _refresh_view(self, _=None):
         self.model.layoutChanged.emit()
 
     def update_list(self):
         self.state_manager.change_and_broadcast('ui_refresh_signal', None)
-    
+
     def select(self, idx):
         index = self.model.index(idx)
         self.view.setCurrentIndex(index)
@@ -55,7 +56,7 @@ class NodeEventPropertiesMenu(QWidget):
         if self._data:
             opt = self._data[curr.row()]
             self.modify_option_widget.set_current(opt)
-            
+
     def on_node_changed(self):
         if self._data:
             opt = self._data[0]
@@ -67,7 +68,7 @@ class NodeEventPropertiesMenu(QWidget):
             if len(self._data) > 0 and idx < len(self._data):
                 return self._data[idx]
         return None
-        
+
     def create_event(self, example=None):
         nid = str_utils.get_next_name('New Event', self._data.keys())
         created_event = node_events.NodeMenuEvent(nid)
@@ -82,14 +83,14 @@ class NodeEventPropertiesMenu(QWidget):
         self.toggle_details()
         self.modify_option_widget.set_current(created_event)
         return created_event
-        
+
     def set_data(self, node_data):
         self._data = node_data
         self.model._data = self._data
         self.model.update()
         self.modify_option_widget._data = self._data
         self.toggle_details()
-            
+
     def toggle_details(self):
         if len(self._data):
             self.modify_option_widget.show()
@@ -136,7 +137,7 @@ class ModifyOptionsWidget(QWidget):
 
         self.current = current
 
-        self.opt_nid_box = PropertyBox("Menu Option ID", QLineEdit, self)
+        self.opt_nid_box = PropertyBox("Menu Option ID", NidLineEdit, self)
         self.opt_nid_box.edit.textChanged.connect(self.option_nid_changed)
         self.opt_nid_box.edit.editingFinished.connect(self.option_nid_done_editing)
         layout.addWidget(self.opt_nid_box)
@@ -144,7 +145,7 @@ class ModifyOptionsWidget(QWidget):
         self.option_name_box = PropertyBox("Display Name", QLineEdit, self)
         self.option_name_box.edit.textChanged.connect(self.sub_nid_changed)
         layout.addWidget(self.option_name_box)
-        
+
         self.event_box = EventBox(self)
         self.event_box.edit.currentIndexChanged.connect(self.event_changed)
         layout.addWidget(self.event_box)
@@ -152,7 +153,7 @@ class ModifyOptionsWidget(QWidget):
         self.visible_box = PropertyCheckBox("Visible in menu?", QCheckBox, self)
         self.visible_box.edit.stateChanged.connect(self.visibility_changed)
         layout.addWidget(self.visible_box)
-        
+
         self.enabled_box = PropertyCheckBox("Can be selected?", QCheckBox, self)
         self.enabled_box.edit.stateChanged.connect(self.selectable_changed)
         layout.addWidget(self.enabled_box)
@@ -182,7 +183,7 @@ class ModifyOptionsWidget(QWidget):
 
     def event_changed(self, index):
         self.current.event = self.event_box.edit.currentText()
-    
+
     def visibility_changed(self, state):
         self.current.visible = bool(state)
 

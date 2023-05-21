@@ -1,8 +1,8 @@
 from PyQt5.QtGui import QPixmap, QIcon, QPainter, QImage
 from PyQt5.QtCore import Qt
 
-from app.data.database import DB
-from app.data import supports
+from app.data.database.database import DB
+from app.data.database import supports
 import app.editor.utilities as editor_utilities
 
 from app.editor.unit_editor import unit_model

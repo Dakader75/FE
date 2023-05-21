@@ -1,13 +1,13 @@
 from PyQt5.QtGui import QIcon, QPixmap, QColor
 from PyQt5.QtCore import Qt
 
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 
 from app.editor.base_database_gui import DragDropCollectionModel
 from app.utilities import str_utils
 
-from app.data import terrain
+from app.data.database import terrain
 
 class TerrainModel(DragDropCollectionModel):
     def data(self, index, role):

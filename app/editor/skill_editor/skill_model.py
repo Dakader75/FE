@@ -2,9 +2,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
 
 from app.utilities.data import Data
-from app.resources.resources import RESOURCES
-from app.data.database import DB
-from app.data import skills
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
+from app.data.database import skills
 
 from app.extensions.custom_gui import DeletionDialog
 from app.editor.base_database_gui import DragDropCollectionModel

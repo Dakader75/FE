@@ -19,7 +19,6 @@ class SeaTerrain(WangEdge2Terrain):
         super().set_tileset()
         self.limits = {k: self._find_limit(k) for k in range(16)}
         self.sand_limits = {k: self._find_limit(k, self.sand_start_px) for k in range(16)}
-        print(self.sand_limits)
 
     def _find_limit(self, idx: int, offset: int = 0) -> int:
         bg_color = qRgb(0, 0, 0)
@@ -51,7 +50,6 @@ class SeaTerrain(WangEdge2Terrain):
         return index
 
     def _near_sand(self, tilemap, pos: tuple) -> bool:
-        north, east, south, west = tilemap.get_cardinal_terrain(pos)
         return any(x == 'Sand' for x in tilemap.get_cardinal_terrain(pos))
 
     def _modify_index(self, index: int, tilemap, pos: tuple) -> int:
@@ -64,7 +62,7 @@ class SeaTerrain(WangEdge2Terrain):
                 index = 12
             elif even and self._determine_index(tilemap, (pos[0], pos[1] + 1)) == 13 and edge_random(pos, (pos[0], pos[1] + 1)) < self.serration_chance:
                 index = 9
-            # Right
+        # Right
         elif index == 7:
             if odd and self._determine_index(tilemap, (pos[0], pos[1] - 1)) == 7 and edge_random((pos[0], pos[1] - 1), pos) < self.serration_chance:
                 index = 6
@@ -94,7 +92,7 @@ class SeaTerrain(WangEdge2Terrain):
                     min_distance = distance
         return min_distance
 
-    def determine_sprite_coords(self, tilemap, pos: tuple) -> tuple:
+    def determine_sprite(self, tilemap, pos: tuple, autotile_num: int) -> QPixmap:
         index = self._determine_index(tilemap, pos)
         index = self._modify_index(index, tilemap, pos)
         if index == 15:
@@ -110,9 +108,13 @@ class SeaTerrain(WangEdge2Terrain):
             else:
                 new_coords = [(index, k) for k in range(self.limits[index])]
 
-        # So it always uses the same set of coords...
-        new_coords1 = [random_choice([(c[0]*2, c[1]*2) for c in new_coords], pos)]
-        new_coords2 = [random_choice([(c[0]*2 + 1, c[1]*2) for c in new_coords], pos)]
-        new_coords3 = [random_choice([(c[0]*2 + 1, c[1]*2 + 1) for c in new_coords], pos)]
-        new_coords4 = [random_choice([(c[0]*2, c[1]*2 + 1) for c in new_coords], pos)]
-        return new_coords1, new_coords2, new_coords3, new_coords4
+        coord = random_choice(new_coords, pos)
+        # Even though this should be able to use the 16x16
+        # pixmaps, the sea autotiles are not set up to use 
+        # 16x16, but 8x8, so we need to do this
+        coord1 = (coord[0] * 2, coord[1] * 2)
+        coord2 = (coord[0] * 2 + 1, coord[1] * 2)
+        coord3 = (coord[0] * 2 + 1, coord[1] * 2 + 1)
+        coord4 = (coord[0] * 2, coord[1] * 2 + 1)
+        pix = self.get_pixmap8(coord1, coord2, coord3, coord4, autotile_num)
+        return pix

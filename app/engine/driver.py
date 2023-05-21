@@ -98,7 +98,9 @@ def run(game):
 
         surf, repeat = game.state.update(event, surf)
         while repeat:  # Let's the game traverse through state chains
+            # print("Repeating States:\t", game.state.state)
             surf, repeat = game.state.update([], surf)
+        # print("States:\t\t\t", game.state.state)
 
         if cf.SETTINGS['display_fps']:
             draw_fps(surf, fps_records)

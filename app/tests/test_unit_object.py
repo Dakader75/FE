@@ -6,7 +6,7 @@ from app.tests.mocks.mock_game import get_mock_game
 
 class UnitObjectUnitTests(unittest.TestCase):
     def setUp(self):
-        from app.data.database import DB
+        from app.data.database.database import DB
         DB.load('testing_proj.ltproj')
         from app.engine import equations
         equations.clear()
@@ -17,8 +17,8 @@ class UnitObjectUnitTests(unittest.TestCase):
 
     def test_db_unit_constructor(self):
         unit = self.db_unit
-        from app.data.database import DB
-        from app.data.units import UnitPrefab
+        from app.data.database.database import DB
+        from app.data.database.units import UnitPrefab
         self.assertEqual(unit.nid, "Eirika")
         self.assertEqual(unit.generic, False)
         self.assertEqual(unit.persistent, True)

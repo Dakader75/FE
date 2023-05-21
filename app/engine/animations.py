@@ -23,7 +23,7 @@ class Animation():
         self.hold = hold
         self.reverse = reverse
         self.enabled = True
-        self.tint: bool = False
+        self.tint: engine.BlendMode = engine.BlendMode.NONE
         self.tint_after_delay = None
         self.contingent = contingent
 
@@ -37,13 +37,13 @@ class Animation():
         self.first_update = engine.get_time()
 
     def save(self) -> tuple:
-        return {'nid': self.nid, 
+        return {'nid': self.nid,
                 'pos': self.xy_pos,
                 'loop': self.loop,
-                'hold': self.hold, 
-                'reverse': self.reverse, 
+                'hold': self.hold,
+                'reverse': self.reverse,
                 'speed_adj': self.speed_adj,
-                'tint': self.tint,
+                'tint': self.tint.value,
                 'contingent': self.contingent}
 
     @property
@@ -65,7 +65,7 @@ class Animation():
         else:
             return self.position
 
-    def set_tint(self, val: bool):
+    def set_tint(self, val: engine.BlendMode):
         self.tint = val
 
     def set_tint_after_delay(self, i):
@@ -113,7 +113,7 @@ class Animation():
                     done = True
 
         if self.tint_after_delay == self.counter:
-            self.tint = True
+            self.tint = engine.BlendMode.BLEND_RGB_ADD
 
         # Now actually create image
         if self.reverse:
@@ -136,7 +136,7 @@ class Animation():
         else:
             image = self.image
         if self.tint:
-            engine.blit(surf, image, (x, y), None, engine.BLEND_RGB_ADD)
+            engine.blit(surf, image, (x, y), None, engine.BlendMode.convert(self.tint))
         else:
             surf.blit(image, (x, y))
         return surf

@@ -1,14 +1,14 @@
 from app.events.event_commands import EventCommand, GameVar, LevelVar
 from app.utilities.typing import NID
 import re
-from typing import Dict, Set, Tuple
+from typing import Dict, Optional, Set, Tuple
 from app.events.event_prefab import EventCatalog
 
 class EventInspectorEngine():
     def __init__(self, event_db: EventCatalog):
         self.event_db = event_db
 
-    def find_all_variables_in_level(self, level_nid: NID) -> Set[NID]:
+    def find_all_variables_in_level(self, level_nid: Optional[NID]) -> Set[NID]:
         """returns all known user-defined symbols in level."""
         all_vars = set()
         for event in self.event_db.get_by_level(level_nid):
@@ -42,5 +42,5 @@ class EventInspectorEngine():
             if level_nid == 'all' or event.level_nid == level_nid:
                 for idx, command in enumerate(event.commands):
                     if command.nid == qcommand.nid:
-                        all_commands[(event.level_nid, idx)] = command
+                        all_commands[(event.nid, idx)] = command
         return all_commands

@@ -1,12 +1,13 @@
-from app.data.database import DB
+import logging
 
+import app.engine.config as cf
+from app.data.database.database import DB
+from app.engine.dialog_log import DialogLogState
+from app.engine.game_state import game
 from app.engine.sound import get_sound_thread
 from app.engine.state import State
-from app.engine.dialog_log import DialogLogState
-import app.engine.config as cf
-from app.engine.game_state import game
+from app.events import triggers
 
-import logging
 
 class EventState(State):
     name = 'event'
@@ -19,6 +20,8 @@ class EventState(State):
         self.game_over: bool = False  # Whether we've called for a game over
         if not self.event:
             self.event = game.events.get()
+            if self.event and self.event.trigger and self.event.trigger.nid == 'on_turnwheel':
+                game.action_log.stop_recording()
             if self.event and game.cursor:
                 game.cursor.hide()
 
@@ -105,6 +108,8 @@ class EventState(State):
 
     def end_event(self):
         logging.debug("Ending Event")
+        if self.event and self.event.trigger and self.event.trigger.nid == 'on_turnwheel':
+            game.action_log.start_recording()
         game.events.end(self.event)
         if game.level_vars.get('_win_game') or self.is_handling_end_event:
             logging.info("Player Wins!")
@@ -114,7 +119,7 @@ class EventState(State):
             if game.level_vars.get('_level_end_triggered'):
                 self.level_end()
             else:
-                did_trigger = game.events.trigger('level_end')
+                did_trigger = game.events.trigger(triggers.LevelEnd())
                 if did_trigger:
                     game.level_vars['_level_end_triggered'] = True
                 else:

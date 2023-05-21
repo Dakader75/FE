@@ -1,5 +1,5 @@
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 
 from app.editor.base_database_gui import DatabaseTab
 from app.editor.data_editor import SingleDatabaseEditor

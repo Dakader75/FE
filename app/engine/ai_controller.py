@@ -1,14 +1,16 @@
 import logging
 import math
 
-from app.data.database import DB
-from app.events.regions import RegionType
+from app.data.database.database import DB
 from app.engine import (action, combat_calcs, engine, equations, evaluate,
-                        item_funcs, item_system, line_of_sight, pathfinding,
+                        item_funcs, item_system, line_of_sight,
                         skill_system, target_system)
+from app.engine.pathfinding import pathfinding
 from app.engine.combat import interaction
 from app.engine.game_state import game
 from app.engine.movement import MovementManager
+from app.events import triggers
+from app.events.regions import RegionType
 from app.utilities import utils
 
 
@@ -54,24 +56,31 @@ class AIController():
 
     def set_next_behaviour(self):
         behaviours = DB.ai.get(self.unit.get_ai()).behaviours
-        if self.behaviour_idx < len(behaviours):
-            self.behaviour = behaviours[self.behaviour_idx]
+        while self.behaviour_idx < len(behaviours):
+            next_behaviour = behaviours[self.behaviour_idx]
             self.behaviour_idx += 1
+            if not next_behaviour.condition or \
+                    evaluate.evaluate(next_behaviour.condition, self.unit, position=self.unit.position):
+                self.behaviour = next_behaviour
+                break            
         else:
-            self.behaviour = None
             self.behaviour_idx = 0
+            self.behaviour = None
 
     def get_behaviour(self):
         return self.behaviour
+
+    def interrupt(self):
+        self.move_ai_complete = True
+        self.attack_ai_complete = True
+        self.canto_ai_complete = True
 
     def act(self):
         logging.info("AI Act!")
 
         change = False
         if game.movement.check_region_interrupt(self.unit):
-            self.move_ai_complete = True
-            self.attack_ai_complete = True
-            self.canto_ai_complete = True
+            self.interrupt()
 
         if not self.move_ai_complete:
             if self.think():
@@ -82,6 +91,7 @@ class AIController():
             self.attack_ai_complete = True
         elif not self.canto_ai_complete:
             if self.unit.has_attacked and skill_system.has_canto(self.unit, None):
+                action.do(action.SetMovementLeft(self.unit, skill_system.canto_movement(self.unit, None)))
                 self.canto_retreat()
                 change = self.move()
             self.canto_ai_complete = True
@@ -90,9 +100,14 @@ class AIController():
 
     def move(self):
         if self.goal_position and self.goal_position != self.unit.position:
-            path = target_system.get_path(self.unit, self.goal_position)
-            game.state.change('movement')
-            action.do(action.Move(self.unit, self.goal_position, path))
+            normal_moves = target_system.get_valid_moves(self.unit, witch_warp=False)
+            witch_warp = set(skill_system.witch_warp(self.unit))
+            if self.goal_position in witch_warp and self.goal_position not in normal_moves:
+                action.do(action.Warp(self.unit, self.goal_position))
+            else:
+                path = target_system.get_path(self.unit, self.goal_position)
+                game.state.change('movement')
+                action.do(action.Move(self.unit, self.goal_position, path))
             return True
         else:
             return False
@@ -105,7 +120,8 @@ class AIController():
             if not item_funcs.available(self.unit, self.goal_item):
                 return False
             if self.goal_item in item_funcs.get_all_items(self.unit):
-                action.do(action.EquipItem(self.unit, self.goal_item))
+                if self.unit.can_equip(self.goal_item):
+                    action.do(action.EquipItem(self.unit, self.goal_item))
             # Highlights
             if item_system.is_weapon(self.unit, self.goal_item):
                 game.highlight.remove_highlights()
@@ -148,9 +164,9 @@ class AIController():
                     except:
                         logging.warning("Could not evaluate region conditional %s" % r.condition)
             if region:
-                did_trigger = game.events.trigger(region.sub_nid, self.unit, position=self.unit.position, local_args={'region': region})
+                did_trigger = game.events.trigger(triggers.RegionTrigger(region.sub_nid, self.unit, self.unit.position, region))
                 if not did_trigger:  # Just in case we need the generic one
-                    did_trigger = game.events.trigger('on_region_interact', self.unit, position=self.unit.position, local_args={'region': region})
+                    did_trigger = game.events.trigger(triggers.OnRegionInteract(self.unit, self.unit.position, region))
                 if did_trigger and region.only_once:
                     action.do(action.RemoveRegion(region))
                 if did_trigger:
@@ -183,7 +199,7 @@ class AIController():
         elif self.behaviour.view_range == -1:
             target_positions = {(pos, mag) for pos, mag in target_positions if mag < zero_move}
         else:
-            target_positions = {(pos, mag) for pos, mag in target_positions if mag < self.view_range}
+            target_positions = {(pos, mag) for pos, mag in target_positions if mag < self.behaviour.view_range}
 
         if target_positions and len(valid_positions) > 1:
             self.goal_position = utils.smart_farthest_away_pos(self.unit.position, valid_positions, target_positions)
@@ -347,8 +363,10 @@ class PrimaryAI():
 
     def item_setup(self):
         if self.item_index < len(self.items):
-            logging.info("Testing %s" % self.items[self.item_index])
-            self.unit.equip(self.items[self.item_index])
+            item = self.items[self.item_index]
+            logging.info("Testing %s" % item)
+            if self.unit.can_equip(item):
+                self.unit.equip(item)
             self.get_all_valid_targets()
             self.possible_moves = self.get_possible_moves()
             logging.info(self.possible_moves)
@@ -399,7 +417,7 @@ class PrimaryAI():
     def run(self):
         if self.item_index >= len(self.items):
             self.quick_move(self.orig_pos)
-            if self.orig_item:
+            if self.orig_item and self.unit.can_equip(self.orig_item):
                 self.unit.equip(self.orig_item)
             return (True, self.best_target, self.best_position, self.best_item)
 
@@ -421,6 +439,8 @@ class PrimaryAI():
             if len(self.valid_targets) > 10:
                 enemy_positions = {u.position for u in game.units if u.position and skill_system.check_enemy(self.unit, u)}
                 move = utils.farthest_away_pos(self.orig_pos, self.possible_moves, enemy_positions)
+                if not move:
+                    move = self.possible_moves[self.move_index]
             else:
                 move = self.possible_moves[self.move_index]
 
@@ -429,10 +449,14 @@ class PrimaryAI():
 
             # Check line of sight
             line_of_sight_flag = True
-            if DB.constants.value('line_of_sight'):
-                max_item_range = max(item_funcs.get_range(self.unit, item))
-                valid_targets = line_of_sight.line_of_sight([move], [target], max_item_range)
-                if not valid_targets:
+            if DB.constants.value('line_of_sight') and not item_system.ignore_line_of_sight(self.unit, item):
+                item_range = item_funcs.get_range(self.unit, item)
+                if item_range:
+                    max_item_range = max(item_range)
+                    valid_targets = line_of_sight.line_of_sight([move], [target], max_item_range)
+                    if not valid_targets:
+                        line_of_sight_flag = False
+                else:
                     line_of_sight_flag = False
 
             if line_of_sight_flag:
@@ -560,9 +584,9 @@ class PrimaryAI():
         offense_term += crit_term
         defense_term -= target_damage * target_accuracy * (1 - first_strike)
         if offense_term <= 0:
-            if lethality > 0 and DB.constants.value('attack_zero_hit'):
+            if accuracy <= 0 and DB.constants.value('attack_zero_hit'):
                 logging.info("Accuracy is bad, but continuing with stupid AI")
-            elif accuracy > 0 and DB.constants.value('attack_zero_dam'):
+            elif lethality <= 0 and DB.constants.value('attack_zero_dam'):
                 logging.info("Zero Damage, but continuing with stupid AI")
             else:
                 logging.info("Offense: %.2f, Defense: %.2f", offense_term, defense_term)
@@ -666,8 +690,7 @@ class SecondaryAI():
         self.pathfinder = \
             pathfinding.AStar(self.unit.position, None, self.grid,
                               game.board.bounds, game.tilemap.height,
-                              self.unit.team, skill_system.pass_through(self.unit),
-                              DB.constants.value('ai_fog_of_war'))
+                              self.unit.team)
 
         self.widen_flag = False  # Determines if we've widened our search
         self.reset()
@@ -736,11 +759,17 @@ class SecondaryAI():
 
         if self.behaviour.target == 'Event':
             adj_good_enough = False
+        elif self.behaviour.target == 'Position' and not game.board.get_unit(goal_pos):
+            adj_good_enough = False  # Don't move adjacent if it's not necessary
         else:
             adj_good_enough = True
 
         limit = self.get_limit()
-        path = self.pathfinder.process(game.board, adj_good_enough=adj_good_enough, ally_block=False, limit=limit)
+        if skill_system.pass_through(self.unit):
+            can_move_through = lambda team, adj: True
+        else:
+            can_move_through = game.board.can_move_through
+        path = self.pathfinder.process(can_move_through, adj_good_enough=adj_good_enough, limit=limit)
         self.pathfinder.reset()
         return path
 
@@ -798,6 +827,17 @@ class SecondaryAI():
                 terms += new_terms
             else:
                 return 0
+        elif self.behaviour.action == 'Support' and enemy:
+            ally = enemy
+            # Try to help others since we already checked ourself in Primary AI
+            if ally is self.unit:
+                return 0
+            else:
+                max_hp = ally.get_max_hp()
+                missing_health = max_hp - ally.get_hp()
+                help_term = utils.clamp(missing_health / float(max_hp), 0, 1)
+                terms.append((help_term, 100))
+
         elif self.behaviour.action == "Steal" and enemy:
             return 0  # TODO: For now, Steal just won't work with secondary AI
         else:

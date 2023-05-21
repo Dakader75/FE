@@ -2,7 +2,7 @@ import logging
 import unittest
 from unittest.mock import MagicMock, patch, call
 
-import app.editor.lib.csv.csv_exporter as csv
+import app.editor.lib.csv.csv_data_exporter as csv
 from app.engine.query_engine import GameQueryEngine
 from app.tests.mocks.mock_game import get_mock_game
 from app.tests.mocks.mock_object import Object

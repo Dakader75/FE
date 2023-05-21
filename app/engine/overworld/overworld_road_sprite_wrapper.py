@@ -5,7 +5,7 @@ from typing import List
 from app.constants import TILEHEIGHT, TILEWIDTH
 from app.engine import engine
 from app.sprites import SPRITES
-from app.utilities.enums import Direction
+from app.utilities.direction import Direction
 from app.utilities.typing import Point
 from app.utilities.utils import dot_product, tmult, tuple_add, tuple_sub
 from app.engine.engine import Surface

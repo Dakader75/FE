@@ -1,18 +1,19 @@
+import logging
 from dataclasses import dataclass
-from app.constants import WINWIDTH, WINHEIGHT
 
+import app.engine.action as Action
+from app.constants import WINHEIGHT, WINWIDTH
+from app.engine import base_surf, engine, gui, image_mods
+from app.engine.background import SpriteBackground
+from app.engine.fonts import FONT
+from app.engine.graphics.text.text_renderer import render_text
+from app.engine.game_state import game
+from app.engine.input_manager import get_input_manager
 from app.engine.sound import get_sound_thread
 from app.engine.sprites import SPRITES
-from app.engine.fonts import FONT
-from app.engine.input_manager import get_input_manager
-
-from app.engine.game_state import game
-import app.engine.action as Action
-from app.engine.background import SpriteBackground
 from app.engine.state import MapState
-from app.engine import engine, base_surf, image_mods, gui
+from app.events import triggers
 
-import logging
 
 class ActionLog():
     def __init__(self):
@@ -20,8 +21,19 @@ class ActionLog():
         self.action_index = -1  # Means no actions
         self.first_free_action = -1
         self.locked = False
-        self.record = True  # Whether the action log is currently recording
-        self.action_depth = 0
+        # Whether the action log is currently recording
+        # 0 means currently ON
+        # Can be turned off by
+        # A) Saving the game (no need to record)
+        # B) Running an event with an OnTurnwheel trigger
+        # C) Manually turning off with StopTurnwheelRecording event command
+        # D) Running the turnwheel itself
+        self.record: int = 0 
+        # How far down the action chain we are
+        # We only need to save the foremost action
+        # Since it will call the other actions it needs to reverse itself
+        # on it's own. 0 means first action in the chain
+        self.action_depth: int = 0
 
         # For playback
         self.current_unit = None
@@ -50,6 +62,8 @@ class ActionLog():
         for act in reversed(self.actions[idx:]):
             if act.__class__.__name__ == 'EquipItem':
                 logging.debug("Not going to reverse or remove the EquipItem action")
+            elif act.__class__.__name__ == 'BringToTopItem':
+                logging.debug("Not going to reverse or remove the BringToTopItem action")
             else:
                 act.reverse()
                 self.actions.remove(act)
@@ -98,7 +112,7 @@ class ActionLog():
         self.unique_moves.clear()
         current_move = None
 
-        for action_index in range(self.first_free_action, len(self.actions)):
+        for action_index in range(max(0, self.first_free_action), len(self.actions)):
             action = self.actions[action_index]
             # Only regular moves, not CantoMove or other nonsense gets counted
             if type(action) == Action.Move or type(action) == Action.Teleport:
@@ -347,16 +361,30 @@ class ActionLog():
         game.cursor.hide()
         self.hovered_unit = None
 
+    def is_recording(self) -> bool:
+        return self.record <= 0
+
+    def stop_recording(self) -> None:
+        self.record += 1
+
+    def start_recording(self) -> None:
+        self.record -= 1
+
     def save(self):
-        return ([action.save() for action in self.actions], self.first_free_action)
+        return ([action.save() for action in self.actions], self.first_free_action, self.record)
 
     @classmethod
     def restore(cls, serial):
         self = cls()
-        actions, first_free_action = serial
+        if len(serial) == 2: # deprecated
+            actions, first_free_action = serial
+            record = 0
+        else:
+            actions, first_free_action, record = serial
         for name, action in actions:
             self.append(getattr(Action, name).restore(action))
         self.first_free_action = first_free_action
+        self.record = record
         return self
 
 class TurnwheelDisplay():
@@ -392,11 +420,10 @@ class TurnwheelDisplay():
 
         # Turnwheel message
         if self.desc:
-            font = FONT['text']
             num_lines = len(self.desc)
-            bg = base_surf.create_base_surf(WINWIDTH, 8 + font.height * num_lines, 'menu_bg_clear')
+            bg = base_surf.create_base_surf(WINWIDTH, 8 + 16 * num_lines, 'menu_bg_clear')
             for idx, line in enumerate(self.desc):
-                font.blit(line, bg, (4, 4 + font.height * idx))
+                render_text(bg, ['text'], [line], [None], (4, 4 + 16 * idx))
             if self.transition != 0:
                 bg = image_mods.make_translucent(bg, -self.transition/24.)
             surf.blit(bg, (0, 0))
@@ -443,7 +470,7 @@ class TurnwheelState(MapState):
             if unit.is_dying:
                 game.death.force_death(unit)
 
-        game.action_log.record = False
+        game.action_log.stop_recording()
 
         # Lower volume
 
@@ -566,7 +593,11 @@ class TurnwheelState(MapState):
                     game.phase.set_player()
                 # Call turnwheel script whenever the turnwheel is used
                 if self.turnwheel_activated:
-                    game.events.trigger('on_turnwheel')
+                    # Need to clear all hanging events if we 
+                    # are going back in time
+                    # Otherwise hanging events just sit in memory
+                    game.events.clear()
+                    game.events.trigger(triggers.OnTurnwheel())
 
         # Update animations
         # if self.end_effect:
@@ -601,5 +632,5 @@ class TurnwheelState(MapState):
 
     def end(self):
         game.boundary.reset()
-        # Set volume back
-        game.action_log.record = True
+        # Set recording back
+        game.action_log.start_recording()

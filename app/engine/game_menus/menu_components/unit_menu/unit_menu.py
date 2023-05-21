@@ -11,7 +11,7 @@ from app.engine.game_menus.menu_components.unit_menu.unit_table import \
     UnitInformationTable
 from app.engine.objects.unit import UnitObject
 from app.engine.sprites import SPRITES
-from app.utilities.enums import Direction
+from app.utilities.direction import Direction
 
 
 class SORT_TYPE(Enum):

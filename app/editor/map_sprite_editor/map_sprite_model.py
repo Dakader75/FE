@@ -4,11 +4,11 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QIcon, QPainter, QColor, QTransform
 
-from app.resources.map_sprites import MapSprite
-from app.resources.resources import RESOURCES
+from app.data.resources.map_sprites import MapSprite
+from app.data.resources.resources import RESOURCES
 
 from app.utilities.data import Data
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import DeletionDialog
 from app.editor.settings import MainSettingsController

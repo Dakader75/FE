@@ -3,13 +3,13 @@ import os
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListView, QDialog, \
     QPushButton, QFileDialog, QMessageBox, QGroupBox, QFormLayout, QSpinBox
 from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtGui import QPixmap, QIcon, QImage, QPainter
+from PyQt5.QtGui import QPixmap, QIcon, QImage, QPainter, QColor
 
 from app.constants import WINWIDTH, WINHEIGHT
 
 from app import utilities
-from app.resources import combat_anims, combat_palettes
-from app.resources.resources import RESOURCES
+from app.data.resources import combat_anims, combat_palettes
+from app.data.resources.resources import RESOURCES
 
 from app.editor.settings import MainSettingsController
 
@@ -200,20 +200,21 @@ class FrameSelector(Dialog):
                     my_palette = palette
                     break
             else:
-                print("Generating new palette...")
                 nid = utilities.get_next_name("New Palette", RESOURCES.combat_palettes.keys())
                 my_palette = combat_palettes.Palette(nid)
                 RESOURCES.combat_palettes.append(my_palette)
                 self.combat_anim.palettes.append(["New Palette", my_palette.nid])
+                self.current_palette_nid = my_palette.nid
                 my_palette.assign_colors(all_palette_colors)
 
             convert_dict = editor_utilities.get_color_conversion(my_palette)
-            for idx, pixmap in enumerate(pixmaps):
+            for idx, pix in enumerate(pixmaps):
                 im = pix.toImage()
                 im = editor_utilities.color_convert(im, convert_dict)
                 pix = QPixmap.fromImage(im)
                 nid = utilities.get_next_name(nids[idx], self.frames.keys())
                 x, y, width, height = crops[idx]
+                # rect is None because it hasn't been placed in a sheet yet
                 new_frame = combat_anims.Frame(nid, None, (x, y), pix)
                 self.frames.append(new_frame)
                 self.set_current(new_frame)

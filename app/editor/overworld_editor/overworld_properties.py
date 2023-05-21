@@ -1,9 +1,10 @@
-from app.data.database import DB
+from app.editor.lib.components.validated_line_edit import NidLineEdit
+from app.data.database.database import DB
 from app.editor.sound_editor import sound_tab
 from app.editor.tile_editor import tile_tab
 from app.extensions.custom_gui import (ComboBox, PropertyBox, PropertyCheckBox,
                                        QHLine, SimpleDialog)
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 from app.utilities import str_utils
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtWidgets import (QComboBox, QLabel, QLineEdit, QMessageBox,
@@ -39,7 +40,7 @@ class OverworldPropertiesMenu(QWidget):
         form = QVBoxLayout(self)
         form.setAlignment(Qt.AlignTop)
 
-        self.nid_box = PropertyBox("Overworld ID", QLineEdit, self)
+        self.nid_box = PropertyBox("Overworld ID", NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         form.addWidget(self.nid_box)

@@ -4,7 +4,8 @@ from app.constants import WINWIDTH, WINHEIGHT
 from app.engine import config as cf
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
-from app.engine import text_funcs, menu_options, image_mods, \
+from app.engine.game_menus import menu_options
+from app.engine import text_funcs, image_mods, \
     gui, base_surf, help_menu, engine, menus
 
 class ControlOption(menu_options.BasicOption):

@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import QWidget, QLineEdit, QMessageBox, QVBoxLayout
 from PyQt5.QtCore import Qt
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import PropertyBox
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 from app.editor.custom_widgets import UnitBox
 from app.utilities import str_utils
 
@@ -17,17 +18,17 @@ class PartyProperties(QWidget):
 
         name_section = QVBoxLayout()
 
-        self.nid_box = PropertyBox("Unique ID", QLineEdit, self)
+        self.nid_box = PropertyBox(_("Unique ID"), NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         name_section.addWidget(self.nid_box)
 
-        self.name_box = PropertyBox("Display Name", QLineEdit, self)
+        self.name_box = PropertyBox(_("Display Name"), QLineEdit, self)
 
         self.name_box.edit.textChanged.connect(self.name_changed)
         name_section.addWidget(self.name_box)
 
-        self.leader_box = UnitBox(self, title="Leader Unit")
+        self.leader_box = UnitBox(self, title=_("Leader Unit"))
         self.leader_box.edit.activated.connect(self.leader_changed)
         name_section.addWidget(self.leader_box)
 
@@ -35,8 +36,8 @@ class PartyProperties(QWidget):
         name_section.setAlignment(Qt.AlignTop)
 
     def nid_changed(self, text):
-        if self.current.name == self.current.nid:
-            self.name_box.edit.setText(text)
+        if self.current.name == self.current.nid.replace('_', ' '):
+            self.name_box.edit.setText(text.replace('_', ' '))
         self.current.nid = text
         self.window.update_list()
 

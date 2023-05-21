@@ -1,10 +1,10 @@
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt
 
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 
 from app.utilities.data import Data
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import DeletionDialog
 
@@ -15,7 +15,7 @@ from app.editor.base_database_gui import DragDropCollectionModel
 from app.editor.map_sprite_editor import map_sprite_model
 from app.editor.combat_animation_editor import combat_animation_model
 
-from app.data import klass
+from app.data.database import klass
 
 from app.utilities import str_utils
 
@@ -96,11 +96,13 @@ class ClassModel(DragDropCollectionModel):
         super().delete(idx)
 
     def on_nid_changed(self, old_nid, new_nid):
+        if not new_nid:
+            return
         for unit in DB.units:
             if unit.klass == old_nid:
                 unit.klass = new_nid
         for k in DB.classes:
-            if k.promotes_from == old_nid:
+            if old_nid and k.promotes_from == old_nid:
                 k.promotes_from = new_nid
             k.turns_into = [new_nid if elem == old_nid else elem for elem in k.turns_into]
         for ai in DB.ai:

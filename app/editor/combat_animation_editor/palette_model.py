@@ -2,12 +2,12 @@ from functools import lru_cache
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QIcon, QPainter, QColor
 
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 
 from app.utilities import utils
 from app.utilities.data import Data
 
-from app.resources.combat_palettes import Palette
+from app.data.resources.combat_palettes import Palette
 from app.extensions.custom_gui import DeletionDialog
 from app.editor.base_database_gui import DragDropCollectionModel
 from app.utilities import str_utils

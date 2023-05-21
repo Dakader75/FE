@@ -1,21 +1,21 @@
 import math, string
 
 from app.constants import TILEX, WINWIDTH, WINHEIGHT
-from app.data.database import DB
+from app.data.database.database import DB
+from app.engine.game_menus import menu_options
 from app.utilities import utils
 
-from app.data import lore
+from app.data.database import lore
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
 from app.engine.input_manager import get_input_manager
-from app.engine import engine, image_mods, icons, help_menu, menu_options, \
-    item_system, gui, item_funcs
+from app.engine import engine, image_mods, icons, help_menu, item_system, gui, item_funcs
 from app.engine.gui import ScrollBar
 from app.engine.base_surf import create_base_surf
 from app.engine.objects.item import ItemObject
 from app.engine.objects.unit import UnitObject
-from app.engine.objects.skill import SkillObject
 from app.engine.game_state import game
+from app.engine.achievements import Achievement
 
 def draw_unit_top(surf, topleft, unit):
     x, y = topleft
@@ -42,9 +42,9 @@ def draw_unit_face(surf, topleft, unit, right):
     face_image = face_image.convert_alpha()
     face_image = engine.subsurface(face_image, (0, max(0, offset - 4), 96, 76))
     face_image = image_mods.make_translucent(face_image, 0.5)
-    left = x + 104//2 + 1
-    top = y + (16 * DB.constants.total_items() + 8)//2 - 1 + 2
-    engine.blit_center(surf, face_image, (left, top))
+    left = x + 4 + 1
+    top = y + (16 * DB.constants.total_items() + 8) - 4 - 76
+    engine.blit(surf, face_image, (left, top))
 
 def draw_unit_items(surf, topleft, unit, include_top=False, include_bottom=True, include_face=False, right=True, shimmer=0):
     x, y = topleft
@@ -61,10 +61,10 @@ def draw_unit_items(surf, topleft, unit, include_top=False, include_bottom=True,
         # Blit items
         for idx, item in enumerate(unit.nonaccessories):
             item_option = menu_options.ItemOption(idx, item)
-            item_option.draw(surf, topleft[0] + 2, topleft[1] + idx * 16 + 4)
+            item_option.draw(surf, topleft[0] + 1, topleft[1] + idx * 16 + 4)
         for idx, item in enumerate(unit.accessories):
             item_option = menu_options.ItemOption(idx, item)
-            item_option.draw(surf, topleft[0] + 2, topleft[1] + item_funcs.get_num_items(unit) * 16 + idx * 16 + 4)
+            item_option.draw(surf, topleft[0] + 1, topleft[1] + item_funcs.get_num_items(unit) * 16 + idx * 16 + 4)
 
 
 def draw_unit_bexp(surf, topleft, unit, new_exp, new_bexp, current_bexp, include_top=False, include_bottom=True,
@@ -420,12 +420,12 @@ class Choice(Simple):
                             option.help_box = help_menu.HelpDialog(desc)
                     self.options.append(option)
 
-            if self.hard_limit:
-                for num in range(self.limit - len(options)):
-                    option = menu_options.EmptyOption(len(options) + num)
-                    if self.is_convoy:
-                        option._width = 112
-                    self.options.append(option)
+        if self.hard_limit:
+            for num in range(self.limit - len(options)):
+                option = menu_options.EmptyOption(len(options) + num)
+                if self.is_convoy:
+                    option._width = 112
+                self.options.append(option)
 
     def move_down(self, first_push=True):
         if all(option.ignore for option in self.options):
@@ -448,7 +448,7 @@ class Choice(Simple):
         if self.horizontal:
             self.cursor.y_offset = 0
         if did_move and self.show_face():
-            self._bg_surf = None  # Unstore bg
+            self.update_bg()  # Unstore bg
         return did_move
 
     def move_up(self, first_push=True):
@@ -473,8 +473,13 @@ class Choice(Simple):
         if self.horizontal:
             self.cursor.y_offset = 0
         if did_move and self.show_face():
-            self._bg_surf = None  # Unstore bg
+            self.update_bg()  # Unstore bg
         return did_move
+
+    def update_options(self, options=None):
+        super().update_options(options)
+        if self.show_face():
+            self.update_bg()  # Unstore bg
 
     def get_menu_width(self):
         if self.horizontal:
@@ -490,6 +495,9 @@ class Choice(Simple):
 
     def show_face(self):
         return self.is_convoy or self.disp_value == 'sell'
+
+    def update_bg(self):
+        self._bg_surf = None
 
     def create_bg_surf(self):
         # Handle clear background
@@ -1009,15 +1017,11 @@ class Table(Simple):
             if isinstance(option, UnitObject):
                 option = menu_options.UnitOption(idx, option)
                 option.set_mode(self.mode)
+            elif isinstance(option, Achievement):
+                option = menu_options.AchievementOption(idx, option)
             else:
                 option = menu_options.BasicOption(idx, option)
             self.options.append(option)
-
-    def mouse_move(self, idx):
-        if engine.get_time() > self.next_scroll_time:
-            did_scroll = self.move_to(idx)
-            if did_scroll:
-                self.next_scroll_time = engine.get_time() + 50
 
     def move_to(self, idx):
         scroll = self.scroll
@@ -1060,16 +1064,24 @@ class Table(Simple):
         row, col = self._true_coords(old_index)
         idx = old_index
         while True:
-            row += 1
+            if self.mode == 'objective_menu':
+                row += 5
+            else:
+                row += 1
             if self._exists(row, col):
                 pass
             elif first_push:
                 row = 0
                 self.scroll = 0
             else:
+                # Set to most recent good option
+                row = max(r for r in range(row) if self._exists(r, col) and not self.options[self._idx_coords(r, col)].ignore)
+                idx = self._idx_coords(row, col)
                 break
             idx = self._idx_coords(row, col)
-            if row > self.scroll + self.rows - 2:
+            if row > self.scroll + self.rows - 5 and self.mode == 'objective_menu':
+                self.scroll += 5
+            elif row > self.scroll + self.rows - 2:
                 self.scroll += 1
             elif row != 0:
                 self.cursor.y_offset_down()
@@ -1087,19 +1099,27 @@ class Table(Simple):
             return
         old_index = self.current_index
         row, col = self._true_coords(old_index)
+        num_rows = math.ceil(len(self.options) / self.columns)
         idx = old_index
         while True:
-            row -= 1
+            if self.mode == 'objective_menu':
+                row -= 5
+            else:
+                row -= 1
             if self._exists(row, col):
                 pass
             elif first_push:
                 row = self._get_bottom(col)
-                num_rows = math.ceil(len(self.options) / self.columns)
                 self.scroll = num_rows - self.rows
             else:
+                # Set to most recent good option
+                row = min(r for r in range(num_rows) if self._exists(r, col) and not self.options[self._idx_coords(r, col)].ignore)
+                idx = self._idx_coords(row, col)
                 break
             idx = self._idx_coords(row, col)
-            if row < self.scroll + 1:
+            if row < self.scroll + 4 and self.mode == 'objective_menu':
+                self.scroll -= 5
+            elif row < self.scroll + 1:
                 self.scroll -= 1
             elif row != self._get_bottom(col):
                 self.cursor.y_offset_up()
@@ -1117,16 +1137,22 @@ class Table(Simple):
         old_index = self.current_index
         row, col = self._true_coords(old_index)
         idx = old_index
+        num_rows = math.ceil(len(self.options) / self.columns)
         while True:
             col += 1
             if self._exists(row, col):
                 pass
             elif idx >= len(self.options) - 1:
                 break  # Don't move right because we are on the last row
-            elif row < self.rows - 1:
+            elif row < num_rows - 1:
                 row += 1
                 col = 0
+                if row > self.scroll + self.rows - 2:
+                    self.scroll += 1
+                    self.scroll = utils.clamp(self.scroll, 0, max(0, num_rows - self.rows))
             else:
+                # Set to most recent good option
+                idx = max(i for i in range(len(self.options)) if not self.options[idx].ignore)
                 break
             idx = self._idx_coords(row, col)
             if not self.options[idx].ignore:
@@ -1148,7 +1174,12 @@ class Table(Simple):
             elif row > 0:
                 row -= 1
                 col = self._get_right(row)
+                if row < self.scroll + 1:
+                    self.scroll -= 1
+                    self.scroll = max(0, self.scroll)
             else:
+                # Set to most recent good option
+                idx = min(i for i in range(len(self.options)) if not self.options[idx].ignore)
                 break
             idx = self._idx_coords(row, col)
             if not self.options[idx].ignore:
@@ -1160,7 +1191,10 @@ class Table(Simple):
     def get_menu_width(self):
         max_width = max(option.width() - option.width()%8 for option in self.options)
         total_width = max_width * self.columns
-        total_width = total_width - total_width%8
+        if self.mode == 'objective_menu':
+            total_width = 120
+        else:
+            total_width = total_width - total_width%8
         if self.mode in ('unit', 'prep_manage'):
             total_width += 32
         return total_width
@@ -1201,7 +1235,8 @@ class Table(Simple):
         right = topleft[0] + self.get_menu_width()
         topright = (right, topleft[1])
         num_rows = math.ceil(len(self.options) / self.columns)
-        self.scroll_bar.draw(surf, topright, self.scroll, self.rows, num_rows)
+        option_height = 32 if self.mode == 'achievements' else 16
+        self.scroll_bar.draw(surf, topright, self.scroll, self.rows, num_rows, option_height)
 
     def draw(self, surf):
         topleft = self.get_topleft()
@@ -1223,20 +1258,38 @@ class Table(Simple):
             for idx, choice in enumerate(choices):
                 top = topleft[1] + 4 + (idx // self.columns * height)
                 left = topleft[0] + (idx % self.columns * width)
-                if self.mode in ('unit', 'prep_manage'):
-                    left += 16
-
-                if idx + (self.scroll * self.columns) == self.current_index and self.takes_input and self.draw_cursor:
-                    choice.draw_highlight(surf, left, top, width - 8 if draw_scroll_bar else width)
-                elif idx + (self.scroll * self.columns) == self.fake_cursor_idx:
-                    choice.draw_highlight(surf, left, top, width - 8 if draw_scroll_bar else width)
-                else:
+                if self.mode == 'objective_menu':
+                    win_con = game.level.objective['win']
+                    win_count = str(win_con).count(',')
+                    if idx + (self.scroll * self.columns) < self.takes_input:
+                        surf.blit(SPRITES.get('lowlight'), (topleft[0] + 2, topleft[1] + 12))
+                        FONT['text-yellow'].blit("Win Conditions", surf, (topleft[0] + 4, topleft[1] + 4))
+                        surf.blit(SPRITES.get('lowlight'), (topleft[0] + 2, topleft[1] + 44 + win_count * 16))
+                        FONT['text-yellow'].blit("Loss Conditions", surf, (topleft[0] + 4, topleft[1] + 36 + win_count * 16))
+                        if win_count > 3:
+                            surf.blit(SPRITES.get('lowlight'), (topleft[0] + 2, topleft[1] + 12))
+                            FONT['text-yellow'].blit("Win Conditions", surf, (topleft[0] + 4, topleft[1] + 4))
+                    elif idx + (self.scroll * self.columns) == self.current_index and self.takes_input:
+                        if self.current_index <= 6:
+                            surf.blit(SPRITES.get('lowlight'), (topleft[0] + 2, topleft[1] + 12 + (win_count - self.scroll + 2) * 16))
+                            FONT['text-yellow'].blit("Loss Conditions", surf, (topleft[0] + 4, topleft[1] + 4 + (win_count - self.scroll + 2) * 16))
+                        elif self.current_index > 6 and win_count >= self.scroll - 2:
+                            surf.blit(SPRITES.get('lowlight'), (topleft[0] + 2, topleft[1] + 12 + (win_count - self.scroll + 2) * 16))
+                            FONT['text-yellow'].blit("Loss Conditions", surf, (topleft[0] + 4, topleft[1] + 4 + (win_count - self.scroll + 2) * 16))
                     choice.draw(surf, left, top)
-                if idx + (self.scroll * self.columns) == self.fake_cursor_idx:
-                    self.stationary_cursor.draw(surf, left, top)
-                if idx + (self.scroll * self.columns) == self.current_index and self.takes_input and self.draw_cursor:
-                    self.cursor.draw(surf, left, top)
-
+                else:
+                    if self.mode in ('unit', 'prep_manage'):
+                        left += 16
+                    if idx + (self.scroll * self.columns) == self.current_index and self.takes_input and self.draw_cursor:
+                        choice.draw_highlight(surf, left, top, width - 8 if draw_scroll_bar else width)
+                    elif idx + (self.scroll * self.columns) == self.fake_cursor_idx:
+                        choice.draw_highlight(surf, left, top, width - 8 if draw_scroll_bar else width)
+                    else:
+                        choice.draw(surf, left, top)
+                    if idx + (self.scroll * self.columns) == self.fake_cursor_idx:
+                        self.stationary_cursor.draw(surf, left, top)
+                    if idx + (self.scroll * self.columns) == self.current_index and self.takes_input and self.draw_cursor:
+                        self.cursor.draw(surf, left, top)
         else:
             FONT['text-grey'].blit("Nothing", bg_surf, (topleft[0] + 16, topleft[1] + 4))
 
@@ -1631,6 +1684,7 @@ class Market(Convoy):
         for name, menu in self.menus.items():
             if self.show_stock:
                 menu.stock = [game.market_items[item.nid] for item in sorted_dict[name]]
+            menu.update_bg()
             menu.update_options(sorted_dict[name])
 
     def get_stock(self):

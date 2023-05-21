@@ -1,5 +1,6 @@
 import sys
 from typing import Tuple
+from enum import Enum
 
 import pygame
 import pygame.image
@@ -90,6 +91,22 @@ BLEND_RGBA_ADD = pygame.BLEND_RGBA_ADD
 BLEND_RGBA_SUB = pygame.BLEND_RGBA_SUB
 BLEND_RGBA_MULT = pygame.BLEND_RGBA_MULT
 
+class BlendMode(Enum):
+    NONE = 0
+    BLEND_RGB_ADD = 1
+    BLEND_RGB_SUB = 2
+    BLEND_RGB_MULT = 3
+
+    @staticmethod
+    def convert(blendmode):
+        if blendmode == BlendMode.BLEND_RGB_ADD:
+            return pygame.BLEND_RGB_ADD
+        elif blendmode == BlendMode.BLEND_RGB_SUB:
+            return pygame.BLEND_RGB_SUB
+        elif blendmode == BlendMode.BLEND_RGB_MULT:
+            return pygame.BLEND_RGB_MULT
+        return 0
+
 Surface = pygame.Surface
 
 def blit(dest, source, pos=(0, 0), mask=None, blend=0):
@@ -118,7 +135,7 @@ def copy_surface(surf):
 def save_surface(surf, fn):
     pygame.image.save(surf, fn)
 
-def subsurface(surf, rect):
+def subsurface(surf, rect) -> pygame.Surface:
     x, y, width, height = rect
     twidth = min(surf.get_width() - x, width)
     theight = min(surf.get_height() - y, height)
@@ -240,8 +257,8 @@ MOUSEMOTION = pygame.MOUSEMOTION
 def get_pressed():
     return pygame.key.get_pressed()
 
-def joystick_avail():
-    return pygame.joystick.get_count()
+def joystick_avail() -> bool:
+    return pygame.joystick.get_init() and pygame.joystick.get_count()
 
 def get_joystick():
     return pygame.joystick.Joystick(0)

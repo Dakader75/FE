@@ -1,5 +1,5 @@
 from app.constants import TILEWIDTH, TILEHEIGHT
-from app.data.database import DB
+from app.data.database.database import DB
 from app.events.regions import RegionType
 
 from app.engine.sprites import SPRITES
@@ -90,7 +90,7 @@ class HighlightController():
             guard = ai_prefab.guard_ai()
             if guard:
                 valid_moves = {unit.position}
-                
+
         valid_attacks = target_system.get_possible_spell_attacks(unit, valid_moves)
         self.display_possible_spell_attacks(valid_attacks, light=light)
         valid_attacks = target_system.get_possible_attacks(unit, valid_moves)
@@ -129,7 +129,7 @@ class HighlightController():
         rect = (self.update_idx//4 * TILEWIDTH, 0, TILEWIDTH, TILEHEIGHT)
         escape_image = engine.subsurface(escape_image, rect)
         for region in game.level.regions:
-            if (region.region_type == RegionType.EVENT and region.sub_nid in ('Escape', 'Arrive')) or (region.region_type == RegionType.TIME):
+            if (region.region_type == RegionType.EVENT and region.sub_nid in ('Escape', 'Arrive')):
                 for position in region.get_all_positions():
                     surf.blit(escape_image, (position[0] * TILEWIDTH - cull_rect[0], position[1] * TILEHEIGHT - cull_rect[1]))
 

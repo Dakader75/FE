@@ -1,10 +1,12 @@
 from app.engine.combat.solver import CombatPhaseSolver
 
-from app.engine import skill_system, item_system, static_random, action
+from app.engine import skill_system, item_system, action
 from app.engine.combat.simple_combat import SimpleCombat
 
 from app.engine.objects.unit import UnitObject
 from app.engine.objects.item import ItemObject
+
+from app.utilities import static_random
 
 class BaseCombat(SimpleCombat):
     alerts: bool = True

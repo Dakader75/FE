@@ -1,10 +1,10 @@
 from PyQt5.QtCore import Qt
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.editor.base_database_gui import DragDropCollectionModel
 
-from app.data import difficulty_modes
+from app.data.database import difficulty_modes
 from app.utilities import str_utils
 
 class DifficultyModeModel(DragDropCollectionModel):

@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog
 from PyQt5.QtCore import Qt
 
 from app.utilities import str_utils
-from app.resources.sounds import SFX, Song
-from app.resources.resources import RESOURCES
+from app.data.resources.sounds import SFX, Song
+from app.data.resources.resources import RESOURCES
 from app.editor.settings import MainSettingsController
 from app.editor.table_model import TableModel
 from app.editor.sound_editor.sound_dialog import ModifySFXDialog, ModifyMusicDialog

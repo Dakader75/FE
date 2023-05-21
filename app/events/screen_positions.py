@@ -7,7 +7,7 @@ horizontal_screen_positions = {'OffscreenLeft': -96,
                                'CenterLeft': 24,
                                'CenterRight': WINWIDTH - 120,
                                'MidRight': WINWIDTH - 120,
-                               'LevelUpRight': 140,
+                               'LevelUpRight': WINWIDTH - 100,
                                'Right': WINWIDTH - 96,
                                'FarRight': WINWIDTH - 72,
                                'OffscreenRight': WINWIDTH}
@@ -19,6 +19,7 @@ vertical_screen_positions = {'Top': 0,
 def parse_screen_position(pos) -> tuple:
     x, y = 0, 0
     mirror = False
+    pos = pos.replace(')', '').replace('(', '')
     if pos and ',' in pos:
         split_pos = pos.split(',')
         # Handle first part of tuple
@@ -47,3 +48,19 @@ def parse_screen_position(pos) -> tuple:
         mirror = True
 
     return (x, y), mirror
+
+def get_desired_center(x: int) -> int:
+    if x < 48:  # FarLeft
+        return 8
+    elif x < 72:  # Left
+        return 80
+    elif x < 104:  # MidLeft
+        return 104
+    elif x > WINWIDTH - 48:  # FarRight
+        return WINWIDTH - 8
+    elif x > WINWIDTH - 72:  # Right
+        return WINWIDTH - 88
+    elif x > WINWIDTH - 144:  # MidRight
+        return WINWIDTH - 112
+    else:
+        return WINWIDTH//2

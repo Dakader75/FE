@@ -1,9 +1,10 @@
 from app.constants import WINWIDTH, WINHEIGHT
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
-from app.engine import menus, menu_options, gui, base_surf, image_mods, text_funcs
+from app.engine.game_menus import menu_options
+from app.engine import menus, gui, base_surf, image_mods, text_funcs
 
 from app.engine.game_state import game
 
@@ -147,7 +148,7 @@ class RecordsDisplay(menus.Choice):
         bg = base_surf.create_base_surf(self.get_menu_width(), 24, 'menu_bg_white')
         bg = image_mods.make_translucent(bg, 0.25)
         FONT['text-yellow'].blit(text_funcs.translate('Total Turns'), bg, (4, 4))
-        
+
         FONT['text-blue'].blit_right(total_turns, bg, (92, 4))
         FONT['text-yellow'].blit(text_funcs.translate('Overall MVP'), bg, (100, 4))
         unit = DB.units.get(overall_mvp)
@@ -229,6 +230,7 @@ class MVPDisplay(RecordsDisplay):
         FONT['text-yellow'].blit(text_funcs.translate('unit_record_header'), surf, (offset[0] + 12, offset[1] + 32))
         return surf
 
+
 class ChapterStats(RecordsDisplay):
     """
     For a given level, display each unit in mvp order
@@ -265,5 +267,5 @@ class ChapterStats(RecordsDisplay):
             offset = (0, 0)
         surf.blit(self.top_banner, (offset[0] + WINWIDTH//2 - self.top_banner.get_width()//2, offset[1] + 4))
         super().vert_draw(surf, offset)
-        FONT['text-yellow'].blit(text_funcs.translate('unit_record_header'), surf, (offset[0] + 12, offset[1] + 32))        
+        FONT['text-yellow'].blit(text_funcs.translate('unit_record_header'), surf, (offset[0] + 12, offset[1] + 32))
         return surf

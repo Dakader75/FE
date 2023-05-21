@@ -1,28 +1,30 @@
 import functools
+import logging
+from typing import Callable, List
 
-from PyQt5.QtWidgets import QPushButton, QLineEdit, \
-    QWidget, QDialog, QVBoxLayout, QMessageBox, QListWidgetItem, \
-    QGridLayout, QApplication
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QModelIndex, QSize, Qt
 from PyQt5.QtGui import QBrush, QColor, QIcon
+from PyQt5.QtWidgets import (QApplication, QGridLayout,
+                             QListView, QListWidgetItem, QMessageBox,
+                             QPushButton, QVBoxLayout, QWidget)
 
-from app.utilities import str_utils
-from app.utilities.data import Data
-from app.data.database import DB
-from app.data.level_units import GenericUnit
-
+from app.data.database.database import DB
+from app.data.database.level_units import GenericUnit, UnitGroup
+from app.data.database.units import UnitPrefab
 from app.editor import timer
-
-from app.extensions.widget_list import WidgetList
-from app.extensions.custom_gui import Dialog, RightClickListView, QHLine
-from app.editor.custom_widgets import ObjBox
-from app.editor.level_editor.unit_painter_menu import AllUnitModel, InventoryDelegate
 from app.editor.base_database_gui import DragDropCollectionModel
 from app.editor.class_editor import class_model
+from app.editor.custom_widgets import CustomQtRoles
+from app.editor.level_editor.unit_painter_menu import (AllUnitModel,
+                                                       InventoryDelegate,
+                                                       LevelUnitModel)
+from app.editor.lib.components.validated_line_edit import NidLineEdit
+from app.extensions.custom_gui import Dialog, QHLine, RightClickListView
+from app.extensions.widget_list import WidgetList
+from app.utilities import str_utils
+from app.utilities.data import Data
+from app.utilities.typing import NID
 
-from app.data.level_units import UnitGroup
-
-import logging
 
 class UnitGroupMenu(QWidget):
     def __init__(self, state_manager):
@@ -129,14 +131,12 @@ class GroupWidget(QWidget):
         self.display = None
         self._data = self.window._data
 
-        self.saved_unit_nid = None  # Save the most recent selection
-
         self.layout = QGridLayout(self)
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
 
-        self.nid_box = QLineEdit(self)
+        self.nid_box = NidLineEdit(self)
         self.nid_box.textChanged.connect(self.nid_changed)
         self.nid_box.editingFinished.connect(self.nid_done_editing)
         self.layout.addWidget(self.nid_box, 0, 0)
@@ -179,7 +179,7 @@ class GroupWidget(QWidget):
     def tick(self):
         self.model.layoutChanged.emit()
 
-    def nid_changed(self, text):
+    def nid_changed(self, text: str):
         self.current.nid = text
 
     def nid_done_editing(self):
@@ -226,50 +226,39 @@ class GroupWidget(QWidget):
         self.view.clearSelection()
 
     def add_new_unit(self):
-        unit_nid, ok = SelectUnitDialog.get_unit_nid(self, self.saved_unit_nid)
-        self.saved_unit_nid = unit_nid
-        if ok:
-            if unit_nid in self.current.units:
-                QMessageBox.critical(self, "Error!", "%s already present in group!" % unit_nid)
-            else:
-                self.current.units.append(unit_nid)
+        remaining_units = [unit for unit in self.current_level.units if unit.nid not in self.current.units]
+        SelectUnitDialog.get_unit_nid(self, remaining_units, self.current.units.append)
 
 
 class SelectUnitDialog(Dialog):
-    def __init__(self, parent=None, saved_unit_nid=None):
+    def __init__(self, parent, available_units: List[UnitPrefab], on_add: Callable[[NID], None]):
         super().__init__(parent)
         self.setWindowTitle("Load Unit")
         self.window = parent
         self.view = None
-        print(saved_unit_nid)
+        self.on_add = on_add
 
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        self.unit_box = ObjBox("Units", AllUnitModel,
-                               self.window.current_level.units, self)
-        self.unit_box.edit.setIconSize(QSize(32, 32))
-        self.unit_box.edit.view().setUniformItemSizes(True)
-        if saved_unit_nid and saved_unit_nid in self.window.current_level.units.keys():
-            idx = self.window.current_level.units.index(saved_unit_nid)
-            self.unit_box.edit.setCurrentIndex(idx)
-        self.unit_box.edit.activated.connect(self.accept)
-        self.view = self.unit_box.edit.view()
+        self.unit_list = QListView()
+        self.view = self.unit_list
+        self.unit_model = LevelUnitModel(available_units, self)
+        self.unit_list.setModel(self.unit_model)
+        self.unit_list.doubleClicked.connect(self.on_double_click)
+        layout.addWidget(self.unit_list)
 
-        layout.addWidget(self.unit_box)
         self.buttonbox.hide()
-        # layout.addWidget(self.buttonbox)
+
+    def on_double_click(self, index: QModelIndex):
+        unit = index.data(CustomQtRoles.UnderlyingDataRole)
+        self.on_add(unit.nid)
+        self.unit_model.delete(index.row())
 
     @classmethod
-    def get_unit_nid(cls, parent, saved_unit_nid=None):
-        dialog = cls(parent, saved_unit_nid)
-        result = dialog.exec_()
-        if result == QDialog.Accepted:
-            idx = dialog.unit_box.edit.currentIndex()
-            unit_nid = dialog.window.current_level.units[idx].nid
-            return unit_nid, True
-        else:
-            return None, False
+    def get_unit_nid(cls, parent, available_units: List[UnitPrefab], on_add: Callable[[NID], None]):
+        dialog = cls(parent, available_units, on_add)
+        dialog.exec_()
 
 
 class GroupUnitModel(DragDropCollectionModel):
@@ -310,7 +299,7 @@ class GroupUnitModel(DragDropCollectionModel):
                 return None
         elif role == Qt.ForegroundRole:
             unit_nid = self._data[index.row()]
-            if unit_nid in self.positions:
+            if unit_nid in self.positions and self.positions[unit_nid]:
                 return QBrush(QApplication.palette().text().color())
             else:
                 return QBrush(QColor("red"))
@@ -327,9 +316,5 @@ class GroupUnitModel(DragDropCollectionModel):
             return index, self.drop_to
 
     def create_new(self):
-        unit_nid, ok = SelectUnitDialog.get_unit_nid(self.window)
-        if ok:
-            if unit_nid in self._data:
-                QMessageBox.critical(self, "Error!", "%s already present in group!" % unit_nid)
-            else:
-                self._data.append(unit_nid)
+        remaining_units = [unit for unit in self.window.current_level.units if unit.nid not in self._data]
+        SelectUnitDialog.get_unit_nid(self.window, remaining_units, self._data.append)

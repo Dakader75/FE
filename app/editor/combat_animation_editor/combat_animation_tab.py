@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QWidget
 
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 
 from app.editor.base_database_gui import DatabaseTab
 from app.editor.combat_animation_editor.combat_animation_display import CombatAnimProperties

@@ -1,5 +1,5 @@
-from app.data import raw_data
-from app.data.database import DB
+from app.data.database import raw_data
+from app.data.database.database import DB
 from app.editor.base_database_gui import DragDropCollectionModel
 from app.utilities import str_utils
 from PyQt5.QtCore import Qt

@@ -1,11 +1,11 @@
 from PyQt5.QtCore import Qt
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import DeletionDialog
 from app.editor.custom_widgets import AIBox
 from app.editor.base_database_gui import DragDropCollectionModel
-from app.data.ai import AIPrefab
+from app.data.database.ai import AIPrefab
 from app.utilities import str_utils
 
 class AIModel(DragDropCollectionModel):

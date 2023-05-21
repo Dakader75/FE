@@ -1,9 +1,9 @@
 from __future__ import annotations
-from app.data.units import UnitPrefab
+from app.data.database.units import UnitPrefab
 
 from typing import TYPE_CHECKING
 
-from app.data.klass import Klass
+from app.data.database.klass import Klass
 from app.engine.game_counters import ANIMATION_COUNTERS
 from app.engine.objects.unit import UnitObject
 from app.engine.unit_sprite import MapSprite
@@ -16,16 +16,16 @@ if TYPE_CHECKING:
 from typing import Tuple
 
 from app.constants import TILEHEIGHT, TILEWIDTH
-from app.data.database import DB
-from app.data.overworld_node import OverworldNodePrefab
+from app.data.database.database import DB
+from app.data.database.overworld_node import OverworldNodePrefab
 from app.engine.overworld.overworld_road_sprite_wrapper import OverworldRoadSpriteWrapper
-from app.engine import engine, image_mods
+from app.engine import engine, image_mods, skill_system
 from app.engine.animations import MapAnimation
 from app.engine.sound import get_sound_thread
-from app.resources.map_icons import MapIcon
-from app.resources.resources import RESOURCES
+from app.data.resources.map_icons import MapIcon
+from app.data.resources.resources import RESOURCES
 from app.utilities import utils
-from app.utilities.typing import Point
+from app.utilities.typing import NID, Point
 
 class FlagSprite():
     def __init__(self) -> None:
@@ -53,7 +53,7 @@ class OverworldNodeSprite():
         self.load_sprites()
 
     def load_sprites(self):
-        if not self.map_icon.image:
+        if self.map_icon and not self.map_icon.image:
             self.map_icon.image = engine.image_load(self.map_icon.full_path)
 
     def set_transition(self, new_state):
@@ -205,8 +205,9 @@ class OverworldUnitSprite():
     def load_sprites(self):
         klass: Klass = DB.classes.get(self.unit.klass)
         nid = klass.map_sprite_nid
-        if self.unit.variant:
-            nid += self.unit.variant
+        variant = skill_system.change_variant(self.unit) if isinstance(self.unit, UnitObject) else None
+        if variant:
+            nid += variant
         res = RESOURCES.map_sprites.get(nid)
         if not res:  # Try without unit variant
             res = RESOURCES.map_sprites.get(klass.map_sprite_nid)

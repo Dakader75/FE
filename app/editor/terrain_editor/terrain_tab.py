@@ -2,7 +2,7 @@ import os
 
 from PyQt5.QtWidgets import QFileDialog
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.editor.data_editor import SingleDatabaseEditor
 from app.editor.base_database_gui import DatabaseTab
@@ -15,7 +15,7 @@ class TerrainDatabase(DatabaseTab):
     @classmethod
     def create(cls, parent=None):
         data = DB.terrain
-        title = "Terrain"
+        title = _("Terrain")
         right_frame = terrain_properties.TerrainProperties
 
         def deletion_func(model, index):
@@ -28,7 +28,7 @@ class TerrainDatabase(DatabaseTab):
     def import_data(self):
         settings = MainSettingsController()
         starting_path = settings.get_last_open_path()
-        fn, ok = QFileDialog.getOpenFileName(self, "Import terrain from terrain.xml", starting_path, "Terrain XML (terrain.xml);;All Files(*)")
+        fn, ok = QFileDialog.getOpenFileName(self, _("Import terrain from terrain.xml"), starting_path, "Terrain XML (terrain.xml);;All Files(*)")
         if ok and fn.endswith('terrain.xml'):
             parent_dir = os.path.split(fn)[0]
             settings.set_last_open_path(parent_dir)
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     import sys
     from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)
-    from app.resources.resources import RESOURCES
+    from app.data.resources.resources import RESOURCES
     RESOURCES.load('default.ltproj')
     DB.load('default.ltproj')
     window = SingleDatabaseEditor(TerrainDatabase)

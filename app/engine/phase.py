@@ -1,7 +1,7 @@
 import math
 
 from app.constants import WINWIDTH, WINHEIGHT
-from app.data.database import DB
+from app.data.database.database import DB
 from app.engine.sprites import SPRITES
 
 from app.utilities import utils
@@ -16,7 +16,7 @@ import logging
 def fade_in_phase_music():
     logging.info('Fade in Phase Music')
     team = game.phase.get_current()
-    music = game.level.music.get(team + '_phase')
+    music = game.level.music.get(team + '_phase', None)
     fade = game.game_vars.get('_phase_music_fade_ms', 400)
     if music:
         if DB.constants.value('restart_phase_music'):
@@ -29,7 +29,7 @@ def fade_in_phase_music():
 def fade_out_phase_music():
     logging.info('Fade out Phase Music')
     next_team = game.phase.get_current()
-    next_music = game.level.music.get(next_team + '_phase')
+    next_music = game.level.music.get(next_team + '_phase', None)
     currently_playing = get_sound_thread().get_current_song()
     # Don't fade_out phase music if we will just fade in to the same song
     if currently_playing and next_music and next_music == currently_playing.nid:

@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.editor.table_model import TableModel
 from app.utilities import str_utils
@@ -41,7 +41,7 @@ class EventModel(TableModel):
         return None
 
     def create_new(self, level_nid=None):
-        other_names = [d.name for d in self._data if d.level_nid is None]
+        other_names = [d.name for d in self._data if d.level_nid == level_nid]
         name = str_utils.get_next_name("New Event", other_names)
         new_event = EventPrefab(name)
         new_event.level_nid = level_nid

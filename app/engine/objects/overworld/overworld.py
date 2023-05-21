@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List, Set, Tuple
 
 from app.constants import TILEHEIGHT, TILEWIDTH
-from app.data.database import DB
+from app.data.database.database import DB
 from app.utilities.utils import magnitude, tuple_sub
 
 if TYPE_CHECKING:
-    from app.data.overworld import OverworldPrefab
-    from app.data.units import UnitPrefab
-    from app.data.overworld_node import OverworldNodePrefab
+    from app.data.database.overworld import OverworldPrefab
+    from app.data.database.units import UnitPrefab
+    from app.data.database.overworld_node import OverworldNodePrefab
     from app.engine.game_state import GameState
     from app.engine.objects.party import PartyObject
     from app.engine.objects.unit import UnitObject
@@ -19,7 +19,7 @@ from app.engine.overworld.overworld_map_sprites import (OverworldNodeSprite,
                                                         OverworldRoadSprite,
                                                         OverworldUnitSprite)
 from app.engine.unit_sound import UnitSound
-from app.resources.sounds import Song
+from app.data.resources.sounds import Song
 from app.utilities.typing import NID, Point
 from .overworld_entity import OverworldEntityObject
 

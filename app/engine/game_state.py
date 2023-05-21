@@ -4,7 +4,9 @@ from functools import lru_cache
 import random
 import time
 from collections import Counter
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+
+from app.engine.query_engine import GameQueryEngine
 
 if TYPE_CHECKING:
     from app.engine import (ai_controller, death,
@@ -22,19 +24,20 @@ if TYPE_CHECKING:
     from app.engine.objects.party import PartyObject
     from app.engine.objects.skill import SkillObject
     from app.engine.objects.unit import UnitObject
+    from app.engine.objects.region import RegionObject
     from app.engine.dialog_log import DialogLog
     from app.events.event_manager import EventManager
-    from app.events import speak_style
-    from app.events.regions import Region
     from app.utilities.typing import NID, UID
 
 from app.constants import VERSION
-from app.data.database import DB
-from app.data.difficulty_modes import GrowthOption, PermadeathOption
+from app.data.database.database import DB
+from app.data.database.difficulty_modes import GrowthOption, PermadeathOption
 from app.events.regions import RegionType
+from app.events import speak_style
 from app.engine import config as cf
-from app.engine import state_machine, static_random
-from app.resources.resources import RESOURCES
+from app.engine import state_machine
+from app.utilities import static_random
+from app.data.resources.resources import RESOURCES
 
 import logging
 
@@ -59,8 +62,8 @@ class GameState():
         self.unit_registry: Dict[NID, UnitObject] = {}
         self.item_registry: Dict[UID, ItemObject] = {}
         self.skill_registry: Dict[UID, SkillObject] = {}
-        self.terrain_status_registry: Dict[NID, NID] = {}
-        self.region_registry: Dict[NID, Region] = {}
+        self.terrain_status_registry: Dict[Tuple[int, int, NID], UID] = {}
+        self.region_registry: Dict[NID, RegionObject] = {}
         self.overworld_registry: Dict[NID, OverworldObject] = {}
         self.parties: Dict[NID, PartyObject] = {}
         self.unlocked_lore: List[NID] = []
@@ -72,6 +75,7 @@ class GameState():
         self.supports: supports.SupportController = None
         self.records: records.Recordkeeper = None
         self.speak_styles: speak_style.SpeakStyleLibrary = None
+        self.query_engine: GameQueryEngine = GameQueryEngine(logging.Logger('query_engine'), self)
 
         # 'current' state information, typically varies by level
         self.current_level: LevelObject = None
@@ -123,6 +127,8 @@ class GameState():
         self.current_save_slot = None
         self.current_level = None
 
+        self.speak_styles = speak_style.SpeakStyleLibrary()
+
     def load_states(self, starting_states):
         self.state.load_states(starting_states)
 
@@ -130,7 +136,6 @@ class GameState():
     # When the player clicks "New Game"
     def build_new(self):
         from app.engine import records, supports
-        from app.events import speak_style
         logging.info("Building New Game")
         self.playtime = 0
 
@@ -167,7 +172,6 @@ class GameState():
             self.overworld_registry[overworld.nid] = OverworldObject.from_prefab(overworld, self.parties, self.unit_registry)
         self.supports = supports.SupportController()
         self.records = records.Recordkeeper()
-        self.speak_styles = speak_style.SpeakStyleLibrary()
         self.market_items = {}
         self.unlocked_lore = []
         from app.engine.dialog_log import DialogLog
@@ -182,14 +186,17 @@ class GameState():
         """
         from app.engine import turnwheel
         from app.events import event_manager
+        from app.engine.dialog_log import DialogLog
+
         self.level_vars = Counter()
         self.turncount = 0
         self.talk_options = []
         self.base_convos = {}
         self.action_log = turnwheel.ActionLog()
         self.events = event_manager.EventManager()
-        if self.dialog_log:
-            self.dialog_log.clear()
+        if not self.dialog_log:
+            self.dialog_log = DialogLog()
+        self.dialog_log.clear()
 
     def generic(self):
         """
@@ -216,8 +223,46 @@ class GameState():
         # Build registries
         self.map_sprite_registry = {}
 
-        # caches
         self.get_region_under_pos.cache_clear()
+
+    def level_setup(self):
+        from app.engine.initiative import InitiativeTracker
+        from app.engine import action
+
+        # Build party object for new parties
+        if self.current_party not in self.parties:
+            self.build_party(self.current_party)
+
+        # Assign every unit the levels party if they don't already have one
+        for unit in self.current_level.units:
+            if not unit.party:
+                unit.party = self.current_party
+        self.set_up_game_board(self.current_level.tilemap)
+
+        for region in self.current_level.regions:
+            self.register_region(region)
+
+        # The fog and vision regions affect the game board
+        for region in self.current_level.regions:
+            if region.region_type == RegionType.FOG:
+                action.AddFogRegion(region).execute()
+            elif region.region_type == RegionType.VISION:
+                action.AddVisionRegion(region).execute()
+
+        for unit in self.current_level.units:
+            self.full_register(unit)
+        for unit in self.current_level.units:
+            # Only let unit's that have a VALID position spawn onto the map
+            if unit.position and self.current_level.tilemap.check_bounds(unit.position):
+                self.arrive(unit)
+            else:
+                logging.warning("Unit %s's position not on map. Removing...", unit.nid)
+                unit.position = None
+
+        # Handle initiative
+        if DB.constants.value('initiative'):
+            self.initiative = InitiativeTracker()
+            self.initiative.start(self.get_all_units())
 
     def start_level(self, level_nid, with_party=None):
         """
@@ -227,7 +272,6 @@ class GameState():
         self.generic()
         logging.debug("Starting Level %s", level_nid)
 
-        from app.engine.initiative import InitiativeTracker
         from app.engine.level_cursor import LevelCursor
         from app.engine.objects.level import LevelObject
         from app.engine.objects.tilemap import TileMapObject
@@ -245,28 +289,25 @@ class GameState():
         else:
             self.current_party = self.current_level.party
 
-        # Build party object for new parties
-        if self.current_party not in self.parties:
-            self.build_party(self.current_party)
+        self.level_setup()
 
-        # Assign every unit the levels party if they don't already have one
-        for unit in self.current_level.units:
-            if not unit.party:
-                unit.party = self.current_party
-        self.set_up_game_board(self.current_level.tilemap)
+    def build_level_from_scratch(self, level_nid, tilemap):
+        """
+        Using the tilemap: TileMapObject to build a level
+        """
+        self.boundary = None
+        self.generic()
+        logging.debug("Building Level %s", level_nid)
 
-        for region in self.current_level.regions:
-            self.register_region(region)
+        from app.engine.level_cursor import LevelCursor
+        from app.engine.objects.level import LevelObject
 
-        for unit in self.current_level.units:
-            self.full_register(unit)
-        for unit in self.current_level.units:
-            self.arrive(unit)
+        self.cursor = LevelCursor(self)
+        party = DB.parties.keys()[0]
+        self.current_level = LevelObject.from_scratch(level_nid, tilemap, None, party, self.unit_registry, self.current_mode)
+        self.current_party = self.current_level.party
 
-        # Handle initiative
-        if DB.constants.value('initiative'):
-            self.initiative = InitiativeTracker()
-            self.initiative.start(self.get_all_units())
+        self.level_setup()
 
     def full_register(self, unit):
         self.register_unit(unit)
@@ -283,7 +324,7 @@ class GameState():
         self.boundary = boundary.BoundaryInterface(tilemap.width, tilemap.height)
 
     def save(self):
-        self.action_log.record = False
+        self.action_log.stop_recording()
 
         s_dict = {'units': [unit.save() for unit in self.unit_registry.values()],
                   'items': [item.save() for item in self.item_registry.values()],
@@ -331,7 +372,7 @@ class GameState():
             meta_dict['level_nid'] = None
             meta_dict['level_title'] = 'Overworld'
 
-        self.action_log.record = True
+        self.action_log.start_recording()
         return s_dict, meta_dict
 
     def load(self, s_dict):
@@ -343,8 +384,8 @@ class GameState():
         from app.engine.objects.party import PartyObject
         from app.engine.objects.skill import SkillObject
         from app.engine.objects.unit import UnitObject
+        from app.engine.objects.region import RegionObject
         from app.events import event_manager, speak_style
-        from app.events.regions import Region
 
         logging.info("Loading Game...")
         self.game_vars = Counter(s_dict.get('game_vars', {}))
@@ -365,8 +406,8 @@ class GameState():
         self.skill_registry = {skill['uid']: SkillObject.restore(skill) for skill in s_dict['skills']}
         save.set_next_uids(self)
         self.terrain_status_registry = s_dict.get('terrain_status_registry', {})
-        self.region_registry = {region['nid']: Region.restore(region) for region in s_dict.get('regions', [])}
         self.unit_registry = {unit['nid']: UnitObject.restore(unit, self) for unit in s_dict['units']}
+        self.region_registry = {region['nid']: RegionObject.restore(region) for region in s_dict.get('regions', [])}
 
         # Handle subitems
         for item in self.item_registry.values():
@@ -427,6 +468,13 @@ class GameState():
             from app.engine.level_cursor import LevelCursor
             self.cursor = LevelCursor(self)
 
+            # The fog and vision regions affect the game board
+            for region in self.current_level.regions:
+                if region.region_type == RegionType.FOG:
+                    action.AddFogRegion(region).execute()
+                elif region.region_type == RegionType.VISION:
+                    action.AddVisionRegion(region).execute()
+
             # Now have units actually arrive on map
             for unit in self.units:
                 if unit.position:
@@ -441,38 +489,58 @@ class GameState():
 
         self.events = event_manager.EventManager.restore(s_dict.get('events'))
 
-    def clean_up(self):
+    def clean_up(self, full: bool = True):
+        '''
+        A `full` cleanup does everything associated with cleaning up
+        a chapter in preparation for the next.
+        A non-full cleanup does not
+            - Remove any units from the field
+            - Remove all generic units from memory
+            - Remove all now unused items and skills from memory
+            - Remove any regions or terrain statuses
+            - Reset level vars
+            - Reset talk options or base convos
+            - Actually remove the level
+        '''
+
         from app.engine import (action, item_funcs, item_system, skill_system,
-                                supports)
+                                supports, target_system)
 
         supports.increment_end_chapter_supports()
 
         self.game_vars['_current_turnwheel_uses'] = \
             self.game_vars.get('_max_turnwheel_uses', -1)
 
-        for unit in self.unit_registry.values():
-            self.leave(unit)
+        if full:
+            for unit in self.unit_registry.values():
+                self.leave(unit)
         for unit in self.unit_registry.values():
             # Unit cleanup
             unit.is_dying = False
             if unit.traveler:
-                unit.traveler = None
-                action.execute(action.RemoveSkill(unit, 'Rescue'))
+                if full:
+                    unit.traveler = None
+                    action.RemoveSkill(unit, 'Rescue').execute()
+                else:
+                    droppee = self.get_unit(unit.traveler)
+                    pos = target_system.get_nearest_open_tile(droppee, unit.position)
+                    action.Drop(unit, droppee, pos).execute()
             unit.set_hp(1000)  # Set to full health
             unit.set_guard_gauge(0) # Remove all guard gauge
             if DB.constants.value('reset_mana'):
                 unit.set_mana(1000)  # Set to full mana
-            unit.position = None
+            if full:
+                unit.position = None
             unit.sprite.change_state('normal')
             unit.reset()
 
-        for item in self.item_registry.values():
+        for item in list(self.item_registry.values()):
             unit = None
             if item.owner_nid:
                 unit = self.get_unit(item.owner_nid)
             item_system.on_end_chapter(unit, item)
 
-        for skill in self.skill_registry.values():
+        for skill in list(self.skill_registry.values()):
             unit = None
             if skill.owner_nid:
                 unit = self.get_unit(skill.owner_nid)
@@ -481,37 +549,39 @@ class GameState():
                 else:
                     logging.error("Unable to find owner %s in unit_registry", skill.owner_nid)
 
-        self.terrain_status_registry.clear()
-        self.region_registry.clear()
+        if full:
+            self.terrain_status_registry.clear()
+            self.region_registry.clear()
 
-        # Remove all generics
-        self.unit_registry = {k: v for (k, v) in self.unit_registry.items() if v.persistent}
+            # Remove all generics
+            self.unit_registry = {k: v for (k, v) in self.unit_registry.items() if v.persistent}
 
-        # Remove any skill that's not on a unit and does not have a parent_skill
-        for k, v in list(self.skill_registry.items()):
-            if v.parent_skill:
-                if v.parent_skill.owner_nid:
-                    if v.parent_skill.owner_nid not in self.unit_registry:
+            # Remove any skill that's not on a unit and does not have a parent_skill
+            for k, v in list(self.skill_registry.items()):
+                if v.parent_skill:
+                    if v.parent_skill.owner_nid:
+                        if v.parent_skill.owner_nid not in self.unit_registry:
+                            del self.skill_registry[k]
+                    else:
+                        del self.skill_registry[k]
+                elif v.owner_nid:  # Remove skills from units that no longer exist
+                    if v.owner_nid not in self.unit_registry:
                         del self.skill_registry[k]
                 else:
                     del self.skill_registry[k]
-            elif v.owner_nid:  # Remove skills from units that no longer exist
-                if v.owner_nid not in self.unit_registry:
-                    del self.skill_registry[k]
-            else:
-                del self.skill_registry[k]
 
-        # Remove any item that's not on a unit or in the convoy
-        for k, v in list(self.item_registry.items()):
-            if v.owner_nid:  # Remove items from units that no longer exist
-                if v.owner_nid not in self.unit_registry:
-                    del self.item_registry[k]
-            else:
-                for party in self.parties.values():
-                    if v in party.convoy or (v.parent_item and v.parent_item in party.convoy):
-                        break
-                else:  # No party ever found
-                    del self.item_registry[k]
+            # Remove any item that's not on a unit or in the convoy
+            for k, v in list(self.item_registry.items()):
+                if v.owner_nid:  # Remove items from units that no longer exist
+                    if v.owner_nid not in self.unit_registry:
+                        del self.item_registry[k]
+                else:
+                    for party in self.parties.values():
+                        if v in party.convoy or (v.parent_item and v.parent_item in party.convoy):
+                            break
+                    else:  # No party ever found
+                        del self.item_registry[k]
+        # End If
 
         # Handle player death
         for unit in self.unit_registry.values():
@@ -527,8 +597,12 @@ class GameState():
                         self.parties[unit.party].convoy.append(item)
 
         # Remove unnecessary information between levels
-        self.sweep()
-        self.current_level = None
+        if full:
+            self.sweep()
+            self.current_level = None
+        else:
+            self.turncount = 1
+            self.action_log.set_first_free_action()
 
     @property
     def level(self):
@@ -610,7 +684,7 @@ class GameState():
 
     @property
     def regions(self):
-        return list(self.level.regions.values())
+        return list(self.region_registry.values())
 
     def register_unit(self, unit):
         logging.debug("Registering unit %s as %s", unit, unit.nid)
@@ -648,11 +722,11 @@ class GameState():
         if skill.subskill:
             del self.skill_registry[skill.subskill.uid]
 
-    def register_terrain_status(self, key, skill_uid):
+    def register_terrain_status(self, key: Tuple[int, int, NID], skill_uid: UID):
         logging.debug("Registering terrain status %s", skill_uid)
         self.terrain_status_registry[key] = skill_uid
 
-    def register_region(self, region):
+    def register_region(self, region: RegionObject):
         logging.debug("Registering region %s", region.nid)
         self.region_registry[region.nid] = region
 
@@ -690,7 +764,7 @@ class GameState():
         skill = self.skill_registry.get(skill_uid)
         return skill
 
-    def get_terrain_status(self, key):
+    def get_terrain_status(self, key: Tuple[int, int, NID]) -> UID:
         skill_uid = self.terrain_status_registry.get(key)
         return skill_uid
 
@@ -699,10 +773,13 @@ class GameState():
         return region
 
     @lru_cache(128)
-    def get_region_under_pos(self, pos: Tuple[int, int]) -> Region:
-        if pos:
+    def get_region_under_pos(self, pos: Tuple[int, int], region_type: RegionType = None) -> Optional[RegionObject]:
+        """
+        if region_type arguments is None, all region types are accepted and available to be returned
+        """
+        if pos and self.level:
             for region in self.level.regions.values():
-                if region.contains(pos):
+                if (not region_type or region.region_type == region_type) and region.contains(pos):
                     return region
 
     def get_all_units(self) -> List[UnitObject]:
@@ -714,6 +791,21 @@ class GameState():
     def get_enemy_units(self) -> List[UnitObject]:
         return [unit for unit in self.get_all_units() if unit.team.startswith('enemy')]
 
+    def get_enemy1_units(self) -> List[UnitObject]:
+        return [unit for unit in self.get_all_units() if unit.team == 'enemy']
+
+    def get_enemy2_units(self) -> List[UnitObject]:
+        return [unit for unit in self.get_all_units() if unit.team == 'enemy2']
+
+    def get_other_units(self) -> List[UnitObject]:
+        return [unit for unit in self.get_all_units() if unit.team == 'other']
+
+    def get_travelers(self) -> List[UnitObject]:
+        return [self.get_unit(unit.traveler) for unit in self.get_all_units() if unit.traveler]
+
+    def get_player_units_and_travelers(self) -> List[UnitObject]:
+        return self.get_player_units() + [unit for unit in self.get_travelers() if unit.team == 'player']
+
     def get_all_units_in_party(self, party=None) -> List[UnitObject]:
         if party is None:
             party = self.current_party
@@ -723,7 +815,10 @@ class GameState():
     def get_units_in_party(self, party=None) -> List[UnitObject]:
         if party is None:
             party = self.current_party
-        return [unit for unit in self.get_all_units_in_party() if not unit.dead]
+        party_order = self.parties[party].party_prep_manage_sort_order
+        party_units = [unit for unit in game.get_all_units_in_party(party) if not unit.dead]
+        party_units = sorted(party_units, key=lambda unit: party_order.index(unit.nid) if unit.nid in party_order else 999999)
+        return party_units
 
     def check_dead(self, nid):
         unit = self.get_unit(nid)
@@ -765,10 +860,11 @@ class GameState():
                 for skill in unit.skills:
                     if skill.aura:
                         aura_funcs.release_aura(unit, skill, self)
-            # Regions
+                self.boundary.unregister_unit_auras(unit)
+            # Status Regions
             for region in game.level.regions:
                 if region.region_type == RegionType.STATUS and region.contains(unit.position):
-                    skill_uid = self.get_terrain_status(region.nid)
+                    skill_uid = self.get_terrain_status((*region.position, region.sub_nid))
                     skill_obj = self.get_skill(skill_uid)
                     if skill_obj and skill_obj in unit.skills:
                         if test:
@@ -776,9 +872,11 @@ class GameState():
                         else:
                             act = action.RemoveSkill(unit, skill_obj)
                             action.do(act)
-            # Tiles
-            layer = self.tilemap.get_layer(unit.position)
-            terrain_key = (*unit.position, layer)  # Terrain position and layer
+            # Tiles and terrain regions
+            terrain_nid = self.get_terrain_nid(self.tilemap, unit.position)
+            terrain = DB.terrain.get(terrain_nid)
+            terrain_key = (*unit.position, terrain.status)
+
             skill_uid = self.get_terrain_status(terrain_key)
             skill_obj = self.get_skill(skill_uid)
             if skill_obj and skill_obj in unit.skills:
@@ -814,10 +912,10 @@ class GameState():
             logging.debug("Arrive %s %s", unit.nid, unit.position)
             if not test:
                 self.board.set_unit(unit.position, unit)
-            # Tiles
+            # Tiles and Terrain Regions
             if not skill_system.ignore_terrain(unit):
                 self.add_terrain_status(unit, test)
-            # Regions
+            # Status Regions
             if not skill_system.ignore_region_status(unit):
                 for region in game.level.regions:
                     if region.region_type == RegionType.STATUS and region.contains(unit.position):
@@ -828,20 +926,22 @@ class GameState():
                 for skill in unit.skills:
                     if skill.aura:
                         aura_funcs.propagate_aura(unit, skill, self)
+                self.boundary.register_unit_auras(unit)
             # Boundary
             if not test:
                 self.boundary.arrive(unit)
 
     def add_terrain_status(self, unit, test):
         from app.engine import action, item_funcs
-        layer = self.tilemap.get_layer(unit.position)
-        terrain_key = (*unit.position, layer)  # Terrain position and layer
+
+        terrain_nid = self.get_terrain_nid(self.tilemap, unit.position)
+        terrain = DB.terrain.get(terrain_nid)
+        terrain_key = (*unit.position, terrain.status)
+
         skill_uid = self.get_terrain_status(terrain_key)
         skill_obj = self.get_skill(skill_uid)
 
         if not skill_obj:
-            terrain_nid = self.tilemap.get_terrain(unit.position)
-            terrain = DB.terrain.get(terrain_nid)
             if terrain and terrain.status:
                 skill_obj = item_funcs.create_skill(unit, terrain.status)
                 if skill_obj:
@@ -860,15 +960,16 @@ class GameState():
                     act = action.AddSkill(unit, skill_obj)
                     action.do(act)
 
-    def add_region_status(self, unit, region, test):
+    def add_region_status(self, unit: UnitObject, region: RegionObject, test: bool):
         from app.engine import action, item_funcs
-        skill_uid = self.get_terrain_status(region.nid)
+        terrain_key = (*region.position, region.sub_nid)
+        skill_uid = self.get_terrain_status(terrain_key)
         skill_obj = self.get_skill(skill_uid)
 
         if not skill_obj:
             skill_obj = item_funcs.create_skill(unit, region.sub_nid)
             self.register_skill(skill_obj)
-            self.register_terrain_status(region.nid, skill_obj.uid)
+            self.register_terrain_status(terrain_key, skill_obj.uid)
 
         if skill_obj:
             # Only bother adding if not already present
@@ -889,6 +990,14 @@ class GameState():
                 if not sub_nid or region.sub_nid == sub_nid:
                     return region
         return None
+
+    def get_terrain_nid(self, tilemap, position) -> NID:
+        terrain_region = self.get_region_under_pos(position, RegionType.TERRAIN)
+        if terrain_region:
+            terrain_nid = terrain_region.sub_nid
+        else:
+            terrain_nid = tilemap.get_terrain(position)
+        return terrain_nid
 
     def get_all_formation_spots(self) -> list:
         legal_spots = set()
@@ -950,16 +1059,20 @@ class GameState():
         action.do(action.RecordOtherRandomState(old, new))
         return result
 
-    def get_random_choice(self, choices):
+    def get_random_choice(self, choices, seed=None):
         """
         Canonical method for getting a random choice from an iterable
         without screwing up the turnwheel
         """
         from app.engine import action
-        old = static_random.get_other_random_state()
-        idx = static_random.get_other(0, len(choices) - 1)
-        new = static_random.get_other_random_state()
-        action.do(action.RecordOtherRandomState(old, new))
+        if seed is not None:
+            r = static_random.get_generator(int(seed))
+            idx = r.randint(0, len(choices) - 1)
+        else:
+            old = static_random.get_other_random_state()
+            idx = static_random.get_other(0, len(choices) - 1)
+            new = static_random.get_other_random_state()
+            action.do(action.RecordOtherRandomState(old, new))
         return list(choices)[idx]
 
     def get_random_weighted_choice(self, choices: List, weights: List[float]):
@@ -988,7 +1101,7 @@ def start_level(level_nid):
         game = GameState()
     else:
         game.clear()  # Need to use old game if called twice in a row
-    game.load_states(['turn_change'])
+    game.load_states(['start_level_asset_loading'])
     game.build_new()
     game.start_level(level_nid)
     return game
@@ -1005,7 +1118,7 @@ def load_level(level_nid, save_loc):
     from app.engine import save
     with open(save_loc, 'rb') as fp:
         s_dict = pickle.load(fp)
-    game.load_states(['turn_change'])
+    game.load_states(['start_level_asset_loading'])
     game.build_new()
     game.load(s_dict)
     save.set_next_uids(game)

@@ -1,5 +1,5 @@
-from app.data.item_components import ItemComponent, ItemTags
-from app.data.components import Type
+from app.data.database.item_components import ItemComponent, ItemTags
+from app.data.database.components import ComponentType
 
 from app.utilities import utils
 from app.engine import target_system, skill_system
@@ -10,7 +10,7 @@ class BlastAOE(ItemComponent):
     desc = "Blast extends outwards the specified number of tiles."
     tag = ItemTags.AOE
 
-    expose = Type.Int  # Radius
+    expose = ComponentType.Int  # Radius
     value = 1
 
     def _get_power(self, unit) -> int:
@@ -109,7 +109,7 @@ class EquationBlastAOE(BlastAOE, ItemComponent):
     desc = "Gives Equation-Sized Blast AOE"
     tag = ItemTags.AOE
 
-    expose = Type.Equation  # Radius
+    expose = ComponentType.Equation  # Radius
     value = None
 
     def _get_power(self, unit) -> int:
@@ -118,12 +118,12 @@ class EquationBlastAOE(BlastAOE, ItemComponent):
         empowered_splash = skill_system.empower_splash(unit)
         return value + 1 + empowered_splash
 
-class AllyBlastEquationAOE(AllyBlastAOE, EquationBlastAOE, ItemComponent):
+class AllyEquationBlastAOE(AllyBlastAOE, EquationBlastAOE, ItemComponent):
     nid = 'ally_equation_blast_aoe'
     desc = "Gives Equation-Sized Blast AOE that only hits allies"
     tag = ItemTags.AOE
 
-    expose = Type.Equation  # Radius
+    expose = ComponentType.Equation  # Radius
     value = None
 
 class EnemyCleaveAOE(ItemComponent):
@@ -233,4 +233,23 @@ class LineAOE(ItemComponent):
     def splash_positions(self, unit, item, position) -> set:
         splash = set(utils.raytrace(unit.position, position))
         splash.discard(unit.position)
+        return splash
+
+class EnemyLineAOE(ItemComponent):
+    nid = 'enemy_line_aoe'
+    desc = "A line is drawn from the user to the target, affecting each enemy within it. Never extends past the target."
+    tag = ItemTags.AOE
+
+    def splash(self, unit, item, position) -> tuple:
+        splash = set(utils.raytrace(unit.position, position))
+        splash.discard(unit.position)
+        splash = [game.board.get_unit(s) for s in splash]
+        splash = [s.position for s in splash if s and skill_system.check_enemy(unit, s)]
+        return None, splash
+
+    def splash_positions(self, unit, item, position) -> set:
+        splash = set(utils.raytrace(unit.position, position))
+        splash.discard(unit.position)
+        # Doesn't highlight allies positions
+        splash = {pos for pos in splash if not game.board.get_unit(pos) or skill_system.check_enemy(unit, game.board.get_unit(pos))}
         return splash

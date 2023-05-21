@@ -5,9 +5,9 @@ from typing import Callable, List, Tuple
 
 import app.engine.graphics.ui_framework as uif
 from app.constants import WINHEIGHT, WINWIDTH
-from app.data.database import DB
-from app.data.stats import StatPrefab
-from app.data.weapons import WeaponType
+from app.data.database.database import DB
+from app.data.database.stats import StatPrefab
+from app.data.database.weapons import WeaponType
 from app.engine import engine, icons, image_mods, item_system
 from app.engine.base_surf import create_base_surf, create_highlight_surf
 from app.engine.game_counters import ANIMATION_COUNTERS
@@ -17,7 +17,7 @@ from app.engine.graphics.ui_framework.ui_framework_styling import UIMetric
 from app.engine.gui import ScrollArrow, ScrollBar
 from app.engine.objects.unit import UnitObject
 from app.sprites import SPRITES
-from app.utilities.enums import Direction
+from app.utilities.direction import Direction
 from app.utilities.utils import tclamp, tuple_add
 from app.engine import skill_system
 
@@ -84,13 +84,13 @@ def get_formatted_stat_pages() -> List[Tuple[str, List[Column]]]:
                 font='text'
                ),
         Column('16%', 'Atk', uif.HAlignment.RIGHT, None,
-               lambda unit: str(unit.get_damage_with_current_weapon()) if unit.get_damage_with_current_weapon() > 0 else '--',
+               lambda unit: str(unit.get_damage_with_current_weapon()) if unit.get_damage_with_current_weapon() else '--',
                None),
         Column('16%', 'Hit', uif.HAlignment.RIGHT, None,
-               lambda unit: str(unit.get_accuracy_with_current_weapon()) if unit.get_accuracy_with_current_weapon() > 0 else '--',
+               lambda unit: str(unit.get_accuracy_with_current_weapon()) if unit.get_accuracy_with_current_weapon() else '--',
                None),
         Column('16%', 'Avoid', uif.HAlignment.RIGHT, None,
-               lambda unit: str(unit.get_avoid_with_current_weapon()) if unit.get_avoid_with_current_weapon() > 0 else '--',
+               lambda unit: str(unit.get_avoid_with_current_weapon()) if unit.get_avoid_with_current_weapon() else '--',
                None),
     ]
     all_pages.append(('Equipment', equipment_page))

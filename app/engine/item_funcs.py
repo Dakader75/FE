@@ -3,7 +3,7 @@ import logging
 import math
 from typing import TYPE_CHECKING, List
 
-from app.data.database import DB
+from app.data.database.database import DB
 from app.engine import item_system, skill_system, text_funcs
 from app.engine.objects.item import ItemObject
 from app.engine.objects.skill import SkillObject
@@ -20,6 +20,11 @@ def is_magic(unit, item, distance=0) -> bool:
 
 def is_ranged(unit, item) -> bool:
     if max(get_range(unit, item), default=0) > 1:
+        return True
+    return False
+
+def is_heal(unit, item) -> bool:
+    if item.heal or item.magic_heal:
         return True
     return False
 
@@ -70,17 +75,6 @@ def repair_price(unit, item):
         repair_cost = math.ceil(charges_used * cost_per_charge)
     return int(repair_cost)
 
-# def can_wield(unit, item) -> bool:
-#     weapon = item_system.is_weapon(unit, item)
-#     spell = item_system.is_weapon(unit, item)
-#     avail = available(unit, item)
-#     if (weapon or spell):
-#         if avail:
-#             return True
-#         else:
-#             return False
-#     return True
-
 def create_item(unit, item_nid, droppable=False, parent: ItemObject = None) -> ItemObject:
     item_prefab = DB.items.get(item_nid)
     if not item_prefab:
@@ -124,7 +118,7 @@ def create_items(unit, item_nid_list: list) -> list:
             logging.error("Cannot find item with nid %s" % item_nid)
     return items
 
-def get_all_items(unit) -> list:
+def get_all_items(unit) -> List[ItemObject]:
     """
     Use this to get all weapons if you want to be able to handle multi_items
     """
@@ -135,6 +129,18 @@ def get_all_items(unit) -> list:
             items += subitems
         else:
             items.append(item)
+    return items
+
+def get_all_items_with_multiitems(item_list) -> list:
+    """
+    Get all of the normal items, subitems and the multi items themselves from a list of items
+    """
+    items = []
+    for item in item_list:
+        if item.multi_item:
+            subitems = get_all_items_with_multiitems(item.subitems)
+            items += subitems
+        items.append(item)
     return items
 
 def is_weapon_recursive(unit, item) -> bool:
@@ -194,13 +200,10 @@ def get_range(unit, item) -> set:
         if component.defines('minimum_range'):
             min_range = component.minimum_range(unit, item)
             break
-    if item._force_max_range is not None:
-        max_range = item._force_max_range
-    else:
-        for component in all_components:
-            if component.defines('maximum_range'):
-                max_range = component.maximum_range(unit, item)
-                break
+    for component in all_components:
+        if component.defines('maximum_range'):
+            max_range = component.maximum_range(unit, item)
+            break
 
     max_range = max(0, max_range)
     max_range += skill_system.modify_maximum_range(unit, item)

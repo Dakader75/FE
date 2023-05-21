@@ -41,6 +41,12 @@ class State():
     def finish(self):
         pass
 
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __str__(self) -> str:
+        return self.name
+
 class MapState(State):
     def __init__(self, name=None):
         if name:

@@ -1,12 +1,12 @@
 from typing import List, Tuple
 from PyQt5 import QtCore
 from app.constants import TILEHEIGHT, TILEWIDTH
-from app.data.database import DB
-from app.data.overworld import OverworldPrefab
+from app.data.database.database import DB
+from app.data.database.overworld import OverworldPrefab
 from app.editor.map_view import SimpleMapView
 from app.editor.overworld_editor.road_sprite_wrapper import RoadSpriteWrapper
 from app.editor.tile_editor import tile_model
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 from app.sprites import SPRITES
 from app.utilities.typing import Point
 from PyQt5.QtCore import Qt

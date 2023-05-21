@@ -1,22 +1,23 @@
 from typing import List, Tuple
-from app.constants import TILEWIDTH, TILEHEIGHT, WINWIDTH, WINHEIGHT
 
-# from app.resources.resources import RESOURCES
-from app.data.database import DB
-
-from app.engine.sprites import SPRITES
-from app.engine.sound import get_sound_thread
-from app.engine.fonts import FONT
-from app.engine.state import State, MapState
-
-from app.engine.background import SpriteBackground
+from app.constants import TILEHEIGHT, TILEWIDTH, WINHEIGHT, WINWIDTH
+# from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
+from app.engine import action, background, banner, base_surf
 from app.engine import config as cf
-from app.engine.game_state import game
-from app.engine import menus, banner, action, base_surf, background, \
-    info_menu, engine, equations, item_funcs, text_funcs, image_mods, \
-    convoy_funcs, item_system, gui, trade
+from app.engine import (convoy_funcs, engine, equations, gui, image_mods,
+                        item_funcs, item_system, menus, text_funcs,
+                        trade)
+from app.engine.background import SpriteBackground
 from app.engine.combat import interaction
 from app.engine.fluid_scroll import FluidScroll
+from app.engine.fonts import FONT
+from app.engine.game_state import game
+from app.engine.sound import get_sound_thread
+from app.engine.sprites import SPRITES
+from app.engine.state import MapState, State
+from app.events import triggers
+
 
 class PrepMainState(MapState):
     name = 'prep_main'
@@ -37,7 +38,7 @@ class PrepMainState(MapState):
         # initialize custom options and events
         events = [None for option in options]
         additional_options = game.game_vars.get('_prep_additional_options')
-        additional_ignore = game.game_vars.get('_prep_options_enabled')
+        additional_ignore = [not enabled for enabled in game.game_vars.get('_prep_options_enabled')]
         additional_events = game.game_vars.get('_prep_options_events')
 
         options = options + additional_options if additional_options else options
@@ -74,7 +75,7 @@ class PrepMainState(MapState):
         self.fade_out = False
         self.last_update = 0
 
-        game.events.trigger('on_prep_start')
+        game.events.trigger(triggers.OnPrepStart())
 
     def create_background(self):
         img = SPRITES.get('focus_fade').convert_alpha()
@@ -161,8 +162,8 @@ class PrepPickUnitsState(State):
         stuck_units = [unit for unit in player_units if unit.position and not game.check_for_region(unit.position, 'formation')]
         unstuck_units = [unit for unit in player_units if unit not in stuck_units]
 
-        units = stuck_units + sorted(unstuck_units, key=lambda unit: bool(unit.position), reverse=True)
-        self.menu = menus.Table(None, units, (6, 2), (110, 24))
+        self.units = stuck_units + sorted(unstuck_units, key=lambda unit: bool(unit.position), reverse=True)
+        self.menu = menus.Table(None, self.units, (6, 2), (110, 24))
         self.menu.set_mode('position')
 
         self.bg = background.create_background('rune_background')
@@ -170,6 +171,12 @@ class PrepPickUnitsState(State):
 
         game.state.change('transition_in')
         return 'repeat'
+
+    def order_party(self):
+        '''Run on exiting the prep menu. Saves the order for future levels with the party.
+        Saved order is unique to current party - will not effect other parties'''
+        party = game.parties[game.current_party]
+        party.party_prep_manage_sort_order = [u.nid for u in sorted(self.units, key=lambda unit: bool(unit.position), reverse=True)]
 
     def take_input(self, event):
         first_push = self.fluid.update()
@@ -217,13 +224,15 @@ class PrepPickUnitsState(State):
                     get_sound_thread().play_sfx('Select 4')
 
         elif event == 'BACK':
+            self.order_party()
             get_sound_thread().play_sfx('Select 4')
             game.state.change('transition_pop')
 
         elif event == 'INFO':
+            get_sound_thread().play_sfx('Select 1')
             game.memory['scroll_units'] = game.get_units_in_party()
-            game.memory['next_state'] = 'info_menu'
             game.memory['current_unit'] = self.menu.get_current()
+            game.memory['next_state'] = 'info_menu'
             game.state.change('transition_to')
 
     def update(self):
@@ -272,6 +281,16 @@ class PrepPickUnitsState(State):
         self.menu.draw(surf)
         return surf
 
+def _handle_info():
+    if game.cursor.get_hover():
+        get_sound_thread().play_sfx('Select 1')
+        game.memory['next_state'] = 'info_menu'
+        game.memory['current_unit'] = game.cursor.get_hover()
+        game.state.change('transition_to')
+    else:
+        get_sound_thread().play_sfx('Select 3')
+        game.boundary.toggle_all_enemy_attacks()
+
 class PrepFormationState(MapState):
     name = 'prep_formation'
 
@@ -286,7 +305,7 @@ class PrepFormationState(MapState):
         game.cursor.take_input()
 
         if event == 'INFO':
-            info_menu.handle_info()
+            _handle_info()
 
         elif event == 'AUX':
             pass
@@ -373,7 +392,7 @@ class PrepFormationSelectState(MapState):
             game.cursor.set_pos(self.unit.position)
 
         elif event == 'INFO':
-            info_menu.handle_info()
+            _handle_info()
 
     def draw(self, surf):
         surf = super().draw(surf)
@@ -488,8 +507,8 @@ class PrepManageState(State):
         elif event == 'INFO':
             get_sound_thread().play_sfx('Select 1')
             game.memory['scroll_units'] = game.get_units_in_party()
-            game.memory['next_state'] = 'info_menu'
             game.memory['current_unit'] = self.menu.get_current()
+            game.memory['next_state'] = 'info_menu'
             game.state.change('transition_to')
         elif event == 'START':
             get_sound_thread().play_sfx('Select 1')
@@ -702,9 +721,10 @@ class PrepTradeSelectState(State):
             game.state.change('transition_pop')
 
         elif event == 'INFO':
+            get_sound_thread().play_sfx('Select 1')
             game.memory['scroll_units'] = game.get_units_in_party()
-            game.memory['next_state'] = 'info_menu'
             game.memory['current_unit'] = self.menu.get_current()
+            game.memory['next_state'] = 'info_menu'
             game.state.change('transition_to')
 
     def update(self):
@@ -741,10 +761,21 @@ class PrepItemsState(State):
         self.state = 'free'
         self.sub_menu = None
 
+        self._proceed_with_targets_item = False
+
         game.state.change('transition_in')
         return 'repeat'
 
     def begin(self):
+        if self._proceed_with_targets_item:
+            self.state = 'free'
+            self._proceed_with_targets_item = False
+            if game.memory.get('item') and game.memory.get('item').data.get('target_item'):
+                item = game.memory.get('item')
+                action.do(action.HasTraded(self.unit))
+                interaction.start_combat(self.unit, None, item)
+                return 'repeat'
+
         self.menu.update_options()
         if self.name.startswith('base'):
             base_music = game.game_vars.get('_base_music')
@@ -849,13 +880,21 @@ class PrepItemsState(State):
                     self.menu.move_to_convoy()
                     self.menu.update_options()
                 elif current == 'Use':
-                    action.do(action.HasTraded(self.unit))
-                    interaction.start_combat(self.unit, None, item)
-                    self.state = 'free'
+                    if item_system.targets_items(self.unit, item):
+                        game.memory['target'] = self.unit
+                        game.memory['item'] = item
+                        self._proceed_with_targets_item = True
+                        game.state.change('item_targeting')
+                    else:
+                        action.do(action.HasTraded(self.unit))
+                        interaction.start_combat(self.unit, None, item)
+                        self.state = 'free'
                 elif current == 'Restock':
                     action.do(action.HasTraded(self.unit))
                     convoy_funcs.restock(item)
                     self.menu.update_options()
+                    self.state = 'free'
+                elif current == 'Nothing':
                     self.state = 'free'
                 self.sub_menu = None
 
@@ -874,8 +913,16 @@ class PrepItemsState(State):
                     self.state = 'trade_inventory'
                     self.menu.move_to_inventory()
                 elif current == 'Use':
-                    action.do(action.HasTraded(self.unit))
-                    interaction.start_combat(self.unit, None, item)
+                    if item_system.targets_items(self.unit, item):
+                        game.memory['target'] = self.unit
+                        game.memory['item'] = item
+                        self._proceed_with_targets_item = True
+                        game.state.change('item_targeting')
+                    else:
+                        action.do(action.HasTraded(self.unit))
+                        interaction.start_combat(self.unit, None, item)
+                        self.state = 'free'
+                elif current == 'Nothing':
                     self.state = 'free'
                 self.sub_menu = None
                 self.menu.update_options()
@@ -1082,6 +1129,7 @@ class PrepMarketState(State):
                     if game.get_money() - value >= 0 and self.menu.get_stock() != 0:
                         get_sound_thread().play_sfx('GoldExchange')
                         game.set_money(game.get_money() - value)
+                        action.do(action.UpdateRecords('money', (game.current_party, -value)))
                         self.money_counter_disp.start(-value)
                         self.menu.decrement_stock()
                         game.market_items[item.nid] -= 1
@@ -1110,6 +1158,7 @@ class PrepMarketState(State):
                     if value:
                         get_sound_thread().play_sfx('GoldExchange')
                         game.set_money(game.get_money() + value)
+                        action.do(action.UpdateRecords('money', (game.current_party, value)))
                         self.money_counter_disp.start(value)
                         if item.owner_nid:
                             owner = game.get_unit(item.owner_nid)

@@ -1,3 +1,4 @@
+from functools import lru_cache
 from math import floor
 from ctypes import c_int64
 
@@ -12,9 +13,11 @@ GRADIENTS2 = [5, 2, 2, 5,
               5, -2, 2, -5,
               -5, -2, -2, -5]
 
+@lru_cache(64)
 def _overflow(x):
     return c_int64(x).value
 
+@lru_cache(64)
 def _init(seed):
     # Have to zero fill so we can properly loop over it later
     perm = [0] * 256
@@ -143,6 +146,64 @@ def get(x, y, seed):
     new_val = (val - -0.865) / (.865 - -0.865)
     return new_val
 
+def get_full_noise(x, y, seed,
+                   starting_frequency=1.0, starting_amplitude=0.5,
+                   octaves=4, lacunarity=2.0, gain=0.5):
+    total = 0
+    freq = starting_frequency
+    amp = starting_amplitude
+    denominator = 0
+    for _ in range(octaves):
+        val = get(x * freq, y * freq, seed)
+        total += val * amp
+        denominator += amp
+        freq *= lacunarity
+        amp *= gain
+    total /= denominator
+    return total
+
+def gen_noise_map(size: tuple, seed,
+                  starting_frequency=1.0, starting_amplitude=0.5,
+                  octaves=4, lacunarity=2.0, gain=0.5) -> dict:
+    width, height = size
+    noise_map = {}
+    for x in range(width):
+        for y in range(height):
+            val = \
+                get_full_noise(
+                    x, y, seed, 
+                    starting_frequency, starting_amplitude, 
+                    octaves, lacunarity, gain)
+            noise_map[(x, y)] = val
+    return noise_map
+
+def gen_double_noise_map(size: tuple, seed,
+                         starting_frequency=1.0, starting_amplitude=0.5,
+                         octaves=4, lacunarity=2.0, gain=0.5) -> dict:
+    width, height = size
+    noise_map1, noise_map2, noise_map3 = {}, {}, {}
+    for x in range(width):
+        for y in range(height):
+            val1 = \
+                get_full_noise(
+                    x, y, seed, 
+                    starting_frequency, starting_amplitude, 
+                    octaves, lacunarity, gain)
+            val2 = \
+                get_full_noise(
+                    x + 5.2*width, y + 1.3*height, seed, 
+                    starting_frequency, starting_amplitude, 
+                    octaves, lacunarity, gain)
+            val3 = \
+                get_full_noise(
+                    x + 4 * width * val1, y + 4 * height * val2, seed, 
+                    starting_frequency, starting_amplitude, 
+                    octaves, lacunarity, gain)
+            noise_map1[(x, y)] = val1
+            noise_map2[(x, y)] = val2
+            noise_map3[(x, y)] = val3
+    return noise_map1, noise_map2, noise_map3
+
 if __name__ == '__main__':
     perm = _init(47)
     val = _noise2(0, 0, perm)
@@ -163,3 +224,49 @@ if __name__ == '__main__':
         print("")
     print(total / (width * height))
     print(minimum, maximum)
+
+    from PIL import Image
+
+    def lerp(a: float, b: float, t: float) -> float:
+        return (b - a) * t + a
+
+    width, height = 400, 180
+    hurst = 1  # Self-similarity (0-1). As you zoom in it will stay the same!
+    gain = 2 ** -hurst
+    noise_map = gen_noise_map((width, height), 0, 
+                              starting_frequency=0.01,
+                              lacunarity=2.1,
+                              octaves=8,
+                              gain=0.6)
+    color_map1, color_map2, double_noise_map = gen_double_noise_map(
+        (width, height), 0, 
+        starting_frequency=0.005,
+        lacunarity=2.1,
+        octaves=8,
+        gain=0.6)
+
+    im = Image.new('RGB', (width, height))
+    for px in range(width):
+        for py in range(height):
+            noise_value = int(255 * noise_map.get((px, py), 0))
+            im.putpixel((px, py), (noise_value, noise_value, noise_value))
+    im.save("im.png")
+
+    im = Image.new('RGB', (width, height))
+    color_ramp1 = (93, 57, 31), (255, 255, 255)
+    for px in range(width):
+        for py in range(height):
+            noise_value = double_noise_map.get((px, py), 0)
+            r = lerp(color_ramp1[0][0], color_ramp1[1][0], noise_value)
+            g = lerp(color_ramp1[0][1], color_ramp1[1][1], noise_value)
+            b = lerp(color_ramp1[0][2], color_ramp1[1][2], noise_value)
+            im.putpixel((px, py), (int(r), int(g), int(b)))
+    im.save("im2.png")
+
+    # threshold = 0.55
+    # im = Image.new('RGB', (width, height))
+    # for px in range(width):
+    #     for py in range(height):
+    #         noise_value = int(255 * (noise_map.get((px, py), 0) > threshold))
+    #         im.putpixel((px, py), (noise_value, noise_value, noise_value))
+    # im.save("im_threshold.png")

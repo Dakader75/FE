@@ -22,6 +22,11 @@ class InitiativeTracker():
         if self.current_idx >= len(self.unit_line):
             self.current_idx = 0
 
+    def back(self):
+        self.current_idx -= 1
+        if self.current_idx < 0:
+            self.current_idx = len(self.unit_line) - 1
+
     def start(self, units):
         # Sort descending
         units = list(sorted(units, key=lambda unit: equations.parser.get_initiative(unit), reverse=True))
@@ -42,8 +47,7 @@ class InitiativeTracker():
             return self.unit_line.index(unit.nid)
         return None
 
-    def append_unit(self, unit):
-        initiative = -1
+    def append_unit(self, unit, initiative=-1):
         self.unit_line.append(unit.nid)
         self.initiative_line.append(initiative)
 
@@ -63,13 +67,16 @@ class InitiativeTracker():
             idx = self.unit_line.index(unit.nid)
             self.unit_line.pop(idx)
             self.initiative_line.pop(idx)
-            if self.current_idx > idx:
+            if self.current_idx >= idx:
                 self.current_idx -= 1
 
     def insert_at(self, unit, idx: int, initiative=None) -> int:
         """
         Don't use the initiative argument unless you know what you are doing
         """
+        if idx == len(self.unit_line):
+            self.append_unit(unit, initiative)
+            return idx
         idx = utils.clamp(idx, 0, len(self.initiative_line) - 1)
         if initiative is not None:
             initiative_at = initiative

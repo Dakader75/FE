@@ -1,6 +1,7 @@
 import colorsys
 import hashlib
 import math
+import sys
 from collections import Counter
 from operator import add, sub
 from typing import Tuple
@@ -147,14 +148,17 @@ def hsv2rgb(h: float, s: float, v: float) -> tuple:
 def rgb2hsv(r: int, g: int, b: int) -> tuple:
     return tuple(colorsys.rgb_to_hsv(r, g, b))
 
-def average_pos(pos_list: list) -> tuple:
+def average_pos(pos_list: list, as_int=False) -> tuple:
     avg_x, avg_y = 0, 0
     for x, y in pos_list:
         avg_x += x
         avg_y += y
     avg_x /= len(pos_list)
     avg_y /= len(pos_list)
-    return (avg_x, avg_y)
+    if as_int:
+        return (int(math.round(avg_x)), int(math.round(avg_y)))
+    else:
+        return (avg_x, avg_y)
 
 def farthest_away_pos(pos: tuple, valid_moves: set, enemy_pos: set):
     if valid_moves and enemy_pos:
@@ -224,6 +228,9 @@ def flatten_list(initial_list) -> list:
 
 def rationalize(p: Tuple[float, float]) -> Tuple[int, int]:
     return (int(round(p[0])), int(round(p[1])))
+
+def is_windows() -> bool:
+    return sys.platform.startswith('win')
 
 # Testing
 if __name__ == '__main__':

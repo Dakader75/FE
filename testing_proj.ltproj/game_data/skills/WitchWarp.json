@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "WitchWarp",
+        "name": "WitchWarp",
+        "desc": "",
+        "icon_nid": "Anima",
+        "icon_index": [
+            0,
+            2
+        ],
+        "components": [
+            [
+                "witch_warp",
+                null
+            ]
+        ]
+    }
+]

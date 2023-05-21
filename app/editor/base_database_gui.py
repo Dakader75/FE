@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QLineEdit, QTextEdit, QWidget, QHBoxLayout, QGridLay
     QSizePolicy, QSplitter, QMessageBox, QApplication, QAbstractItemView
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtCore import QAbstractListModel
-from app.data.components import Component
+from app.data.database.components import Component
 from app.editor import timer
 
 from app.utilities.data import Prefab
@@ -18,6 +18,9 @@ from app.editor.data_editor import SingleDatabaseEditor
 from app.utilities import str_utils
 
 import logging
+
+if '_' not in globals():
+    _ = lambda s: s
 
 class Collection(QWidget):
     def __init__(self, deletion_criteria, collection_model: Type[DragDropCollectionModel], parent,
@@ -56,20 +59,20 @@ class Collection(QWidget):
         grid.addWidget(self.button, 2, 0, 1, 2)
 
         if self.window.allow_import_from_lt:
-            self.import_button = QPushButton("Import Legacy data file...")
+            self.import_button = QPushButton(_("Import Legacy data file..."))
             self.import_button.clicked.connect(self.window.import_data)
             grid.addWidget(self.import_button, 3, 0, 1, 2)
 
         if self.window.allow_import_from_csv:
-            self.csv_import = QPushButton("Import from csv data file...")
+            self.csv_import = QPushButton(_("Import from csv data file..."))
             self.csv_import.clicked.connect(self.window.import_csv)
             grid.addWidget(self.csv_import, 4, 0, 1, 2)
 
         if self.window.allow_copy_and_paste:
-            self.copy_button = QPushButton("Copy to clipboard")
+            self.copy_button = QPushButton(_("Copy to clipboard"))
             self.copy_button.clicked.connect(self.window.copy_data)
             grid.addWidget(self.copy_button, 5, 0)
-            self.paste_button = QPushButton("Paste from clipboard")
+            self.paste_button = QPushButton(_("Paste from clipboard"))
             self.paste_button.clicked.connect(self.window.paste_data)
             grid.addWidget(self.paste_button, 5, 1)
 
@@ -156,7 +159,7 @@ class DatabaseTab(QWidget):
         self._data = data
         self.title = title
 
-        self.setWindowTitle('%s Editor' % self.title)
+        self.setWindowTitle(_('%s Editor') % self.title)
         self.setStyleSheet("font: 10pt;")
         self.left_frame = collection_type(
             deletion_criteria, collection_model, self, button_text=button_text, view_type=view_type)
@@ -375,7 +378,7 @@ class ResourceCollectionModel(DragDropCollectionModel):
     def setData(self, index, value, role):
         if not index.isValid():
             return False
-        if role == Qt.EditRole and not self.drop_to:
+        if role == Qt.EditRole and self.drop_to is None:
             if value:
                 item = self._data[index.row()]
                 old_nid = item.nid

@@ -1,8 +1,9 @@
 from PyQt5.QtWidgets import QSpinBox, QCheckBox, \
     QVBoxLayout, QGroupBox, QWidget
 from PyQt5.QtCore import Qt
+from app.data.database.constants import ConstantType
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import PropertyBox, ComboBox, PropertyCheckBox
 
@@ -40,7 +41,7 @@ class SupportConstantDatabase(DatabaseTab):
         self.setLayout(self.layout)
 
         # main_constants = ('combat_convos', 'base_convos', 'battle_buddy_system', 'bonus_method')
-        main_constants = ('combat_convos', 'base_convos', 'bonus_method')
+        main_constants = ('combat_convos', 'base_convos', 'break_supports_on_death', 'bonus_method')
         main_section = self.create_section(main_constants)
         main_section.setTitle("Main Constants")
         points_constants = ('bonus_range', 'growth_range', 'chapter_points', 'end_turn_points', 'combat_points', 'interact_points', 'pairup_points')
@@ -60,20 +61,20 @@ class SupportConstantDatabase(DatabaseTab):
         section = QGroupBox(self)
         layout = QVBoxLayout()
         section.setLayout(layout)
-        
+
         for constant_nid in constants:
             constant = self._data.get(constant_nid)
             if not constant:
                 logging.error("Couldn't find constant %s" % constant_nid)
                 continue
-            if constant.attr == int:
+            if constant.attr == ConstantType.INT:
                 box = PropertyBox(constant.name, QSpinBox, self, horiz_layout=True)
                 box.edit.setRange(0, 99)
                 box.edit.setValue(constant.value)
                 box.edit.setAlignment(Qt.AlignRight)
                 box.edit.setMaximumWidth(50)
                 box.edit.valueChanged.connect(constant.set_value)
-            elif constant.attr == bool:
+            elif constant.attr == ConstantType.BOOL:
                 box = PropertyCheckBox(constant.name, QCheckBox, self)
                 box.edit.setChecked(constant.value)
                 box.edit.stateChanged.connect(constant.set_value)

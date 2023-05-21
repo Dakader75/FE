@@ -1,7 +1,7 @@
 import logging
 
 import app.engine.config as cf
-from app.data.database import DB
+from app.data.database.database import DB
 from app.engine import action, engine, equations, skill_system
 from app.engine.game_state import game
 from app.engine.sound import get_sound_thread
@@ -9,12 +9,13 @@ from app.utilities import utils
 
 
 class MovementData():
-    def __init__(self, path, event, follow, muted=False):
+    def __init__(self, path, event, follow, muted=False, speed=0):
         self.path = path
         self.last_update = 0
         self.event = event
         self.follow = follow
         self.muted = muted
+        self.speed = speed or cf.SETTINGS['unit_speed']
 
 class MovementManager():
     def __init__(self):
@@ -23,12 +24,13 @@ class MovementManager():
 
         self.surprised = False
 
-    def add(self, unit, path, event=False, follow=True):
-        self.moving_units[unit.nid] = MovementData(path, event, follow)
+    def add(self, unit, path, event=False, follow=True, speed=0):
+        self.moving_units[unit.nid] = MovementData(path, event, follow, speed=speed)
 
-    def begin_move(self, unit, path, event=False, follow=True):
+    def begin_move(self, unit, path, event=False, follow=True, speed=0):
         logging.info("Unit %s begin move: %s", unit.nid, path)
-        self.add(unit, path, event, follow)
+        self.add(unit, path, event, follow, speed=speed)
+        unit.sprite.set_speed(int(speed))
         unit.sprite.change_state('moving')
         game.leave(unit)
         unit.sound.play()
@@ -65,7 +67,7 @@ class MovementManager():
 
     def get_mcost(self, unit_to_move, pos) -> int:
         if DB.terrain:
-            terrain_nid = game.tilemap.get_terrain(pos)
+            terrain_nid = game.get_terrain_nid(game.tilemap, pos)
             terrain = DB.terrain.get(terrain_nid)
             if not terrain:
                 terrain = DB.terrain[0]
@@ -130,6 +132,9 @@ class MovementManager():
             if unit.team == 'player':
                 self.surprised = True
                 self.update_surprise()
+            # If unit is an ai unit, their turn is now complete
+            if game.ai.unit is unit:
+                game.ai.interrupt()
 
         del self.moving_units[unit_nid]
         game.arrive(unit)
@@ -162,7 +167,7 @@ class MovementManager():
         current_time = engine.get_time()
         for unit_nid in list(self.moving_units.keys()):
             data = self.moving_units[unit_nid]
-            if current_time - data.last_update > cf.SETTINGS['unit_speed']:
+            if current_time - data.last_update > int(data.speed):
                 data.last_update = current_time
                 unit = game.get_unit(unit_nid)
                 if not unit:
@@ -178,23 +183,22 @@ class MovementManager():
                     new_position = data.path.pop()
                     if unit.position != new_position:
                         if self.check_position(unit, data, new_position):
-                            pass
+                            logging.debug("%s moved to %s", unit, new_position)
                         else:  # Can only happen when not in an event
+                            logging.debug("%s done moving", unit)
                             self.done_moving(unit_nid, data, unit, surprise=True)
-                            if unit.team == 'player':
-                                self.update_surprise()
-                                self.surprised = True
                             continue
 
                         mcost = self.get_mcost(unit, new_position)
-                        unit.movement_left -= mcost
+                        unit.consume_movement(mcost)
                     unit.position = new_position
                     # Handle camera following moving unit
                     # if not data.event:
                     if data.follow and not self.camera_follow:
                         self.camera_follow = unit_nid
                     if self.camera_follow == unit_nid:
-                        game.cursor.set_pos(unit.position)
+                        if game.board and game.board.check_bounds(unit.position):
+                            game.cursor.set_pos(unit.position)
                         if data.event:
                             game.camera.set_center(*unit.position)
 

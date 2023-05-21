@@ -3,13 +3,14 @@
         "nid": "DEBUG",
         "name": "DEBUG",
         "tilemap": "Chapter 2",
+        "bg_tilemap": null,
         "party": "Eirika",
         "music": {
             "player_phase": "Shadow of the Enemy",
             "enemy_phase": null,
             "other_phase": null,
             "enemy2_phase": null,
-            "player_battle": null,
+            "player_battle": "Attack",
             "enemy_battle": null,
             "other_battle": null,
             "enemy2_battle": null
@@ -27,6 +28,7 @@
                 "nid": "Bone",
                 "team": "enemy",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     2,
@@ -39,6 +41,7 @@
                 "nid": "Eirika",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     2,
@@ -69,6 +72,7 @@
                 ],
                 "team": "enemy",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     4,
@@ -81,6 +85,7 @@
                 "nid": "Seth",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     5,
@@ -93,6 +98,7 @@
                 "nid": "Moulder",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     1,
@@ -105,6 +111,7 @@
                 "nid": "Vanessa",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     2,
@@ -112,6 +119,33 @@
                 ],
                 "starting_traveler": null,
                 "generic": false
+            },
+            {
+                "nid": "101",
+                "variant": null,
+                "level": 1,
+                "klass": "Shaman",
+                "faction": "Soldier",
+                "starting_items": [
+                    [
+                        "Flux",
+                        false
+                    ],
+                    [
+                        "Luna",
+                        false
+                    ]
+                ],
+                "team": "player",
+                "ai": "None",
+                "roam_ai": null,
+                "ai_group": null,
+                "starting_position": [
+                    4,
+                    6
+                ],
+                "starting_traveler": null,
+                "generic": true
             }
         ],
         "regions": [

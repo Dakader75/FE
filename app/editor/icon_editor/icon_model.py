@@ -1,3 +1,4 @@
+from app.editor.custom_widgets import CustomQtRoles
 import os
 
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
@@ -5,11 +6,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QIcon
 
 from app.utilities import str_utils
-from app.resources.icons import Icon, IconSheet
-from app.resources.map_icons import MapIcon, MapIconCatalog
-from app.resources.resources import RESOURCES
+from app.data.resources.icons import Icon, IconSheet
+from app.data.resources.map_icons import MapIcon, MapIconCatalog
+from app.data.resources.resources import RESOURCES
 from app.utilities.data import Data
-from app.data.database import DB
+from app.data.database.database import DB
 from app.editor.base_database_gui import ResourceCollectionModel
 from app.extensions.custom_gui import DeletionDialog
 
@@ -24,9 +25,6 @@ class IconModel(ResourceCollectionModel):
             new_icons = icon_view.icon_slice(icon, self.width, self.height)
             for i in new_icons:
                 self.sub_data.append(i)
-
-    def rearrange_data(self):
-        pass
 
     def rowCount(self, parent=None):
         return len(self.sub_data)
@@ -43,6 +41,10 @@ class IconModel(ResourceCollectionModel):
             if item.pixmap:
                 pixmap = item.pixmap.scaled(max(self.width, 32), max(self.height, 32))
                 return QIcon(pixmap)
+        elif role == CustomQtRoles.FilterRole:
+            item = self.sub_data[index.row()]
+            text = item.parent_nid
+            return text
         return None
 
     def setData(self, index, value, role):
@@ -165,14 +167,6 @@ class Icon16Model(IconModel):
             if skill.icon_nid == old_nid:
                 skill.icon_nid = new_nid
 
-    def rearrange_data(self, horizontal):
-        self.sub_data.clear()
-        for icon in self._data:
-            new_icons = icon_view.icon_slice(icon, self.width, self.height, not horizontal)
-            for i in new_icons:
-                self.sub_data.append(i)
-        self.window.update_list()
-
 
 class Icon32Model(Icon16Model):
     database = RESOURCES.icons32
@@ -249,6 +243,12 @@ class MapIconModel(Icon16Model):
     def __init__(self, data, window):
         super().__init__(data, window)
         self.sub_data = self._data
+
+    def flags(self, index):
+        if index.isValid():
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        else:
+            return Qt.NoItemFlags
 
     def create_new(self):
         settings = MainSettingsController()

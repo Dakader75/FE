@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import QDialog, QGridLayout, QDialogButtonBox, QTabWidget, 
     QSizePolicy
 from PyQt5.QtCore import Qt
 
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 
 from app.editor.settings import MainSettingsController
 

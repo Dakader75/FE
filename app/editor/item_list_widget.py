@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QHBoxLayout, QPushButton
 from PyQt5.QtCore import Qt, pyqtSignal
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import QHLine
 from app.editor.multi_combo_box_list import MultiComboBoxListWithCheckbox
@@ -13,7 +13,7 @@ class ItemListWidget(QWidget):
     def __init__(self, title, parent=None):
         super().__init__(parent)
         self.window = parent
-        
+
         self.item_list = MultiComboBoxListWithCheckbox(DB.items, get_pixmap, self)
         self.item_list.item_changed.connect(self.activate)
 

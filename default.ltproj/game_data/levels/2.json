@@ -3,6 +3,7 @@
         "nid": "2",
         "name": "Ch. 2: The Protected",
         "tilemap": "Chapter 2",
+        "bg_tilemap": null,
         "party": "Eirika",
         "music": {
             "player_phase": "Distant Roads",
@@ -27,6 +28,7 @@
                 "nid": "Eirika",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     2,
@@ -39,6 +41,7 @@
                 "nid": "Seth",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     0,
@@ -51,6 +54,7 @@
                 "nid": "Franz",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     1,
@@ -63,6 +67,7 @@
                 "nid": "Gilliam",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     0,
@@ -75,6 +80,7 @@
                 "nid": "Vanessa",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     6,
@@ -87,6 +93,7 @@
                 "nid": "Moulder",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     3,
@@ -99,6 +106,7 @@
                 "nid": "Ross",
                 "team": "other",
                 "ai": "Guard",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     10,
@@ -111,6 +119,7 @@
                 "nid": "Garcia",
                 "team": "other",
                 "ai": "Defend",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     10,
@@ -123,6 +132,7 @@
                 "nid": "Bone",
                 "team": "enemy",
                 "ai": "Pursue",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     9,
@@ -145,6 +155,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     12,
@@ -167,6 +178,7 @@
                 ],
                 "team": "enemy",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     10,
@@ -189,6 +201,7 @@
                 ],
                 "team": "enemy",
                 "ai": "PursueVillage",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     7,
@@ -215,6 +228,7 @@
                 ],
                 "team": "enemy",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     6,
@@ -237,6 +251,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Defend",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     14,
@@ -259,6 +274,7 @@
                 ],
                 "team": "enemy",
                 "ai": "PursueVillage",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     1,
@@ -281,6 +297,7 @@
                 ],
                 "team": "enemy",
                 "ai": "PursueVillage",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     0,

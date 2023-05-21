@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.data.resources.sounds import Song
 from app.engine.camera import Camera
 import logging
 
@@ -39,6 +40,10 @@ class OverworldManager():
 
         self._initialize_objects()
         self._initialize_graphs()
+
+    @property
+    def music(self) -> Song:
+        return self._overworld.music
 
     @property
     def entities(self) -> Dict[NID, OverworldEntityObject]:

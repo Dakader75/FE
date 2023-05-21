@@ -1,37 +1,49 @@
+from __future__ import annotations
+
 import functools
 import logging
 import math
 import os
 import re
 from dataclasses import dataclass
-from app.extensions.markdown2 import Markdown
+from typing import List
 
-from app.data.database import DB
-from app.events.regions import RegionType
-from app.editor import table_model, timer
-from app.editor.base_database_gui import CollectionModel
-from app.editor.event_editor import event_autocompleter, find_and_replace
-import app.editor.game_actions.game_actions as GAME_ACTIONS
-from app.editor.map_view import SimpleMapView
-from app.editor.settings import MainSettingsController
-from app.events import event_commands, event_prefab, event_validators
-from app.events.mock_event import IfStatementStrategy
-from app.extensions.custom_gui import (ComboBox, PropertyBox, PropertyCheckBox,
-                                       QHLine, TableView)
-from app.resources.resources import RESOURCES
-from app.utilities import str_utils
 from PyQt5.QtCore import (QRect, QRegularExpression, QSize,
-                          QSortFilterProxyModel, QStringListModel, Qt, pyqtSignal)
+                          QSortFilterProxyModel, Qt,
+                          pyqtSignal)
 from PyQt5.QtGui import (QColor, QFont, QFontMetrics, QIcon, QPainter,
                          QPalette, QSyntaxHighlighter, QTextCharFormat,
                          QTextCursor)
 from PyQt5.QtWidgets import (QAbstractItemView, QAction, QApplication,
                              QCheckBox, QCompleter, QDialog, QFrame,
-                             QGridLayout, QHBoxLayout, QLabel, QLineEdit, QListView,
-                             QMessageBox, QPlainTextEdit, QPushButton,
-                             QSizePolicy, QSpinBox, QSplitter, QStyle,
-                             QStyledItemDelegate, QTextEdit, QToolBar,
-                             QVBoxLayout, QWidget, QMenu, QHeaderView)
+                             QGridLayout, QHBoxLayout, QHeaderView, QLabel,
+                             QLineEdit, QListView, QMenu, QMessageBox,
+                             QPlainTextEdit, QPushButton, QSizePolicy,
+                             QSpinBox, QSplitter, QStyle, QStyledItemDelegate,
+                             QTextEdit, QToolBar, QVBoxLayout, QWidget)
+from app import dark_theme
+
+import app.editor.game_actions.game_actions as GAME_ACTIONS
+from app.data.database.database import DB
+from app.data.resources.resources import RESOURCES
+from app.editor import table_model, timer
+from app.editor.base_database_gui import CollectionModel
+from app.editor.event_editor import event_autocompleter, find_and_replace
+from app.editor.lib.components.validated_line_edit import \
+    NoParentheticalLineEdit
+from app.editor.map_view import SimpleMapView
+from app.editor.settings import MainSettingsController
+from app.events import event_commands, event_validators
+from app.events.mock_event import IfStatementStrategy
+from app.events.regions import RegionType
+from app.events.triggers import ALL_TRIGGERS
+from app.extensions.custom_gui import (ComboBox, PropertyBox, PropertyCheckBox,
+                                       QHLine, TableView)
+from app.extensions.markdown2 import Markdown
+from app.utilities import str_utils
+
+from app.data.database.levels import LevelPrefab
+from app.editor.custom_widgets import TilemapBox
 
 
 @dataclass
@@ -39,133 +51,94 @@ class Rule():
     pattern: QRegularExpression
     _format: QTextCharFormat
 
-class Highlighter(QSyntaxHighlighter):
-    def __init__(self, parent, window):
-        super().__init__(parent)
+@dataclass
+class LineToFormat():
+    start: int
+    length: int
+    _format: QTextCharFormat
+
+class HighlighterState():
+    EVENT_CODE = -1
+    PYTHON_CODE = 0
+    TRIPLE_SINGLE_QUOTES = 1
+    TRIPLE_DOUBLE_QUOTES = 2
+
+class EventSyntaxRuleHighlighter():
+    def __init__(self, window) -> None:
         self.window = window
-        self.highlight_rules = []
+        theme = dark_theme.get_theme()
+        syntax_colors = theme.event_syntax_highlighting()
+        function_match = QRegularExpression("^[^;]*")
+        function_format = self.create_text_format(syntax_colors.func_color, font_weight=QFont.Bold)
 
-        settings = MainSettingsController()
-        theme = settings.get_theme()
-        if theme == 0:
-            self.func_color = QColor(52, 103, 174)
-            self.comment_color = Qt.darkGray
-            self.bad_color = Qt.red
-            self.text_color = QColor(63, 109, 58)
-            self.special_text_color = Qt.darkMagenta
-            self.special_func_color = Qt.red
-        else:
-            self.func_color = QColor(102, 217, 239)
-            self.comment_color = QColor(117, 113, 94)
-            self.bad_color = QColor(249, 38, 114)
-            self.text_color = QColor(230, 219, 116)
-            self.special_text_color = QColor(174, 129, 255)
-            self.special_func_color = (249, 38, 114)
+        comment_match = QRegularExpression("#[^\n]*")
+        comment_format = self.create_text_format(syntax_colors.comment_color, italic=True)
 
-        function_head_format = QTextCharFormat()
-        function_head_format.setForeground(self.func_color)
-        # First part of line with semicolon
-        self.function_head_rule1 = Rule(
-            QRegularExpression("^(.*?);"), function_head_format)
-        # Any line without a semicolon
-        self.function_head_rule2 = Rule(
-            QRegularExpression("^[^;]+$"), function_head_format)
-        self.highlight_rules.append(self.function_head_rule1)
-        self.highlight_rules.append(self.function_head_rule2)
+        self.rules: List[Rule] = [
+            Rule(function_match, function_format),
+            Rule(comment_match, comment_format)
+        ]
 
-        self.text_format = QTextCharFormat()
-        self.text_format.setForeground(self.text_color)
-        self.special_text_format = QTextCharFormat()
-        self.special_text_format.setForeground(self.special_text_color)
+        self.lint_format = QTextCharFormat()
+        self.lint_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
+        self.lint_format.setUnderlineColor(syntax_colors.error_underline_color)
+        self.text_format = self.create_text_format(syntax_colors.text_color)
+        self.special_text_format = self.create_text_format(syntax_colors.special_text_color)
 
-        comment_format = QTextCharFormat()
-        comment_format.setForeground(self.comment_color)
-        comment_format.setFontItalic(True)
-        self.comment_rule = Rule(
-            QRegularExpression("#[^\n]*"), comment_format)
-        self.highlight_rules.append(self.comment_rule)
+    def create_text_format(self, color: QColor, font_weight=None, italic=False):
+        text_format = QTextCharFormat()
+        text_format.setForeground(color)
+        if font_weight:
+            text_format.setFontWeight(font_weight)
+        text_format.setFontItalic(italic)
+        return text_format
 
-    def highlightBlock(self, text):
-        text = text.replace('\u2028', ' ')
-        for rule in self.highlight_rules:
-            match_iterator = rule.pattern.globalMatch(text)
+    def match_line(self, line: str) -> List[LineToFormat]:
+        format_lines: List[LineToFormat] = []
+        for rule in self.rules:
+            match_iterator = rule.pattern.globalMatch(line)
             while match_iterator.hasNext():
                 match = match_iterator.next()
-                self.setFormat(match.capturedStart(), match.capturedLength(), rule._format)
+                format_lines.append(LineToFormat(match.capturedStart(), match.capturedLength(), rule._format))
+        as_tokens = event_commands.get_command_arguments(line)
+        # speak formatting
+        command_type = event_commands.determine_command_type(as_tokens[0].string.strip())
+        if command_type == event_commands.Speak:
+            if len(as_tokens) >= 3:
+                dialog_token = as_tokens[2]
+                format_lines.append(LineToFormat(dialog_token.index, len(dialog_token.string), self.text_format))
+                for idx, char in enumerate(dialog_token.string):
+                    if char in '|':
+                        format_lines.append(LineToFormat(dialog_token.index + idx, 1, self.special_text_format))
 
-        lint_format = QTextCharFormat()
-        lint_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
-        lint_format.setUnderlineColor(self.bad_color)
-        lines = text.splitlines()
+        # error checking
+        # error checking happens before brace formatting so that
+        # brace formatting can overwrite the error checking
+        # because if the user is using braces, they probably know what they
+        # are doing (or at least they *should* know what they are doing)
+        broken_args = self.validate_tokens(line)
+        if broken_args == 'all':
+            for token in as_tokens:
+                format_lines.append(LineToFormat(token.index, len(token.string), self.lint_format))
+        else:
+            for idx in broken_args:
+                format_lines.append(LineToFormat(as_tokens[idx].index, len(as_tokens[idx].string), self.lint_format))
 
-        for line in lines:
-            # Don't consider tabs when formatting
-            num_tabs = 0
-            while line.startswith('    '):
-                line = line[4:]
-                num_tabs += 1
-            # Don't process comments
-            line = line.split('#', 1)[0]
-            if not line:
-                continue
-            broken_sections = self.validate_line(line)
-            if broken_sections == 'all':
-                self.setFormat(num_tabs * 4, len(line), lint_format)
-            else:
-                sections = line.split(';')
-                running_length = num_tabs * 4
-                for idx, section in enumerate(sections):
-                    if idx in broken_sections:
-                        self.setFormat(running_length, len(section), lint_format)
-                    running_length += len(section) + 1
+        # brace formatting
+        brace_mode = 0
+        special_start = 0
+        for idx, char in enumerate(line):
+            if char == '{':
+                if brace_mode == 0:
+                    special_start = idx
+                brace_mode += 1
+            if char == '}':
+                if brace_mode > 0:
+                    format_lines.append(LineToFormat(special_start, idx - special_start + 1, self.special_text_format))
+                    brace_mode -= 1
+        return format_lines
 
-        # Extra formatting
-        for line in lines:
-            # Don't consider tabs
-            num_tabs = 0
-            while line.startswith('    '):
-                line = line[4:]
-                num_tabs += 1
-
-            line = line.split('#', 1)[0]
-            if not line:
-                continue
-            sections = line.split(';')
-            # handle eval and vars
-            for idx, section in enumerate(sections):
-                start = num_tabs * 4 + len(';'.join(sections[:idx])) + 1
-                if '{' in section and '}' in section:
-                    brace_mode = 0
-                    for idx, char in enumerate(section):
-                        if char == '{':
-                            if brace_mode == 0:
-                                special_start = start + idx
-                            brace_mode += 1
-                        if char == '}':
-                            if brace_mode > 0:
-                                self.setFormat(special_start, start + idx - special_start + 1, self.special_text_format)
-                                brace_mode -= 1
-
-            # Handle text format
-            if sections[0] in ('s', 'speak') and len(sections) >= 3:
-                start = num_tabs * 4 + len(';'.join(sections[:2])) + 1
-                self.setFormat(start, len(sections[2]), self.text_format)
-                # Handle special text format
-                special_start = 0
-                brace_mode = 0
-                for idx, char in enumerate(sections[2]):
-                    if char == '|':
-                        self.setFormat(start + idx, 1, self.special_text_format)
-                    elif char == '{':
-                        if brace_mode == 0:
-                            special_start = start + idx
-                        brace_mode += 1
-                    elif char == '}':
-                        if brace_mode > 0:
-                            self.setFormat(special_start, start + idx - special_start + 1, self.special_text_format)
-                            brace_mode -= 1
-
-    def validate_line(self, line: str) -> list:
+    def validate_tokens(self, line: str) -> str | List[int]:
         try:
             command, error_loc = event_commands.parse_text_to_command(line, strict=True)
             if command:
@@ -176,8 +149,7 @@ class Highlighter(QSyntaxHighlighter):
                 broken_args = []
                 for keyword, value in parameters.items():
                     validator = command.get_validator_from_keyword(keyword)
-                    level_nid = self.window.current.level_nid
-                    level = DB.levels.get(level_nid)
+                    level = DB.levels.get(self.window.current.level_nid if self.window.current else None)
                     text = event_validators.validate(validator, value, level, DB, RESOURCES)
                     if text is None:
                         broken_args.append(command.get_index_from_keyword(keyword) + 1)
@@ -189,6 +161,37 @@ class Highlighter(QSyntaxHighlighter):
         except Exception as e:
             logging.error("Error while validating %s %s", line, e)
             return 'all'
+
+
+class Highlighter(QSyntaxHighlighter):
+    def __init__(self, parent, window):
+        super().__init__(parent)
+        self.window = window
+        self.highlight_rules = []
+        self.setCurrentBlockState(HighlighterState.EVENT_CODE)
+        self.event_syntax_formatter = EventSyntaxRuleHighlighter(self.window)
+
+    def highlightBlock(self, text: str):
+        if text.startswith("python"):
+            self.setCurrentBlockState(HighlighterState.PYTHON_CODE)
+            self.highlightEventCode(text)
+        elif text.startswith("end_python"):
+            self.setCurrentBlockState(HighlighterState.EVENT_CODE)
+            self.highlightEventCode(text)
+        else:
+            if self.previousBlockState() == HighlighterState.EVENT_CODE:
+                self.highlightEventCode(text)
+            else:
+                self.highlightPython(text)
+            self.setCurrentBlockState(self.previousBlockState())
+
+    def highlightPython(self, text):
+        pass
+
+    def highlightEventCode(self, text):
+        to_format = self.event_syntax_formatter.match_line(text)
+        for piece_to_format in to_format:
+            self.setFormat(piece_to_format.start, piece_to_format.length, piece_to_format._format)
 
 class LineNumberArea(QWidget):
     def __init__(self, parent):
@@ -203,6 +206,7 @@ class LineNumberArea(QWidget):
 
 class CodeEditor(QPlainTextEdit):
     clicked = pyqtSignal()
+
     def mouseReleaseEvent(self, event):
         self.clicked.emit()
         return super().mouseReleaseEvent(event)
@@ -213,11 +217,8 @@ class CodeEditor(QPlainTextEdit):
         self.line_number_area = LineNumberArea(self)
 
         self.settings = MainSettingsController()
-        theme = self.settings.get_theme()
-        if theme == 0:
-            self.line_number_color = Qt.darkGray
-        else:
-            self.line_number_color = QColor(144, 144, 138)
+        theme = dark_theme.get_theme()
+        self.line_number_color = theme.event_syntax_highlighting().line_number_color
 
         self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
@@ -228,7 +229,7 @@ class CodeEditor(QPlainTextEdit):
         fm = QFontMetrics(self.font())
         self.setTabStopWidth(4 * fm.width(' '))
 
-        self.completer: event_autocompleter.Completer = None
+        self.completer: QCompleter = None
         self.function_annotator: QLabel = QLabel(self)
         self.markdown_converter: Markdown = Markdown()
 
@@ -236,7 +237,7 @@ class CodeEditor(QPlainTextEdit):
             return  # Event auto completer is turned off
         else:
             # completer
-            self.setCompleter(event_autocompleter.Completer(parent=self))
+            self.setCompleter(event_autocompleter.EventScriptCompleter(parent=self))
             self.textChanged.connect(self.complete)
             self.textChanged.connect(self.display_function_hint)
             self.clicked.connect(self.display_function_hint)
@@ -260,9 +261,20 @@ class CodeEditor(QPlainTextEdit):
 
     def insertCompletion(self, completion):
         tc = self.textCursor()
-        tc.movePosition(QTextCursor.StartOfWord)
-        tc.movePosition(QTextCursor.EndOfWord)
-        tc.select(QTextCursor.WordUnderCursor)
+        while not tc.atBlockEnd():
+            tc.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
+            if tc.selectedText() in ";,":
+                break
+            tc.clearSelection()
+        end = tc.position()
+        while not tc.atBlockStart():
+            tc.movePosition(QTextCursor.PreviousCharacter, QTextCursor.KeepAnchor)
+            if tc.selectedText() in ';,':
+                break
+            tc.clearSelection()
+        start = tc.position()
+        for i in range(start, end):
+            tc.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
         tc.removeSelectedText()
         tc.insertText(completion)
         self.setTextCursor(tc)
@@ -304,9 +316,15 @@ class CodeEditor(QPlainTextEdit):
         for idx, keyword in enumerate(all_keywords):
             if command.keyword_types:
                 keyword_type = command.keyword_types[idx]
-                hint_words.append(keyword + "=" + keyword_type)
+                hint_str = "%s=%s" % (keyword, keyword_type)
+                if validator and event_validators.get(keyword_type) == validator:
+                    hint_str = "<b>%s</b>" % hint_str
+                hint_words.append(hint_str)
             else:
-                hint_words.append(keyword)
+                hint_str = keyword
+                if validator and event_validators.get(keyword) == validator:
+                    hint_str = "<b>%s</b>" % hint_str
+                hint_words.append(hint_str)
         if command.flags:
             hint_words.append('FLAGS')
         hint_cmd = ""
@@ -319,10 +337,8 @@ class CodeEditor(QPlainTextEdit):
             try:
                 arg_idx = line.count(';', 0, cursor_pos)
                 if arg_idx != len(hint_words) - 1:
-                    hint_words[arg_idx] = '<b>' + hint_words[arg_idx] + '</b>'
-                    hint_desc = validator.__name__ + ' ' + validator().desc
+                    hint_desc = validator.__name__ + ' ' + str(validator().desc)
                 elif cursor_pos > 0 and command.flags:
-                    hint_words[-1] = '<b>' + hint_words[-1] + '</b>'
                     hint_desc = 'Must be one of (`' + str.join('`,`', flags) + '`)'
             except:
                 if cursor_pos > 0 and command.flags:
@@ -333,7 +349,7 @@ class CodeEditor(QPlainTextEdit):
         # style both components
         hint_cmd = '<div class="command_text">' + hint_cmd + '</div>'
         hint_desc = '<div class="desc_text">' + hint_desc + '</div>'
-        hint_command_desc = '<div class="desc_text">' + self.markdown_converter.convert(command.desc) + '</div>'
+        hint_command_desc = '<div class="desc_text">' + self.markdown_converter.convert('\n'.join(command.desc.split('\n')[:3])) + '</div>'
 
         style = """
             <style>
@@ -370,18 +386,6 @@ class CodeEditor(QPlainTextEdit):
         tc = self.textCursor()
         line = tc.block().text()
         cursor_pos = tc.positionInBlock()
-
-        def arg_text_under_cursor(text: str, cursor_pos):
-            before_text = text[0:cursor_pos]
-            after_text = text[cursor_pos:]
-            idx = before_text.rfind(';')
-            before_arg = before_text[idx + 1:]
-            idx = after_text.find(';')
-            after_arg = after_text[0:idx]
-            return (before_arg + after_arg)
-
-        arg_under_cursor = arg_text_under_cursor(line, cursor_pos)
-
         if len(line) != cursor_pos:
             return  # Only do autocomplete on end of line
         if tc.blockNumber() <= 0 and cursor_pos <= 0:  # Remove if cursor is at the very top left of event
@@ -394,26 +398,8 @@ class CodeEditor(QPlainTextEdit):
                 pass
             return
 
-        # determine what dictionary to use for completion
-        validator, flags = event_autocompleter.detect_type_under_cursor(line, cursor_pos, arg_under_cursor)
-        autofill_dict = event_autocompleter.generate_wordlist_from_validator_type(validator, self.window.current.level_nid, arg_under_cursor, DB, RESOURCES)
-        if flags:
-            autofill_dict = autofill_dict + event_autocompleter.generate_flags_wordlist(flags)
-        if len(autofill_dict) == 0:
-            try:
-                if self.completer.popup().isVisible():
-                    self.completer.popup().hide()
-            except: # popup doesn't exist?
-                pass
+        if not self.completer.setTextToComplete(line, cursor_pos, self.window.current.level_nid):
             return
-        self.completer.setModel(QStringListModel(autofill_dict, self.completer))
-
-        # filter the dictionary and display the popup
-        completionPrefix = self.textUnderCursor()
-        self.completer.setCompletionPrefix(completionPrefix)
-        popup = self.completer.popup()
-        popup.setCurrentIndex(
-            self.completer.completionModel().index(0, 0))
         cr = self.cursorRect()
         cr.setWidth(
             self.completer.popup().sizeHintForColumn(0) + self.completer.popup().verticalScrollBar().sizeHint().width())
@@ -603,11 +589,8 @@ class EventCollection(QWidget):
             self.level_filter_box.edit.setValue("All")
 
     def create_actions(self):
-        theme = self.settings.get_theme()
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
 
         self.new_action = QAction(QIcon(f"{icon_folder}/file-plus.png"), "New Event", triggered=self.new)
         self.new_action.setShortcut("Ctrl+N")
@@ -754,6 +737,12 @@ class EventCollection(QWidget):
                 first_index = self.level_filtered_model.index(0, 0)
                 self.view.setCurrentIndex(first_index)
                 self.set_current_index(first_index)
+        elif self.display and not self.display.current:
+            # Change selection only if we need to!
+            first_index = self.level_filtered_model.index(0, 0)
+            self.view.setCurrentIndex(first_index)
+            self.set_current_index(first_index)
+
         self.update_list()
 
         if self.level_filtered_model.rowCount() > 0:
@@ -793,11 +782,11 @@ class EventProperties(QWidget):
 
         # Text setup
         self.cursor = self.text_box.textCursor()
-        self.font = QFont()
-        self.font.setFamily("Courier")
-        self.font.setFixedPitch(True)
-        self.font.setPointSize(10)
-        self.text_box.setFont(self.font)
+        self.code_font = QFont()
+        self.code_font.setFamily("Courier")
+        self.code_font.setFixedPitch(True)
+        self.code_font.setPointSize(10)
+        self.text_box.setFont(self.code_font)
         self.highlighter = Highlighter(self.text_box.document(), self)
 
         main_section = QVBoxLayout()
@@ -808,7 +797,7 @@ class EventProperties(QWidget):
         self.level_filter_box = left_frame.level_filter_box
         grid = left_frame.layout()
 
-        self.name_box = PropertyBox("Name", QLineEdit, self)
+        self.name_box = PropertyBox("Name", NoParentheticalLineEdit, self)
         self.name_box.edit.textChanged.connect(self.name_changed)
         self.name_box.edit.editingFinished.connect(self.name_done_editing)
 
@@ -887,7 +876,7 @@ class EventProperties(QWidget):
                     if region.region_type == RegionType.EVENT:
                         all_custom_triggers.add(region.sub_nid)
         all_items += list(all_custom_triggers)
-        all_items += [trigger.nid for trigger in event_prefab.all_triggers]
+        all_items += [trigger.nid for trigger in ALL_TRIGGERS]
         return all_items
 
     def insert_text(self, text):
@@ -955,7 +944,7 @@ class EventProperties(QWidget):
         cur_val = self.trigger_box.edit.currentText()
         if cur_val == 'None':
             self.current.trigger = None
-        elif cur_val in [trigger.nid for trigger in event_prefab.all_triggers]:
+        elif cur_val in [trigger.nid for trigger in ALL_TRIGGERS]:
             self.current.trigger = cur_val
         else:
             self.current.trigger = cur_val
@@ -1049,12 +1038,17 @@ class EventProperties(QWidget):
         self.close_commands()
 
 class ShowMapDialog(QDialog):
-    def __init__(self, current_level, parent=None):
+    def __init__(self, current_level: LevelPrefab, parent=None):
         super().__init__(parent)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowTitle("Level Map View")
         self.window = parent
         self.current_level = current_level
+
+        self.map_selector = TilemapBox(self)
+        self.map_selector.edit.activated.connect(self.select_current)
+        if self.current_level and self.current_level.tilemap:
+            self.map_selector.edit.setCurrentIndex(self.map_selector.edit.findText(self.current_level.tilemap))
 
         self.map_view = SimpleMapView(self)
         self.map_view.position_clicked.connect(self.position_clicked)
@@ -1067,10 +1061,20 @@ class ShowMapDialog(QDialog):
 
         layout = QVBoxLayout()
         self.setLayout(layout)
+        layout.addWidget(self.map_selector)
         layout.addWidget(self.map_view)
         layout.addWidget(self.position_edit, Qt.AlignRight)
 
         timer.get_timer().tick_elapsed.connect(self.map_view.update_view)
+
+    def select_current(self):
+        tilemap_nid = self.map_selector.edit.currentText()
+        if tilemap_nid == self.current_level.tilemap:
+            self.map_view.set_current_level(self.current_level)
+        else:
+            tilemap = RESOURCES.tilemaps.get(tilemap_nid)
+            if tilemap:
+                self.map_view.set_current_map(tilemap)
 
     def position_clicked(self, x, y):
         self.window.insert_text("%d,%d" % (x, y))
@@ -1207,13 +1211,13 @@ class ShowCommandsDialog(QDialog):
                     else:
                         already.append(keyword)
                     validator = event_validators.get(keyword)
-                    if validator and validator.desc:
-                        text += '_%s_ %s\n\n' % (keyword, validator.desc)
+                    if validator and validator().desc:
+                        text += '_%s_ %s\n\n' % (keyword, str(validator().desc))
                     else:
                         text += '_%s_ %s\n\n' % (keyword, "")
                 if command.desc:
                     text += " --- \n\n"
-                text += command.desc
+                text += str(command.desc)
                 self.desc_box.setMarkdown(text)
             else:
                 self.desc_box.setMarkdown(command + ' Section')
@@ -1227,7 +1231,7 @@ class EventCommandModel(CollectionModel):
 
     def get_text(self, command) -> str:
         full_text = command.nid + ';'.join(command.keywords) + ';'.join(command.optional_keywords) + \
-            ';'.join(command.flags) + ':' + command.desc
+            ';'.join(command.flags) + ':' + str(command.desc)
         return full_text
 
     def data(self, index, role):

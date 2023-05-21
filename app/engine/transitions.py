@@ -10,6 +10,10 @@ class TransitionInState(State):
     name = 'transition_in'
     transparent = True
 
+    start_time = 0
+    wait_time = 0
+    bg = None
+
     def start(self):
         self.bg = SPRITES.get('bg_black').convert_alpha()
         self.start_time = engine.get_time()
@@ -25,9 +29,10 @@ class TransitionInState(State):
             return 'repeat'
 
     def draw(self, surf):
-        proc = (engine.get_time() - self.start_time) / self.wait_time
-        bg = image_mods.make_translucent(self.bg, proc)
-        engine.blit_center(surf, bg)
+        if self.bg:
+            proc = (engine.get_time() - self.start_time) / self.wait_time
+            bg = image_mods.make_translucent(self.bg, proc)
+            engine.blit_center(surf, bg)
         return surf
 
     def finish(self):

@@ -45,17 +45,17 @@ class HealthBar():
                 self.transition_flag = False
 
 class CombatHealthBar(HealthBar):
-    full_hp_blip = SPRITES.get('full_hp_blip')
-    empty_hp_blip = SPRITES.get('empty_hp_blip')
-    overflow_hp_blip = SPRITES.get('overflow_hp_blip')
-    overflowpurple_hp_blip = SPRITES.get('overflowpurple_hp_blip')
-    end_hp_blip = engine.subsurface(full_hp_blip, (0, 0, 1, full_hp_blip.get_height()))
     colors = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1]
     speed = utils.frames2ms(2)
     time_for_change_min = 0
 
     def __init__(self, unit):
         super().__init__(unit)
+        self.full_hp_blip = SPRITES.get('full_hp_blip')
+        self.empty_hp_blip = SPRITES.get('empty_hp_blip')
+        self.overflow_hp_blip = SPRITES.get('overflow_hp_blip')
+        self.overflowpurple_hp_blip = SPRITES.get('overflowpurple_hp_blip')
+        self.end_hp_blip = engine.subsurface(self.full_hp_blip, (0, 0, 1, self.full_hp_blip.get_height()))
         self.color_tick = 0
         self.heal_sound_update = 0
 
@@ -334,7 +334,7 @@ class MapCombatInfo():
                 if top_gap > bottom_gap and top_gap > middle_gap:
                     y_pos = top_gap * TILEHEIGHT - 12 - height - 13  # Stat surf
                 elif bottom_gap > top_gap and bottom_gap > middle_gap:
-                    y_pos = (bottom_gap + 1) * TILEHEIGHT + 12
+                    y_pos = (TILEY - 1 - bottom_gap//2) * TILEHEIGHT - 12
                 else:
                     y_pos = WINHEIGHT//4 - height//2 - 13//2 if rel_1 < TILEY//2 else 3*WINHEIGHT//4 - height//2 - 13//2
                     x_pos = WINWIDTH//4 - width//2 if pos1[0] - camera_pos[0] > TILEX//2 else 3*WINWIDTH//4 - width//2

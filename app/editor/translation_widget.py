@@ -1,4 +1,4 @@
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.list_dialogs import MultiAttrListDialog
 from app.extensions.list_models import MultiAttrListModel

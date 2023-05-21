@@ -1,14 +1,17 @@
-from app.utilities import utils
-from app.events.regions import RegionType
+import logging
+import math
 
+from app.data.database.database import DB
+from app.engine import (action, engine, evaluate,
+                        roam_ai, target_system)
+from app.engine.game_state import game
+from app.engine.input_manager import get_input_manager
 from app.engine.sound import get_sound_thread
 from app.engine.state import MapState
-from app.engine.game_state import game
-from app.engine import engine, info_menu, evaluate, target_system, action, ai_controller, skill_system, equations, roam_ai
-from app.engine.input_manager import get_input_manager
-from app.data.database import DB
+from app.events import triggers
+from app.events.regions import RegionType
+from app.utilities import utils
 
-import logging
 
 class FreeRoamState(MapState):
     name = 'free_roam'
@@ -25,12 +28,22 @@ class FreeRoamState(MapState):
 
         # AI manager
         self.ai_handler = roam_ai.FreeRoamAIHandler()
+        self.compose_target_list(game.get_all_units())
+
+    def compose_target_list(self, units):
+        targets = set()
+        for unit in units:
+            if unit.get_roam_ai() and DB.ai.get(unit.get_roam_ai()).roam_ai:
+                targets.add(roam_ai.FreeRoamUnit(unit, roam_ai.FreeRoamAIController(unit)))
+                if game.board.rationalize_pos(unit.position) == unit.position:
+                    game.leave(unit)
+        self.ai_handler.targets = targets
 
     def begin(self):
         game.cursor.hide()
-        self.ai_handler.reload()
 
         if game.level.roam and game.level.roam_unit:
+            self.compose_target_list(game.get_all_units())
             roam_unit_nid = game.level.roam_unit
             if self.roam_unit and self.roam_unit.nid != roam_unit_nid:
                 self.rationalize()  # Rationalize original unit
@@ -147,7 +160,7 @@ class FreeRoamState(MapState):
                 if current_occupant:
                     rounded_position = target_system.get_nearest_open_tile(current_occupant, rounded_position)
                     self.roam_unit.position = rounded_position
-                did_trigger = game.events.trigger('roaming_interrupt', self.roam_unit, position=self.roam_unit.position, local_args={'region': region})
+                did_trigger = game.events.trigger(triggers.RoamingInterrupt(self.roam_unit, self.roam_unit.position, region))
                 if did_trigger:
                     self.rationalize()
                 if region.only_once and did_trigger:
@@ -158,13 +171,13 @@ class FreeRoamState(MapState):
             region = self.can_visit()
             if other_unit:
                 get_sound_thread().play_sfx('Select 2')
-                did_trigger = game.events.trigger('on_talk', self.roam_unit, other_unit)
+                did_trigger = game.events.trigger(triggers.OnTalk(self.roam_unit, other_unit, None))
                 if did_trigger:
                     action.do(action.RemoveTalk(self.roam_unit.nid, other_unit.nid))
                     self.rationalize()
             elif region:
                 get_sound_thread().play_sfx('Select 2')
-                did_trigger = game.events.trigger(region.sub_nid, self.roam_unit, position=self.roam_unit.position, local_args={'region': region})
+                did_trigger = game.events.trigger(triggers.RegionTrigger(region.sub_nid, self.roam_unit, self.roam_unit.position, region))
                 if did_trigger:
                     self.rationalize()
                 if did_trigger and region.only_once:
@@ -174,17 +187,22 @@ class FreeRoamState(MapState):
 
         elif event == 'AUX':
             game.state.change('option_menu')
+            self.rationalize()  # Forced rationalization when pressing AUX
+            # so this if you win_game or something your position is valid int
 
         elif event == 'INFO':
             other_unit = self.can_talk()
-            did_trigger = game.events.trigger('roam_press_info', self.roam_unit, other_unit)
+            did_trigger = game.events.trigger(triggers.RoamPressInfo(self.roam_unit, other_unit))
             if did_trigger:
                 self.rationalize()
             else:
-                info_menu.handle_info()
+                get_sound_thread().play_sfx('Select 1')
+                game.memory['next_state'] = 'info_menu'
+                game.memory['current_unit'] = self.roam_unit
+                game.state.change('transition_to')
 
         elif event == 'START':
-            did_trigger = game.events.trigger('roam_press_start', self.roam_unit)
+            did_trigger = game.events.trigger(triggers.RoamPressStart(self.roam_unit))
             if did_trigger:
                 get_sound_thread().play_sfx('Select 2')
                 self.rationalize()
@@ -214,33 +232,33 @@ class FreeRoamState(MapState):
             action.UpdateFogOfWar(self.roam_unit).do()
             self.roam_unit.position = true_pos  # Remember to reset the position to what we want
 
-    def can_move(self, direc: str) -> bool:
+    def get_next_location(self, direc: str, pos: tuple):
         tolerance = 0.4
         if direc == 'LEFT':
-            check_x = int(round(self.roam_unit.position[0] - tolerance))
-            check_y = int(round(self.roam_unit.position[1]))
-            mcost = game.movement.get_mcost(self.roam_unit, (check_x, check_y))
-            return mcost < 99 and self.no_bumps(check_x, check_y)
+            check_x = int(round(pos[0] - tolerance))
+            check_y = int(round(pos[1]))
         elif direc == 'RIGHT':
-            check_x = int(round(self.roam_unit.position[0] + tolerance))
-            check_y = int(round(self.roam_unit.position[1]))
-            mcost = game.movement.get_mcost(self.roam_unit, (check_x, check_y))
-            return mcost < 99 and self.no_bumps(check_x, check_y)
+            check_x = int(round(pos[0] + tolerance))
+            check_y = int(round(pos[1]))
         elif direc == 'UP':
-            check_x = int(round(self.roam_unit.position[0]))
-            check_y = int(round(self.roam_unit.position[1] - tolerance))
-            mcost = game.movement.get_mcost(self.roam_unit, (check_x, check_y))
-            return mcost < 99 and self.no_bumps(check_x, check_y)
+            check_x = int(round(pos[0]))
+            check_y = int(round(pos[1] - tolerance))
         elif direc == 'DOWN':
-            check_x = int(round(self.roam_unit.position[0]))
-            check_y = int(round(self.roam_unit.position[1] + tolerance))
-            mcost = game.movement.get_mcost(self.roam_unit, (check_x, check_y))
-            return mcost < 99 and self.no_bumps(check_x, check_y)
-        return True
+            check_x = int(round(pos[0]))
+            check_y = int(round(pos[1] + tolerance))
+        return check_x, check_y
+
+    def can_move(self, direc: str) -> bool:
+        pos = (self.roam_unit.position[0] + self.hspeed, self.roam_unit.position[1])
+        check_x, check_y = self.get_next_location(direc, pos)
+        mcost = game.movement.get_mcost(self.roam_unit, (check_x, check_y))
+        return mcost < 99 and self.no_bumps(check_x, check_y)
 
     def no_bumps(self, x: int, y: int) -> bool:
         '''Used to detect if the space is occupied by an impassable unit'''
         new_pos = (x, y)
+        if not game.movement.check_traversable(self.roam_unit, new_pos):
+            return False
         if game.board.get_unit(new_pos):
             other_team = game.board.get_team(new_pos)
             if not other_team or utils.compare_teams(self.roam_unit.team, other_team):
@@ -253,32 +271,17 @@ class FreeRoamState(MapState):
         """
         Done whenever the roam unit should be returned to a regular unit
         """
-        new_pos = (int(round(self.roam_unit.position[0])), int(round(self.roam_unit.position[1])))
-        current_occupant = game.board.get_unit(new_pos)
-        if current_occupant:
-            new_pos = target_system.get_nearest_open_tile(self.roam_unit, new_pos)
-        self.roam_unit.position = new_pos
-        game.arrive(self.roam_unit)
-        self.roam_unit.sprite.change_state('normal')
-        self.roam_unit.sound.stop()
 
         for t in self.ai_handler.targets:
             t.ai.stop_unit()
-            self.rationalize_unit(t.unit)
+
+        game.state.change('rationalize')
 
         self.speed = 0
         self.vspeed = 0
         self.hspeed = 0
         self.roam_unit = None
         self.last_move = 0
-
-    def rationalize_unit(self, unit):
-        new_pos = (int(unit.position[0]), int(unit.position[1]))
-        current_occupant = game.board.get_unit(new_pos)
-        if current_occupant and current_occupant != unit:
-            new_pos = target_system.get_nearest_open_tile(unit, new_pos)
-        unit.position = new_pos
-        game.arrive(unit)
 
     def can_talk(self):
         """
@@ -288,7 +291,8 @@ class FreeRoamState(MapState):
         units = []
         for unit in game.units:
             if unit.position and unit is not self.roam_unit and self.roam_unit and \
-                    utils.calculate_distance(self.roam_unit.position, unit.position) < 1:
+                    utils.calculate_distance(self.roam_unit.position, unit.position) < 1 and \
+                    (self.roam_unit.nid, unit.nid) in game.talk_options:
                 units.append(unit)
         units = list(sorted(units, key=lambda unit: utils.calculate_distance(self.roam_unit.position, unit.position)))
         if units:
@@ -310,3 +314,54 @@ class FreeRoamState(MapState):
             except Exception as e:
                 logging.error("%s: Could not evaluate {%s}" % (e, region.condition))
         return None
+
+
+class RationalizeState(MapState):
+    name = 'rationalize'
+
+    def start(self):
+        self.ai_handler = roam_ai.FreeRoamAIHandler()
+        self.targets = self.compose_target_list(game.get_all_units())
+
+    def compose_target_list(self, potential_targets):
+        targets = []
+        taken_positions = []
+        for t in potential_targets:
+            # Two different loops are used since we don't want to give invalid arrival positions
+            if self.rounded_position(t.position) and not game.board.get_unit(t.position):
+                # If a unit is already in their final position they should just arrive
+                game.arrive(t)
+        for t in potential_targets:
+            if not self.rounded_position(t.position):
+                move_handler = roam_ai.RoamMovementHandler(t)
+                goal = self.find_open_tile(t, taken_positions)
+                taken_positions.append(goal)
+                move_handler.update_goal_pos(goal)
+                move_handler.update_path([goal])
+                targets.append(move_handler)
+
+        return targets
+
+    def rounded_position(self, pos):
+        x = pos[0]
+        y = pos[1]
+        if (x is not None and not math.isclose(x, int(x))) or (y is not None and not math.isclose(y, int(y))):
+            return False
+        return True
+
+    def find_open_tile(self, unit, taken):
+        return target_system.get_nearest_open_tile_rationalization(unit, game.board.rationalize_pos(unit.position), taken)
+
+    def update(self):
+        super().update()
+        for t in self.targets:
+            if self.rounded_position(t.unit.position) and not game.board.get_unit(t.unit.position):
+                t.unit.position = game.board.rationalize_pos(t.unit.position)
+                t.stop_unit()
+                game.arrive(t.unit)
+                self.targets.remove(t)
+            else:
+                t.rationalization()
+
+        if not self.targets:
+            game.state.back()

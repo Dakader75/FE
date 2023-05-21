@@ -1,3 +1,5 @@
+<small>`Originally written by Hillgarm. Last Updated 2022-09-01`</small>
+
 # 2. Conditional Passives I - Lucky Seven, Odd Rhythm, Wrath and Quick Burn
 Many skills have conditions to be activated, even the ones that have passive effects. In this guide we will take a look at the basic conditions for passive skills.
 

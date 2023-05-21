@@ -1,8 +1,8 @@
 from app.utilities import utils
 
 from app.constants import COLORKEY
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 
 from app.engine.sprites import SPRITES
 from app.engine.fonts import FONT
@@ -75,7 +75,7 @@ def draw_skill(surf, skill, topleft, compact=True, simple=False, grey=False):
         cooldown_surf = SPRITES.get('icon_cooldown')
         index = utils.clamp(int(8 * frac), 0, 7)
         c = engine.subsurface(cooldown_surf, (16 * index, 0, 16, 16))
-        surf.blit(c, topleft)
+        surf.blit(c, topleft, None, engine.BLEND_RGB_MULT)
 
     if compact:
         pass
@@ -138,7 +138,7 @@ def get_portrait(unit) -> tuple:
         klass = DB.classes.get(unit.klass)
         image = RESOURCES.icons80.get(klass.icon_nid)
         if not image:
-            return None
+            return None, 0
         if not image.image:
             image.image = engine.image_load(image.full_path)
         image = engine.subsurface(image.image, (klass.icon_index[0] * 80, klass.icon_index[1] * 72, 80, 72))
@@ -180,7 +180,7 @@ def draw_chibi(surf, nid, topleft=None, bottomright=None):
 
     if not image.image:
         image.image = engine.image_load(image.full_path)
-    image = engine.subsurface(image.image, (96, 16, 32, 32))
+    image = engine.subsurface(image.image, (image.image.get_width() - 32, 16, 32, 32))
     image = image.convert()
     engine.set_colorkey(image, COLORKEY, rleaccel=True)
 
@@ -197,6 +197,7 @@ def draw_stat(surf, stat_nid, unit, topright, compact=False):
     class_obj = DB.classes.get(unit.klass)
     value = unit.stats.get(stat_nid, 0)
     bonus = unit.stat_bonus(stat_nid)
+    subtle_bonus = unit.subtle_stat_bonus(stat_nid)
     if compact:
         if bonus > 0:
             typeface = FONT['text-green']
@@ -208,6 +209,9 @@ def draw_stat(surf, stat_nid, unit, topright, compact=False):
             typeface = FONT['text-blue']
         typeface.blit_right(str(value + bonus), surf, topright)
     else:
+        # Recalc these values for full display
+        value = value + subtle_bonus
+        bonus = bonus - subtle_bonus
         if value >= class_obj.max_stats.get(stat_nid, 30):
             FONT['text-yellow'].blit_right(str(value), surf, topright)
         else:

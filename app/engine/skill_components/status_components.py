@@ -1,11 +1,13 @@
 import random
 
-from app.data.skill_components import SkillComponent, SkillTags
-from app.data.components import Type
+from app.data.database.skill_components import SkillComponent, SkillTags
+from app.data.database.components import ComponentType
 
-from app.engine import equations, action, static_random
+from app.engine import equations, action, skill_system
 from app.engine.game_state import game
 from app.engine.combat import playback as pb
+from app.utilities import static_random
+from app.utilities.enums import Strike
 
 class Aura(SkillComponent):
     nid = 'aura'
@@ -13,7 +15,7 @@ class Aura(SkillComponent):
     tag = SkillTags.STATUS
     paired_with = ('aura_range', 'aura_target')
 
-    expose = Type.Skill
+    expose = ComponentType.Skill
 
 class AuraRange(SkillComponent):
     nid = 'aura_range'
@@ -21,7 +23,7 @@ class AuraRange(SkillComponent):
     tag = SkillTags.STATUS
     paired_with = ('aura', 'aura_target')
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 3
 
 class AuraTarget(SkillComponent):
@@ -30,15 +32,24 @@ class AuraTarget(SkillComponent):
     tag = SkillTags.STATUS
     paired_with = ('aura', 'aura_range')
 
-    expose = Type.String
+    expose = ComponentType.String
     value = 'unit'
+
+class AuraShow(SkillComponent):
+    nid = 'show_aura'
+    desc = 'Aura will always show on the map'
+    tag = SkillTags.STATUS
+    paired_with = ('aura', 'aura_range', 'aura_target')
+
+    expose = ComponentType.Color3
+    value = (128, 0, 0)
 
 class PairUpBonus(SkillComponent):
     nid = 'pairup_bonus'
     desc = "Grants a child skill to lead units while in guard stance."
     tag = SkillTags.STATUS
 
-    expose = Type.Skill
+    expose = ComponentType.Skill
 
     def on_pairup(self, unit, leader):
         action.do(action.AddSkill(leader, self.value))
@@ -47,12 +58,12 @@ class PairUpBonus(SkillComponent):
         if self.value in [skill.nid for skill in leader.skills]:
             action.do(action.RemoveSkill(leader, self.value))
 
-class PercentRegeneration(SkillComponent):
-    nid = 'percent_regeneration'
+class Regeneration(SkillComponent):
+    nid = 'regeneration'
     desc = "Unit restores %% of HP at beginning of turn"
     tag = SkillTags.STATUS
 
-    expose = Type.Float
+    expose = ComponentType.Float
     value = 0.2
 
     def on_upkeep(self, actions, playback, unit):
@@ -71,36 +82,12 @@ class PercentRegeneration(SkillComponent):
                 name = 'MapSmallHealTrans'
             playback.append(pb.CastAnim(name))
 
-class SetRegeneration(SkillComponent):
-    nid = 'set_regeneration'
-    desc = "Unit restores %% of HP at beginning of turn"
-    tag = SkillTags.STATUS
-
-    expose = Type.Int
-    value = 5
-
-    def on_upkeep(self, actions, playback, unit):
-        max_hp = equations.parser.hitpoints(unit)
-        if unit.get_hp() < max_hp:
-            hp_change = int(self.value)
-            actions.append(action.ChangeHP(unit, hp_change))
-            # Playback
-            playback.append(pb.HitSound('MapHeal'))
-            playback.append(pb.DamageNumbers(unit, -hp_change))
-            if hp_change >= 30:
-                name = 'MapBigHealTrans'
-            elif hp_change >= 15:
-                name = 'MapMediumHealTrans'
-            else:
-                name = 'MapSmallHealTrans'
-            playback.append(pb.CastAnim(name))
-
 class ManaRegeneration(SkillComponent):
     nid = 'mana_regeneration'
     desc = "Unit restores X mana at beginning of turn"
     tag = SkillTags.STATUS
 
-    expose = Type.Int
+    expose = ComponentType.Int
 
     def on_upkeep(self, actions, playback, unit):
         actions.append(action.ChangeMana(unit, self.value))
@@ -110,7 +97,7 @@ class UpkeepDamage(SkillComponent):
     desc = "Unit takes damage at upkeep"
     tag = SkillTags.STATUS
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 5
 
     def _playback_processing(self, playback, unit, hp_change):
@@ -135,13 +122,14 @@ class UpkeepDamage(SkillComponent):
         actions.append(action.ChangeHP(unit, hp_change))
         actions.append(action.TriggerCharge(unit, self.skill))
         self._playback_processing(playback, unit, hp_change)
+        skill_system.after_take_strike(actions, playback, unit, None, None, 'defense', (0, 0), Strike.HIT)
 
 class EndstepDamage(UpkeepDamage, SkillComponent):
     nid = 'endstep_damage'
     desc = "Unit takes damage at endstep"
     tag = SkillTags.STATUS
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 5
 
     def on_upkeep(self, actions, playback, unit):
@@ -152,13 +140,14 @@ class EndstepDamage(UpkeepDamage, SkillComponent):
         actions.append(action.ChangeHP(unit, hp_change))
         actions.append(action.TriggerCharge(unit, self.skill))
         self._playback_processing(playback, unit, hp_change)
+        skill_system.after_take_strike(actions, playback, unit, None, None, 'defense', (0, 0), Strike.HIT)
 
 class GBAPoison(SkillComponent):
     nid = 'gba_poison'
     desc = "Unit takes random amount of damage up to num"
     tag = SkillTags.STATUS
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 5
 
     def on_upkeep(self, actions, playback, unit):
@@ -173,13 +162,13 @@ class ResistStatus(SkillComponent):
     desc = "Unit is only affected by statuses for a turn"
     tag = SkillTags.STATUS
 
-    def on_add(self, unit, skill):
+    def before_add(self, unit, skill):
         for skill in unit.skills:
-            if skill.time:
+            if skill.time or skill.end_time or skill.combined_time:
                 action.do(action.SetObjData(skill, 'turns', min(skill.data['turns'], 1)))
 
-    def on_gain_skill(self, unit, other_skill):
-        if other_skill.time:
+    def before_gain_skill(self, unit, other_skill):
+        if other_skill.time or other_skill.end_time or other_skill.combined_time:
             action.do(action.SetObjData(other_skill, 'turns', min(other_skill.data['turns'], 1)))
 
 class ImmuneStatus(SkillComponent):
@@ -187,12 +176,12 @@ class ImmuneStatus(SkillComponent):
     desc = "Unit is not affected by negative statuses"
     tag = SkillTags.STATUS
 
-    def on_add(self, unit, skill):
+    def after_add(self, unit, skill):
         for skill in unit.skills:
             if skill.negative:
                 action.do(action.RemoveSkill(unit, skill))
 
-    def on_gain_skill(self, unit, other_skill):
+    def after_gain_skill(self, unit, other_skill):
         if other_skill.negative:
             action.do(action.RemoveSkill(unit, other_skill))
 
@@ -201,7 +190,7 @@ class ReflectStatus(SkillComponent):
     desc = "Unit reflects statuses back to initiator"
     tag = SkillTags.STATUS
 
-    def on_gain_skill(self, unit, other_skill):
+    def after_gain_skill(self, unit, other_skill):
         if other_skill.initiator_nid:
             other_unit = game.get_unit(other_skill.initiator_nid)
             if other_unit:

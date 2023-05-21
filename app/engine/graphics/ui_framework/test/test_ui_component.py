@@ -4,7 +4,7 @@ from app.constants import WINHEIGHT, WINWIDTH
 from app.engine import engine
 
 from ..ui_framework import UIComponent
-from ..ui_framework_layout import HAlignment, VAlignment
+from app.utilities.enums import HAlignment, VAlignment
 
 class UIComponentTests(unittest.TestCase):
     def ASSERT_REDRAW_AND_RESET(self, comp: UIComponent, val: bool):

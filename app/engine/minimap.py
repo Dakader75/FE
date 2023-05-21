@@ -3,7 +3,7 @@ from app.constants import WINWIDTH, WINHEIGHT, TILEX, TILEY
 from app.utilities import utils
 from app.sprites import SPRITES
 from app.engine.sound import get_sound_thread
-from app.data.database import DB
+from app.data.database.database import DB
 from app.engine import engine, image_mods
 from app.engine.state import MapState
 from app.engine.game_state import game
@@ -231,12 +231,12 @@ class MiniMap(object):
                 self.surf.blit(sprite, (x*self.scale_factor, y*self.scale_factor))
 
         # Fog of War
-        if game.level_vars['_fog_of_war']:
+        if game.level_vars.get('_fog_of_war', False) or game.board.fog_region_set:
             for x in range(self.width):
                 for y in range(self.height):
                     if not game.board.in_vision((x, y)):
                         mask = (x * self.scale_factor, y * self.scale_factor, self.scale_factor, self.scale_factor)
-                        if game.level_vars['_fog_of_war'] == 2:
+                        if game.level_vars.get('_fog_of_war_type', 0) == 2:
                             engine.fill(self.surf, (12, 12, 12), mask)
                         else:
                             engine.fill(self.surf, (128, 128, 128), mask, engine.BLEND_RGB_MULT)

@@ -29,6 +29,9 @@ class TerrainPainterMenu(QWidget):
     def on_visibility_changed(self, state):
         pass
 
+    def reset(self):
+        self.model.layoutChanged.emit()
+
     def set_current_nid(self, nid):
         idx = self.model.index(DB_terrain.index(nid))
         self.list_view.setCurrentIndex(idx)

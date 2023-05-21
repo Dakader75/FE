@@ -1,26 +1,27 @@
 from __future__ import annotations
 
-from app.constants import COLORKEY
-from app.engine.objects.item import ItemObject
-
 from typing import Callable, List, Tuple
 
-from app.data.database import DB
-from app.data.items import ItemPrefab
-from app.data.klass import Klass
-from app.data.skills import SkillPrefab
+from app.constants import COLORKEY
+from app.data.database.database import DB
+from app.data.database.items import ItemPrefab
+from app.data.database.klass import Klass
+from app.data.database.skills import SkillPrefab
+from app.data.resources.resources import RESOURCES
 from app.engine import engine
 from app.engine.game_menus.menu_components.generic_menu.simple_menu import \
     SimpleIconTable
 from app.engine.game_state import game
 from app.engine.graphics.ui_framework.ui_framework import UIComponent
-from app.engine.graphics.ui_framework.ui_framework_layout import HAlignment, convert_align
+from app.engine.graphics.ui_framework.ui_framework_layout import convert_align
 from app.engine.icons import draw_chibi, get_icon, get_icon_by_nid
+from app.engine.objects.item import ItemObject
 from app.engine.objects.unit import UnitObject
-from app.resources.resources import RESOURCES
 from app.sprites import SPRITES
-from app.utilities.enums import Alignments, Orientation
+from app.utilities.enums import Alignments, HAlignment, Orientation
 from app.utilities.typing import NID
+
+
 class SimpleMenuUI():
     def __init__(self, data: List[str] | Callable[[], List] = None, data_type: str = 'str',
                  title: str = None, rows: int = 0, cols: int = 1, row_width: int = -1,

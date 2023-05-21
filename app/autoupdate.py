@@ -1,5 +1,6 @@
-import sys, os, subprocess
+import shutil, sys, os
 import urllib.request
+from zipfile import ZipFile
 
 remote_repo = r"https://gitlab.com/rainlash/lt-maker/-/releases/permalink/latest/downloads/lex_talionis_maker"
 remote_latest = r"https://gitlab.com/rainlash/lt-maker/-/releases/permalink/latest"
@@ -23,7 +24,6 @@ def get_redirected_url(url): # https://stackoverflow.com/questions/5538280/deter
     request = opener.open(url)
     return request.url
 
-# Check
 def check_for_update() -> bool:
     version_url = get_redirected_url(remote_latest)
     version_num = version_url.index("releases/") + len("releases/") # Will point to start of release ID
@@ -47,23 +47,95 @@ def check_for_update() -> bool:
         print("Cannot find version.txt, so needs update: %s!" % metadata)
         return True
 
-CREATE_NEW_CONSOLE = 0x00000010
+def copy_and_overwrite(src, dst):
+    if os.path.exists(dst):
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst)
 
-# Start a new process that will update all files
+# Update all files -- probably buggy as hell
 def update() -> bool:
-    print("Starting Process! %s" % remote_repo)
     print("Executable: %s" % sys.executable)
     local = os.path.dirname(sys.executable)
-    print("Local: %s" % local)
+    print("Local: %s %s" % (local, os.path.abspath(local)))
     cwd = os.path.abspath(os.getcwd())
     print("Current working directory: %s" % cwd)
-    pid = subprocess.Popen(['./autoupdater.exe', cwd, remote_repo], creationflags=CREATE_NEW_CONSOLE).pid
-    # Just for testing
-    # pid = subprocess.Popen(['python', 'autoupdater.py', local, remote_repo], creationflags=CREATE_NEW_CONSOLE).pid
+    # Make backup of current working directory
+    print("Making backup of current working directory...")
+    current_backup = cwd + '.tmp'
+    shutil.copytree(cwd, current_backup)
 
-    print("pid: %d" % pid)
+    print("Starting Process! %s" % remote_repo)
+    remote_zip = r"remote_tmp.zip"
+    download_url(remote_repo, remote_zip)
+    print(os.path.abspath(remote_zip))
+    remote_dir = os.path.abspath(remote_zip.replace('.zip', '/'))
+    print(remote_dir)
+    try:
+        with ZipFile(remote_zip, 'r') as z:
+            print("Extracting...")
+            z.extractall(remote_dir)
+        print("Done extracting to %s" % os.path.abspath(remote_dir))
+    except OSError as e:
+        print("Failed to fully unzip remote %s to %s! %s" % (remote_zip, remote_dir, e))
+        return False
+
+    print("Deleting zip")
+    try:
+        os.remove(remote_zip)
+    except OSError as e:
+        print("Failed to delete zip %s! %s" % (remote_zip, e))
+        return False
+
+    true_remote_dir = os.path.join(remote_dir, 'lt_editor', 'lt_editor')
+    potential_changes = [
+        'lt_editor.exe',
+        'VCRunTIME.dll',
+        'base_library.zip',
+        'app/',
+        'default.ltproj/',
+        'icons/',
+        'locale/',
+        'resources/',
+        'sprites/'
+    ]
+
+    try:
+        # diff current_backup and remote_dir
+        # import filecmp
+        # new = os.path.join(remote_dir, 'lt_editor', 'lt_editor')
+        # print(new)
+        # diff = filecmp.dircmp(new, current_backup)
+        # print("*** Diff Report ***")
+        # diff.report()
+        # print("*** Diff Full Report ***")
+        # diff.report_full_closure()
+        
+        for fn in potential_changes:
+            zip_path = os.path.join(true_remote_dir, fn)
+            old_path = os.path.join(cwd, fn)
+            print("Copying %s to %s..." % (zip_path, old_path))
+            if os.path.isdir(old_path):
+                copy_and_overwrite(zip_path, old_path)
+            else:
+                shutil.copy(zip_path, old_path)
+
+    except OSError as e:
+        print("Failed to completely upgrade files when copying %s to %s! %s" % (true_remote_dir, cwd, e))
+        print("Replacing with backup...")
+        for fn in potential_changes:
+            backup_path = os.path.join(current_backup, fn)
+            your_path = os.path.join(cwd, fn)
+            print("Copying %s to %s..." % (backup_path, your_path))
+            if os.path.isdir(your_path):
+                copy_and_overwrite(backup_path, your_path)
+            else:
+                shutil.copy(backup_path, your_path)
+        return False
+
+    finally:
+        shutil.rmtree(remote_dir)
+        shutil.rmtree(current_backup)
     return True
-
-
+    
 if __name__ == '__main__':
     check_for_update()

@@ -98,10 +98,10 @@ if;unit.get_weapon()
     if;game.game_vars['ArenaChoice'] == 'Yes'
         sound;GoldExchange
         give_money;{eval:-game.level_vars['ArenaWager']};no_banner
-        s;;Good luck. Don't get yourself killed.60,8;160;clear
+        speak;;Good luck. Don't get yourself killed.;60,8;160;clear
         t;close
-        interact_unit;{unit};{created_unit};;20;arena;force_animation
-        if;unit2.is_dying or unit2.dead
+        interact_unit;{unit};{created_unit};;;20;arena;force_animation
+        if;created_unit.is_dying or created_unit.dead
             t;open
             s;;So you won, eh? Here's your prize. {eval:2*game.level_vars['ArenaWager']} gold.;60,8;160;clear
             sound;GoldExchange
@@ -173,7 +173,7 @@ if;unit.get_weapon()
         speak;;Good luck. Don't get yourself killed.;60,8;160;clear
         transition;close
         interact_unit;{unit};{created_unit};;;20;arena;force_animation
-        if;unit2.is_dying or unit2.dead
+        if;created_unit.is_dying or created_unit.dead
             transition;open
             speak;;So you won, eh? Here's your prize. {eval:2*game.level_vars['ArenaWager']} gold.;60,8;160;clear
             sound;GoldExchange

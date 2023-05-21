@@ -64,6 +64,12 @@ class LevelRecord(Record):
         self.num = num
         self.klass = klass
 
+class MoneyRecord(Record):
+    def __init__(self, party_nid: str, num: int):
+        super().__init__()
+        self.party_nid = party_nid
+        self.num = num
+
 class Recordkeeper():
     """
     Needs to keep track of:
@@ -81,6 +87,7 @@ class Recordkeeper():
     Stealing an Item
     Recruiting a Unit
     Turns Taken
+    Money Gained/Lost
 
     And for all these, needs to know what Chapter and Turn
     """
@@ -96,6 +103,7 @@ class Recordkeeper():
         self.turns_taken = []
         self.levels = []
         self.exp = []
+        self.money = []
 
     def save(self):
         ser_dict = {}
@@ -109,6 +117,7 @@ class Recordkeeper():
         ser_dict['turns_taken'] = [record.save() for record in self.turns_taken]
         ser_dict['levels'] = [record.save() for record in self.levels]
         ser_dict['exp'] = [record.save() for record in self.exp]
+        ser_dict['money'] = [record.save() for record in self.money]
         return ser_dict
 
     @classmethod
@@ -148,6 +157,8 @@ class Recordkeeper():
             self.levels.append(LevelRecord(*data))
         elif record_type == 'exp_gain':
             self.exp.append(LevelRecord(*data))
+        elif record_type == 'money':
+            self.money.append(MoneyRecord(*data))
 
     def pop(self, record_type: str) -> Record:
         if record_type == 'kill':
@@ -157,7 +168,7 @@ class Recordkeeper():
         elif record_type == 'heal':
             return self.healing.pop()
         elif record_type == 'death':
-            return self.player_death.pop()
+            return self.player_death.pop()  # Death records aren't overwritten by turnwheel
         elif record_type == 'item_use':
             return self.item_use.pop()
         elif record_type == 'steal':
@@ -170,6 +181,8 @@ class Recordkeeper():
             return self.levels.pop()
         elif record_type == 'exp_gain':
             return self.exp.pop()
+        elif record_type == 'money_gain':
+            return self.money.pop()
 
     # Interogation functions
     def get_levels(self) -> list:
@@ -238,7 +251,7 @@ class Recordkeeper():
 
     def get_mvp(self, level_nid: str = None) -> str:
         """
-        Returns which unit has the highest score 
+        Returns which unit has the highest score
         of units that participated in the level
         If level_nid is None, instead for all levels
         """

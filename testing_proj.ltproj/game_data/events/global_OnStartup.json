@@ -1,0 +1,31 @@
+[
+    {
+        "name": "OnStartup",
+        "trigger": "on_startup",
+        "level_nid": null,
+        "condition": "True",
+        "commands": [
+            [
+                "enable_turnwheel",
+                [
+                    "t"
+                ]
+            ],
+            [
+                "add_market_item",
+                [
+                    "Steel Sword"
+                ]
+            ],
+            [
+                "game_var",
+                [
+                    "_convoy",
+                    "True"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

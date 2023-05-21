@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.utilities import utils
 
@@ -38,7 +38,7 @@ class SupportPair():
                 (not rank_limit or self.ranks_gained_this_chapter < rank_limit):
             reqs = support_prefab.requirements
             for bonus in reversed(reqs):
-                if self.points < bonus.requirement and self.points + 1 >= bonus.requirement:                     
+                if self.points < bonus.requirement and self.points + 1 >= bonus.requirement:
                     self.ranks_gained_this_chapter += 1
                     self.locked_ranks.append(bonus.support_rank)
             inc -= 1
@@ -205,7 +205,7 @@ class SupportController():
             return False
         else:
             dist = utils.calculate_distance(unit1.position, unit2.position)
-            return dist <= r 
+            return dist <= r
 
     def get_specific_bonus(self, unit1, unit2, highest_rank):
         for pair in DB.support_pairs:
@@ -221,6 +221,15 @@ class SupportController():
         aff2_nid = unit2.affinity
         aff1 = DB.affinities.get(aff1_nid)
         aff2 = DB.affinities.get(aff2_nid)
+        
+        # Check affinities exist before proceeding
+        if not aff1:
+            logging.error("%s is not a valid affinity", aff1_nid)
+            return SupportEffect()
+        if not aff2:
+            logging.error("%s is not a valid affinity", aff2_nid)
+            return SupportEffect()
+
         aff1_bonus = None
         aff2_bonus = None
         for support_rank_bonus in aff1.bonus:
@@ -279,7 +288,7 @@ def increment_end_chapter_supports():
 
         unit_nids = {unit.nid for unit in units}
         for support_prefab in DB.support_pairs:
-            if support_prefab.unit1 in unit_nids and support_prefab.unit2 in unit_nids:     
+            if support_prefab.unit1 in unit_nids and support_prefab.unit2 in unit_nids:
                 action.do(action.IncrementSupportPoints(support_prefab.nid, inc))
 
     # Reset max number of support points and rank that can be gotten in one chapter
@@ -325,6 +334,8 @@ def increment_end_combat_supports(combatant, target=None) -> list:
     """
     if not game.game_vars.get('_supports'):
         return []
+    if not combatant.position:
+        return []
     inc = DB.support_constants.value('combat_points')
     pairs = []
     if inc:
@@ -339,6 +350,7 @@ def increment_end_combat_supports(combatant, target=None) -> list:
                 other_unit = game.get_unit(support_prefab.unit1)
             if not other_unit:
                 continue
+            assert other_unit.position is not None   
             if dist == 0 and target:
                 if target.position in target_system.get_attacks(other_unit, force=True):
                     action.do(action.IncrementSupportPoints(support_prefab.nid, inc))

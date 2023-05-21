@@ -1,9 +1,11 @@
 from __future__ import annotations
+from typing import Optional
 from app.engine.graphics.ui_framework.premade_components.plain_text_component import PlainTextLine
 
 from app.engine import engine
 
-from ..ui_framework import HAlignment, UIComponent
+from ..ui_framework import UIComponent
+from app.utilities.enums import HAlignment
 from ..ui_framework_layout import ListLayoutStyle, UILayoutType
 from ..ui_framework_styling import UIMetric
 
@@ -37,8 +39,12 @@ class IconRow(UIComponent):
         self.update_font()
 
     def set_text(self, text: str):
+        if text != self.text.text:
+            self._should_redraw = True
         self.text.set_text(text)
-        self._should_redraw = True
+
+    def set_data(self, data: Optional[str]):
+        self.data = data
 
     def update_font(self):
         total_width = self.icon.width + self.text.twidth

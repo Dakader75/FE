@@ -8,7 +8,7 @@ from app.engine.fluid_scroll import FluidScroll
 from app.engine.input_manager import get_input_manager
 from app.engine.sound import get_sound_thread
 from app.engine.sprites import SPRITES
-from app.utilities.enums import Direction
+from app.utilities.direction import Direction
 from app.utilities.utils import frames2ms, tclamp, tmult, tuple_sub
 from app.engine.engine import Surface
 

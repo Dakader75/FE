@@ -36,6 +36,8 @@ class NaiveBacktrackingThread(QThread):
     def process_group(self):
         print("--- Process Group ---", id(self))
         # Determine coord 
+        self.did_complete = False
+        self.broke_out = False
         self.organization.clear()
         self.locked_values.clear()
         self.order.clear()

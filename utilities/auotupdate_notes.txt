@@ -1,0 +1,13 @@
+lt_editor.exe
+VCRunTIME.dll
+base_library.zip
+app/
+default.ltproj/
+icons/
+locale/
+resources/
+sprites/
+
+
+# Not saves/
+

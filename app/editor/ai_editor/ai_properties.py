@@ -4,11 +4,12 @@ from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, \
     QGridLayout, QListWidget, QListWidgetItem, QPushButton
 from PyQt5.QtCore import Qt
 
-import app.data.ai as ai
-from app.data.database import DB
+import app.data.database.ai as ai
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import PropertyBox, ComboBox, PropertyCheckBox
 from app.editor.custom_widgets import ClassBox, UnitBox, FactionBox, PartyBox
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 from app.utilities import str_utils
 
 # Target Specifications
@@ -51,7 +52,7 @@ class UnitSpecification(QWidget):
         name_box.activated.connect(self.sub_spec_changed)
         self.box2.addWidget(name_box)
         team_box = ComboBox(self)
-        team_box.addItems(['player', 'enemy', 'enemy2', 'other'])
+        team_box.addItems(DB.teams)
         team_box.activated.connect(self.sub_spec_changed)
         self.box2.addWidget(team_box)
         faction_box = FactionBox(self)
@@ -299,21 +300,31 @@ class BehaviourBox(QGroupBox):
         self.proximity_box.edit.setAlignment(Qt.AlignRight)
         self.proximity_box.edit.valueChanged.connect(self.set_desired_proximity)
 
+        self.condition_box = PropertyBox("Condition", QLineEdit, self)
+        self.condition_box.setToolTip("If Condition is false, behaviour is skipped.")
+        self.condition_box.edit.setMaximumWidth(200)
+        self.condition_box.edit.textChanged.connect(self.set_condition)
+
         self.within_label = QLabel(" within ")
 
-        self.layout.addWidget(self.action)
-        self.layout.addWidget(self.target)
+        left_layout = QGridLayout()
+        left_layout.addWidget(self.action, 0, 0)
+        left_layout.addWidget(self.target, 0, 1)
+        left_layout.addWidget(self.condition_box, 1, 0, 1, 2)
+
+        self.layout.addLayout(left_layout)
         self.layout.addWidget(self.target_spec)
+        self.layout.addWidget(self.speed_box)
+        self.layout.addWidget(self.proximity_box)
 
         self.show_range()
 
-        self.construct_roam_info(False)
+        self.show_roam_info(False)
 
         self.custom_view_range.hide()
         self.setLayout(self.layout)
 
     def show_range(self):
-        # self.target.value() != 'Time'
         if isinstance(self.target_spec.currentWidget(), WaitSpecification):
             self.within_label.setParent(None)
             self.view_range.setParent(None)
@@ -332,17 +343,16 @@ class BehaviourBox(QGroupBox):
     def set_desired_proximity(self, val):
         self.current.desired_proximity = int(val)
 
-    def construct_roam_info(self, enable: bool):
-        if enable and self.current and self.current.action != "Wait":
+    def set_condition(self, val: str):
+        self.current.condition = val
+
+    def show_roam_info(self, enable: bool):
+        if enable and self.target_spec and not isinstance(self.target_spec.currentWidget(), WaitSpecification):
             self.speed_box.show()
             self.proximity_box.show()
-            self.layout.addWidget(self.speed_box)
-            self.layout.addWidget(self.proximity_box)
         else:
             self.speed_box.hide()
             self.proximity_box.hide()
-            self.layout.removeWidget(self.speed_box)
-            self.layout.removeWidget(self.proximity_box)
 
     def action_changed(self, index):
         action = self.action.currentText().replace(' ', '_')
@@ -416,6 +426,11 @@ class BehaviourBox(QGroupBox):
             self.custom_view_range.setValue(int(behaviour.view_range))
             self.view_range.setCurrentIndex(4)
 
+        if behaviour.condition:
+            self.condition_box.edit.setText(behaviour.condition)
+        else:
+            self.condition_box.edit.setText("")
+
 class AIProperties(QWidget):
     def __init__(self, parent, current=None):
         super().__init__(parent)
@@ -428,7 +443,7 @@ class AIProperties(QWidget):
 
         self.top_section = QHBoxLayout()
 
-        self.nid_box = PropertyBox("Unique ID", QLineEdit, self)
+        self.nid_box = PropertyBox("Unique ID", NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         self.top_section.addWidget(self.nid_box)
@@ -477,12 +492,8 @@ class AIProperties(QWidget):
 
     def construct_roam_info(self):
         if self.current:
-            enable = False
-            if self.current.roam_ai:
-                enable = True
-
             for b in self.behaviour_boxes:
-                b.construct_roam_info(enable)
+                b.show_roam_info(self.current.roam_ai)
 
     def nid_changed(self, text):
         self.current.nid = text
@@ -534,6 +545,8 @@ class AIProperties(QWidget):
         if self.current and set_current:
             self.current.add_default()
             behaviour_box.set_current(self.current.behaviours[-1])
+
+        self.construct_roam_info()
 
     def set_current(self, current):
         self.current = current

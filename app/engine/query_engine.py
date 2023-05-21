@@ -1,21 +1,25 @@
 from __future__ import annotations
+
 import logging
-from typing import List, Tuple
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
-from app.engine.game_state import GameState
-from app.engine.objects.item import ItemObject
-from app.engine.objects.skill import SkillObject
-from app.engine.objects.unit import UnitObject
-from app.events.regions import Region
+if TYPE_CHECKING:
+    from app.engine.game_state import GameState
+    from app.engine.objects.item import ItemObject
+    from app.engine.objects.region import RegionObject
+    from app.engine.objects.skill import SkillObject
+    from app.engine.objects.unit import UnitObject
+    from app.utilities.typing import NID
+
 from app.utilities import utils
-from app.utilities.typing import NID
-
 
 class QueryType():
     UNIT = 'Units'
     SKILL = 'Skills'
     ITEM = 'Items'
     MAP = 'Map Functions'
+    ACHIEVEMENT = 'Achievements'
+    VARIABLES = 'VARIABLES'
 
 def categorize(tag):
     def deco(func):
@@ -27,6 +31,8 @@ class GameQueryEngine():
     def __init__(self, logger: logging.Logger, game: GameState) -> None:
         self.logger = logger
         self.game = game
+        query_funcs = [funcname for funcname in dir(self) if not funcname.startswith('_')]
+        self.func_dict = {funcname: getattr(self, funcname) for funcname in query_funcs}
 
     def _resolve_to_nid(self, obj_or_nid) -> NID:
         try:
@@ -37,24 +43,27 @@ class GameQueryEngine():
             except:
                 return obj_or_nid
 
-    def _resolve_to_unit(self, unit_or_nid) -> UnitObject:
+    def _resolve_to_unit(self, unit_or_nid) -> Optional[UnitObject]:
         nid = self._resolve_to_nid(unit_or_nid)
         return self.game.get_unit(nid)
 
-    def _resolve_to_region(self, region_or_nid) -> Region:
+    def _resolve_to_region(self, region_or_nid) -> Optional[RegionObject]:
         nid = self._resolve_to_nid(region_or_nid)
         return self.game.get_region(nid)
 
-    def _resolve_pos(self, has_pos_or_is_pos) -> Tuple[int, int] | None:
+    def _resolve_pos(self, has_pos_or_is_pos) -> Optional[Tuple[int, int]]:
         try:
             # possibly a unit?
-            has_pos_or_is_pos = self._resolve_to_unit(has_pos_or_is_pos)
-            return has_pos_or_is_pos.position
+            a_unit = self._resolve_to_unit(has_pos_or_is_pos)
+            if a_unit:
+                return a_unit.position
+            else:
+                return has_pos_or_is_pos
         except:
             return has_pos_or_is_pos
 
     @categorize(QueryType.ITEM)
-    def get_item(self, unit, item) -> ItemObject:
+    def get_item(self, unit, item) -> Optional[ItemObject]:
         """Returns a item object by nid.
 
         Args:
@@ -62,14 +71,16 @@ class GameQueryEngine():
             item: item to check
 
         Returns:
-            ItemObject | None: Item if exists on unit, otherwise None
+            Optional[ItemObject] | None: Item if exists on unit, otherwise None
         """
         item = self._resolve_to_nid(item)
+        found_items = []
         if unit == 'convoy':
             found_items = [it for it in self.game.get_convoy_inventory() if it.uid == item or it.nid == item]
         else:
             unit = self._resolve_to_unit(unit)
-            found_items = [it for it in unit.items if it.uid == item or it.nid == item]
+            if unit:
+                found_items = [it for it in unit.items if it.uid == item or it.nid == item]
         if found_items:
             return found_items[0]
         return None
@@ -94,8 +105,10 @@ Example usage:
             bool: True if unit has item, else False
         """
         all_units = self.game.get_all_units() if not party else self.game.get_all_units_in_party(party)
-        convoy = None
+        convoy: List[ItemObject] = []
         item = self._resolve_to_nid(item)
+        if not item:
+            return False
         if not nid or nid == 'convoy':
             if nid == 'convoy' or team == 'player':
                 convoy = self.game.get_convoy_inventory()
@@ -115,7 +128,7 @@ Example usage:
         return False
 
     @categorize(QueryType.SKILL)
-    def get_skill(self, unit, skill) -> SkillObject:
+    def get_skill(self, unit, skill) -> Optional[SkillObject]:
         """Returns a skill object by nid.
 
         Args:
@@ -123,13 +136,14 @@ Example usage:
             skill: nid of skill
 
         Returns:
-            SkillObject | None: Skill, if exists on unit, else None.
+            Optional[SkillObject] | None: Skill, if exists on unit, else None.
         """
         unit = self._resolve_to_unit(unit)
         skill = self._resolve_to_nid(skill)
-        for sk in unit.skills:
-            if sk.nid == skill:
-                return sk
+        if unit:
+            for sk in unit.skills:
+                if sk.nid == skill:
+                    return sk
         return None
 
     @categorize(QueryType.SKILL)
@@ -159,8 +173,44 @@ Example usage:
             Will return fewer if there are fewer player units than `num`.
         """
         position = self._resolve_pos(position)
-        return sorted([(unit, utils.calculate_distance(unit.position, position)) for unit in self.game.get_player_units()],
-                      key=lambda pair: pair[1])[:num]
+        if position:
+            return sorted([(unit, utils.calculate_distance(unit.position, position)) for unit in self.game.get_player_units()],
+                        key=lambda pair: pair[1])[:num]
+        return []
+
+    @categorize(QueryType.MAP)
+    def get_units_within_distance(self, position, dist: int = 1, nid=None, team=None, tag=None, party=None) -> List[Tuple[UnitObject, int]]:
+        """Return a list containing all units within `dist` distance to the specific position
+        that match specific criteria
+
+        Args:
+            position: position or unit
+            dist (int, optional): How far to search. Defaults to 1.
+            nid (optional): use to check specific unit nid
+            team (optional): used to match for team. one of 'player', 'enemy', 'enemy2', 'other'
+            tag (optional): used to match for tag.
+            party (optional): used to match for party
+
+        Returns:
+            List[Tuple[UnitObject, int]]: Returns all pairs of `(unit, distance)`
+            within the specified `dist` that match criteria.
+        """
+        position = self._resolve_pos(position)
+        res = []
+        for unit in self.game.get_all_units():
+            if tag and not tag in unit.tags:
+                continue
+            if nid and not unit.nid == nid:
+                continue
+            if team and not unit.team == team:
+                continue
+            if party and not unit.party == party:
+                continue
+            if position:
+                distance = utils.calculate_distance(unit.position, position)
+                if distance <= dist:
+                    res.append(unit)
+        return res
 
     @categorize(QueryType.MAP)
     def get_allies_within_distance(self, position, dist: int = 1) -> List[Tuple[UnitObject, int]]:
@@ -174,8 +224,7 @@ Example usage:
             List[Tuple[UnitObject, int]]: Returns all pairs of `(unit, distance)`
             within the specified `dist`.
         """
-        position = self._resolve_pos(position)
-        return [(unit, utils.calculate_distance(unit.position, position)) for unit in self.game.get_player_units() if utils.calculate_distance(unit.position, position) <= dist]
+        return self.get_units_within_distance(position, dist, team='player')
 
     @categorize(QueryType.MAP)
     def get_units_in_area(self, position_corner_1: Tuple[int, int], position_corner_2: Tuple[int, int]) -> List[UnitObject]:
@@ -213,7 +262,9 @@ Example usage:
             int: Number of unique negative skills on the unit
         """
         unit = self._resolve_to_unit(unit)
-        return len([skill for skill in unit.skills if skill.negative])
+        if unit:
+            return len([skill for skill in unit.skills if skill.negative])
+        return 0
 
     @categorize(QueryType.MAP)
     def get_units_in_region(self, region, nid=None, team=None, tag=None) -> List[UnitObject]:
@@ -234,6 +285,8 @@ Example usage:
             List[UnitObject]: all units matching the criteria in the region
         """
         region = self._resolve_to_region(region)
+        if not region:
+            return []
         all_units = []
         for unit in self.game.get_all_units():
             if nid and nid != unit.nid:
@@ -247,7 +300,7 @@ Example usage:
         return all_units
 
     @categorize(QueryType.MAP)
-    def any_unit_in_region(self, region, nid=None, team=None, tag=None) -> List[UnitObject]:
+    def any_unit_in_region(self, region, nid=None, team=None, tag=None) -> bool:
         """checks if any unit matching the criteria is in the region
 
 Example usage:
@@ -277,4 +330,85 @@ Example usage:
             bool: if the unit has died
         """
         unit = self._resolve_to_unit(unit)
-        return self.game.check_dead(unit)
+        if unit:
+            return self.game.check_dead(unit.nid)
+        return False
+
+    @categorize(QueryType.UNIT)
+    def u(self, unit) -> Optional[UnitObject]:
+        """Shorthand for game.get_unit. Fetches the unit object.
+
+        Args:
+            unit: unit nid
+
+        Returns:
+            Optional[UnitObject]: the actual unit object, if exists, else None
+        """
+        return self._resolve_to_unit(unit)
+
+    @categorize(QueryType.UNIT)
+    def get_support_rank(self, unit1, unit2) -> Optional[NID]:
+        """Returns the most recently obtained support rank between two units.
+
+        Args:
+            unit1: unit in the support pair
+            unit2: the other unit in the support pair
+
+        Returns:
+            Rank nid: if the two units have achieved a support rank.
+            none: if the support pair is invalid or no rank has been obtained
+        """
+        unit1 = self._resolve_to_nid(unit1)
+        unit2 = self._resolve_to_nid(unit2)
+
+        support_pair = self.game.supports.get(unit1, unit2)
+        if support_pair and support_pair.unlocked_ranks:
+            most_recent_rank = support_pair.unlocked_ranks[-1]
+            return most_recent_rank
+        else: # no support exists, or no support is unlocked
+            return None
+
+    @categorize(QueryType.MAP)
+    def get_terrain(self, pos) -> Optional[NID]:
+        """Returns the terrain at position, or, if unit is provided,
+        the terrain underneath the unit.
+
+        Args:
+            pos: Position tuple or unit
+
+        Returns:
+            Optional[NID]: the nid of the region, or None if the position is invalid
+        """
+        pos = self._resolve_pos(pos)
+        return self.game.get_terrain_nid(self.game.tilemap, pos)
+
+    @categorize(QueryType.VARIABLES)
+    def v(self, varname, fallback=None) -> Any:
+        """shorthand for game.level_vars.get and game.game_vars.get. Fetches the variable
+        if game.level_vars and game.game_vars share an identical name,
+        game.level_vars takes priority
+
+        Args:
+            varname: name of the variable
+            fallback: fallback value, if any. Defaults to None
+
+        Returns:
+            Any: the value of the variable
+        """
+        var = self.game.level_vars.get(varname, None)
+        if var is None:
+            var = self.game.game_vars.get(varname, fallback)
+        return var
+
+    @categorize(QueryType.ACHIEVEMENT)
+    def has_achievement(self, nid) -> bool:
+        """Checks if an achievement is completed
+
+        Args:
+            nid: nid to check for completion
+
+        Returns:
+            bool: if the achievement exists
+        """
+        from app.engine.achievements import ACHIEVEMENTS
+        return ACHIEVEMENTS.check_achievement(nid)

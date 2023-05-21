@@ -26,6 +26,8 @@ These variables are saved for the entirety of a given game.
 
 `_convoy` **bool** Set to True to give the player access to the convoy.
 
+`_turnwheel` **bool** Set to True to give the player access to the turnwheel.
+
 `_supports` **bool** Set to True to give the player access to support conversations and have characters gain support points.
 
 `_fatigue` **int** Set to 0 to turn off fatigue. Set to 1 to have fatigue prevent unit from participating in a chapter. Set to 2 to have fatigue apply a Fatigued status when fatigue >= max fatigue and Rested when fatigue < max fatigue. Set to 3 to have the engine track fatigue but not do anything with it by default.
@@ -55,9 +57,11 @@ These variables are cleared after winning or losing the current level
 
 `_level_end_triggered` **bool** Internal to the engine; Do not modify yourself.
 
-`_fog_of_war` **int** Defaults to 0
-    0 - No fog of war.
-    1 - Entire map is revealed, but enemy positions are masked (like in the GBA)
+`_fog_of_war` **bool** Determines whether there is a base fog of war
+
+`_fog_of_war_type` **int** Defaults to 0
+    0 - Entire map is revealed, but enemy positions are masked (like in the GBA)
+    1 - Entire map is revealed, but enemy positions are masked (like in the GBA) (yes, these are identical for past compatibility reasons)
     2 - Both map and enemy positions are masked (like in Thracia)
 
 `_fog_of_war_radius` **int** The distance that player units will be able to see in the fog. Defaults to 0.

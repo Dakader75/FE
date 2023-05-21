@@ -1,4 +1,4 @@
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.editor.base_database_gui import DatabaseTab
 from app.editor.data_editor import SingleDatabaseEditor
@@ -10,7 +10,7 @@ class LoreDatabase(DatabaseTab):
     def create(cls, parent=None):
         data = DB.lore
         title: str = 'lore'
-        right_frame = lore_properties.LoreProperties 
+        right_frame = lore_properties.LoreProperties
 
         collection_model = lore_model.LoreModel
         dialog = cls(data, title, right_frame, (None, None, None), collection_model, parent)
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     import sys
     from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)
-    from app.resources.resources import RESOURCES
+    from app.data.resources.resources import RESOURCES
     RESOURCES.load('default.ltproj')
     DB.load('default.ltproj')
     window = SingleDatabaseEditor(LoreDatabase)

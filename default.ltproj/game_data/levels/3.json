@@ -3,6 +3,7 @@
         "nid": "3",
         "name": "Ch. 3: The Bandits of Borgo",
         "tilemap": "Chapter 3",
+        "bg_tilemap": null,
         "party": "Eirika",
         "music": {
             "player_phase": null,
@@ -27,6 +28,7 @@
                 "nid": "Eirika",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     2,
@@ -39,6 +41,7 @@
                 "nid": "Seth",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     1,
@@ -51,6 +54,7 @@
                 "nid": "Franz",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     0,
@@ -63,6 +67,7 @@
                 "nid": "Gilliam",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     1,
@@ -75,6 +80,7 @@
                 "nid": "Vanessa",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     2,
@@ -87,6 +93,7 @@
                 "nid": "Moulder",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     3,
@@ -99,6 +106,7 @@
                 "nid": "Ross",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     3,
@@ -111,6 +119,7 @@
                 "nid": "Garcia",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     2,
@@ -123,6 +132,7 @@
                 "nid": "Neimi",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     1,
@@ -135,6 +145,7 @@
                 "nid": "Colm",
                 "team": "other",
                 "ai": "Thief",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": null,
                 "starting_traveler": null,
@@ -144,6 +155,7 @@
                 "nid": "Bazba",
                 "team": "enemy",
                 "ai": "Guard",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     14,
@@ -166,6 +178,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     7,
@@ -188,6 +201,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     9,
@@ -210,6 +224,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     14,
@@ -236,6 +251,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     5,
@@ -262,6 +278,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     7,
@@ -288,6 +305,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     14,
@@ -314,6 +332,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     15,
@@ -336,6 +355,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     12,
@@ -358,6 +378,7 @@
                 ],
                 "team": "enemy",
                 "ai": "SimpleThief",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     9,
@@ -375,6 +396,7 @@
                 "starting_items": [],
                 "team": "enemy",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     4,
@@ -392,6 +414,7 @@
                 "starting_items": [],
                 "team": "enemy",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     4,
@@ -409,6 +432,7 @@
                 "starting_items": [],
                 "team": "enemy",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     8,
@@ -426,6 +450,7 @@
                 "starting_items": [],
                 "team": "other",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": null,
                 "starting_traveler": null,

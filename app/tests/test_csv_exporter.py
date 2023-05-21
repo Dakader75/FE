@@ -1,15 +1,15 @@
 from typing import List
 import unittest
 from unittest.mock import MagicMock, patch, call
-from app.data.items import ItemCatalog
-from app.data.klass import ClassCatalog
-from app.data.units import UnitCatalog
+from app.data.database.items import ItemCatalog
+from app.data.database.klass import ClassCatalog
+from app.data.database.units import UnitCatalog
 
-import app.editor.lib.csv.csv_exporter as csv
+import app.editor.lib.csv.csv_data_exporter as csv
 
 class CsvExporterTests(unittest.TestCase):
     def setUp(self):
-        from app.data.database import Database
+        from app.data.database.database import Database
         self.db = Database()
         self.db.load('testing_proj.ltproj')
 

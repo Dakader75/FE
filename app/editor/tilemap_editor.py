@@ -9,11 +9,12 @@ from PyQt5.QtWidgets import QSplitter, QFrame, QVBoxLayout, QDialogButtonBox, \
     QDesktopWidget, QFileDialog, QMessageBox, QHBoxLayout
 from PyQt5.QtCore import Qt, QRect, QDateTime
 from PyQt5.QtGui import QImage, QPainter, QPixmap, QIcon, QColor, QPen
+from app import dark_theme
 
 from app.constants import TILEWIDTH, TILEHEIGHT, TILEX, TILEY
-from app.resources.resources import RESOURCES
-from app.resources.tiles import LayerGrid
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.resources.tiles import LayerGrid
+from app.data.database.database import DB
 
 from app.editor.tile_editor import autotiles
 from app.editor.icon_editor.icon_view import IconView
@@ -454,7 +455,7 @@ class MapEditorView(DraggableTileImageView):
                     self.erase_tile(tile_pos)
         elif self.right_selecting:
             self.find_coords()
-        elif event.buttons() & Qt.MiddleButton:
+        elif (event.buttons() & Qt.MiddleButton) and self.old_middle_pos is not None:
             offset = self.old_middle_pos - event.pos()
             self.old_middle_pos = event.pos()
 
@@ -561,11 +562,8 @@ class MapEditor(QDialog):
         self.view.update_view()
 
     def create_actions(self):
-        theme = self.settings.get_theme()
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
 
         paint_group = QActionGroup(self)
         self.brush_action = QAction(QIcon(f"{icon_folder}/brush.png"), "&Brush", self, shortcut="B", triggered=self.set_brush)
@@ -949,11 +947,9 @@ class LayerMenu(QWidget):
             self.window.update_view()
 
     def create_actions(self):
-        theme = self.settings.get_theme()
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
+
 
         self.move_up_action = QAction(QIcon(f"{icon_folder}/up.png"), "Move Up", triggered=self.move_up)
         self.move_down_action = QAction(QIcon(f"{icon_folder}/down.png"), "Move Down", triggered=self.move_down)
@@ -1072,11 +1068,9 @@ class TileSetMenu(QWidget):
         self.view.update_view()
 
     def create_actions(self):
-        theme = self.settings.get_theme()
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
+
 
         self.new_action = QAction(QIcon(f"{icon_folder}/file-plus.png"), "Load Tileset", triggered=self.new)
         self.delete_action = QAction(QIcon(f"{icon_folder}/x-circle.png"), "Unload Tileset", triggered=self.delete)

@@ -28,6 +28,7 @@
                 "nid": "Eirika",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     3,
@@ -48,8 +49,10 @@
                         false
                     ]
                 ],
+                "starting_skills": [],
                 "team": "enemy",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     7,
@@ -62,6 +65,7 @@
                 "nid": "Seth",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     6,
@@ -82,8 +86,10 @@
                         false
                     ]
                 ],
+                "starting_skills": [],
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     4,

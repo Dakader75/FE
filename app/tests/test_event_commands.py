@@ -26,24 +26,24 @@ class EventCommandUnitTests(unittest.TestCase):
 
     def test_determine_command_type(self):
         command1 = event_commands.determine_command_type("speak")
-        self.assertTrue(isinstance(command1, event_commands.Speak))
+        self.assertTrue(command1 == event_commands.Speak)
         # Test with tab in front
         command2 = event_commands.determine_command_type("    speak;Eirika;I am evil;;60")
-        self.assertTrue(isinstance(command2, event_commands.Speak))
+        self.assertTrue(command2 == event_commands.Speak)
 
     def test_determine_command_type_nickname(self):
         command = event_commands.determine_command_type("s;Eirika;I am evil;;60")
-        self.assertTrue(isinstance(command, event_commands.Speak))
+        self.assertTrue(command == event_commands.Speak)
 
     def test_determine_command_type_comment(self):
         command1 = event_commands.determine_command_type("#Hello")
-        self.assertTrue(isinstance(command1, event_commands.Comment))
+        self.assertTrue(command1 == event_commands.Comment)
         command2 = event_commands.determine_command_type("comment;Hello")
-        self.assertTrue(isinstance(command2, event_commands.Comment))
+        self.assertTrue(command2 == event_commands.Comment)
 
     def test_determine_command_type_fails(self):
         command = event_commands.determine_command_type("flgjklskl;sumerian;lorem ipsum")
-        self.assertTrue(isinstance(command, event_commands.Comment))
+        self.assertTrue(command == event_commands.Comment)
 
     def test_parse_text_to_command_typing(self):
         # Missing keyword
@@ -150,10 +150,10 @@ class EventCommandUnitTests(unittest.TestCase):
         self.assertEqual(parameters, command_parameters)
         self.assertEqual(flags, {"no_warn"})
         # Test with existing command and see if it runs convert using validators
-        command_parameters = {"Speaker": "Seth", "TextSpeed": "5.5"}
+        command_parameters = {"Speaker": "Seth", "Speed": "5.5"}
         command2 = event_commands.SpeakStyle(command_parameters)
         parameters, flags = event_commands.convert_parse(command2)
-        self.assertEqual(parameters, {"Speaker": "Seth", "TextSpeed": 5.5})
+        self.assertEqual(parameters, {"Speaker": "Seth", "Speed": 5.5})
         self.assertTrue(len(flags) == 0)
         # Test with flags and exising function
         command3, _ = event_commands.parse_text_to_command("give_item;Eirika;Rapier;FLAG(no_banner)", strict=True)
@@ -190,7 +190,7 @@ class EventCommandUnitTests(unittest.TestCase):
         # Test that when keyword types does not exist, it returns regular command
         command = event_commands.If()
         self.assertEqual(command.get_keyword_types(), command.keywords + command.optional_keywords)
-        command = event_commands.AddPortrait()
+        command = event_commands.Sound()
         self.assertEqual(command.get_keyword_types(), command.keywords + command.optional_keywords)
 
     def test_get_validator_from_keyword(self):
@@ -212,7 +212,7 @@ class EventCommandUnitTests(unittest.TestCase):
         self.assertEqual(command.get_index_from_keyword("Portrait"), 2)
 
     def test_check_event_signatures(self):
-        from app.utilities import str_utils    
+        from app.utilities import str_utils
 
         commands = event_commands.get_commands()
         for command in commands:

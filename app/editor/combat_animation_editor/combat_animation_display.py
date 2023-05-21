@@ -1,3 +1,5 @@
+from app import dark_theme
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 import time, os, glob
 import json
 import pickle
@@ -10,9 +12,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap, QIcon, QPainter
 
 from app.constants import WINWIDTH, WINHEIGHT
-from app.resources import combat_anims, combat_palettes
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources import combat_anims, combat_palettes
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 
 from app.editor.settings import MainSettingsController
 
@@ -36,7 +38,10 @@ import logging
 def populate_anim_pixmaps(combat_anim, force=False):
     for weapon_anim in combat_anim.weapon_anims:
         if not weapon_anim.pixmap or force:
-            weapon_anim.pixmap = QPixmap(weapon_anim.full_path)
+            if weapon_anim.full_path and os.path.exists(weapon_anim.full_path):
+                weapon_anim.pixmap = QPixmap(weapon_anim.full_path)
+            else:
+                continue
         for frame in weapon_anim.frames:
             if not frame.pixmap or force:
                 x, y, width, height = frame.rect
@@ -56,16 +61,13 @@ class CombatAnimProperties(QWidget):
 
         self.info_form = QFormLayout()
 
-        self.nid_box = QLineEdit()
+        self.nid_box = NidLineEdit()
         self.nid_box.textChanged.connect(self.nid_changed)
         self.nid_box.editingFinished.connect(self.nid_done_editing)
 
         self.settings = MainSettingsController()
-        theme = self.settings.get_theme(0)
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
 
         weapon_row = self.set_up_weapon_box(icon_folder)
         pose_row = self.set_up_pose_box(icon_folder)
@@ -831,9 +833,10 @@ class CombatAnimProperties(QWidget):
         if not os.path.exists(path):
             os.mkdir(path)
 
+        populate_anim_pixmaps(self.current)
         # Store all of this in anim_nid.ltanim folder
         # Gather reference to images for this effect
-        RESOURCES.combat_anims.save_image(path, self.current)
+        RESOURCES.combat_anims.save_image(path, self.current, temp=True)
         # Serialize into json form
         serialized_data = self.current.save()
         serialized_path = os.path.join(path, '%s_anim.json' % self.current.nid)

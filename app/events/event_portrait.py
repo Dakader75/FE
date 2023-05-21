@@ -1,34 +1,38 @@
 from app.utilities.typing import Point
-from app.resources.portraits import Portrait
+from app.data.resources.portraits import Portrait
 import random
 
 from app import counters
 from app.utilities import utils
-from app.constants import COLORKEY
+from app.constants import PORTRAIT_WIDTH, PORTRAIT_HEIGHT, COLORKEY
 
 from app.engine import engine, image_mods
 
 class EventPortrait():
-    width, height = 128, 112
+    width, height = PORTRAIT_WIDTH, PORTRAIT_HEIGHT
     main_portrait_coords = (0, 0, 96, 80)
-    chibi_coords = (96, 16, 32, 32)
+    chibi_coords = (width - 32, 16, 32, 32)
 
-    halfblink = (96, 48, 32, 16)
-    fullblink = (96, 64, 32, 16)
+    halfblink = (width - 32, 48, 32, 16)
+    fullblink = (width - 32, 64, 32, 16)
 
-    openmouth = (0, 96, 32, 16)
-    halfmouth = (32, 96, 32, 16)
-    closemouth = (64, 96, 32, 16)
+    openmouth = (0, height - 16, 32, 16)
+    halfmouth = (32, height - 16, 32, 16)
+    closemouth = (64, height - 16, 32, 16)
 
-    opensmile = (0, 80, 32, 16)
-    halfsmile = (32, 80, 32, 16)
-    closesmile = (64, 80, 32, 16)
+    opensmile = (0, height - 32, 32, 16)
+    halfsmile = (32, height - 32, 32, 16)
+    closesmile = (64, height - 32, 32, 16)
 
-    transition_speed = utils.frames2ms(14)
+    base_transition_speed = utils.frames2ms(14)
     travel_time = utils.frames2ms(15)
     bop_time = utils.frames2ms(8)
+    saturation_time = utils.frames2ms(10)
+    travel_speed_mult = 1
 
-    def __init__(self, portrait: Portrait, position: Point, priority, transition=False, slide=None, mirror=False, expressions=None):
+    def __init__(self, portrait: Portrait, position: Point, priority, 
+                 transition=False, slide=None, mirror=False, name='', expressions=None,
+                 speed_mult=1):
         self.portrait = portrait
         if not self.portrait.image:
             self.portrait.image = engine.image_load(self.portrait.full_path)
@@ -39,9 +43,11 @@ class EventPortrait():
         self.position = position
         self.priority = priority
         self.transition = transition
+        self.transition_speed = self.base_transition_speed * max(speed_mult, 0.001)
         self.transition_update = engine.get_time()
         self.slide = slide
         self.mirror = mirror
+        self.name = name
         self.expressions = expressions or set()
 
         self.transition_progress = 0
@@ -73,6 +79,10 @@ class EventPortrait():
         self.bop_height = 2
         self.last_bop = None
 
+        # For saturation
+        self.saturation = 1.
+        self.saturation_direction = 0
+
     def get_width(self):
         return 96
 
@@ -82,18 +92,26 @@ class EventPortrait():
     def set_expression(self, expression_list):
         self.expressions = expression_list
 
+    def saturate(self):
+        self.saturation_direction = 1
+
+    def desaturate(self):
+        self.saturation_direction = -1
+
     def bop(self, num=2, height=2):
         self.bops_remaining = num
         self.bop_state = False
         self.bop_height = height
         self.last_bop = engine.get_time()
 
-    def move(self, position):
+    def move(self, position, speed_mult=1):
         self.orig_position = self.position
         self.next_position = position
         self.moving = True
+        self.travel_speed_mult = max(0.001, speed_mult)
 
         self.travel_time = self.determine_travel_time(abs(self.next_position[0] - self.orig_position[0]))
+        self.travel_time = int(self.travel_time / speed_mult)
 
     def quick_move(self, position):
         self.position = position
@@ -156,7 +174,12 @@ class EventPortrait():
     def create_image(self):
         main_image = self.main_portrait.copy()
         # For smile image
-        if "Smile" in self.expressions:
+        if "OpenMouth" in self.expressions:
+            if "Smile" in self.expressions:
+                mouth_image = engine.subsurface(self.portrait.image, self.opensmile)
+            else:
+                mouth_image = engine.subsurface(self.portrait.image, self.openmouth)
+        elif "Smile" in self.expressions:
             if self.talk_state == 0:
                 mouth_image = engine.subsurface(self.portrait.image, self.closesmile)
             elif self.talk_state == 1 or self.talk_state == 3:
@@ -194,8 +217,16 @@ class EventPortrait():
 
     def update(self) -> bool:
         current_time = engine.get_time()
+        delta_time = engine.get_delta()
         self.update_talk(current_time)
         self.blink_counter.update(current_time)
+
+        if self.saturation_direction != 0:
+            self.saturation += self.saturation_direction * delta_time / self.saturation_time
+            self.saturation = utils.clamp(self.saturation, 0, 1)
+            # If reached one of the two extremes
+            if self.saturation == 0 or self.saturation == 1:
+                self.saturation_direction = 0
 
         if self.transition:
             # 14 frames for unit face to appear
@@ -228,6 +259,8 @@ class EventPortrait():
                 if travel_mag in (1, 4, 5, 6, 7):
                     self.bop_state = True
                     self.bop_height = 1
+                # Multiply by travel speed
+                travel_mag = min(self.travel_speed_mult * travel_mag, abs(diff_x))
                 # angle = math.atan2(self.travel[1], self.travel[0])
                 # updated_position = (self.orig_position[0] + abs(self.travel[0]) * travel_mag * math.cos(angle),
                 #                     self.orig_position[1] + abs(self.travel[1]) * travel_mag * math.sin(angle))
@@ -248,6 +281,10 @@ class EventPortrait():
         if self.mirror:
             image = engine.flip_horiz(image)
 
+        if self.saturation < 1:
+            blackness = 0.5 * (1 - self.saturation)
+            image = image_mods.make_black_colorkey(image, blackness)
+
         if self.transition:
             if self.slide:
                 image = image_mods.make_translucent(image.convert_alpha(), 1 - self.transition_progress)
@@ -267,7 +304,8 @@ class EventPortrait():
 
         surf.blit(image, position)
 
-    def end(self):
+    def end(self, speed_mult=1):
         self.transition = True
         self.remove = True
+        self.transition_speed = self.base_transition_speed * max(speed_mult, 0.001)
         self.transition_update = engine.get_time()

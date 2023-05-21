@@ -80,6 +80,10 @@
                 [
                     "Horse"
                 ]
+            ],
+            [
+                "effective_multiplier",
+                1
             ]
         ]
     }

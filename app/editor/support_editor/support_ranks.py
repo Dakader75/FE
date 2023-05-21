@@ -1,18 +1,18 @@
 from app.utilities import str_utils
 from app.utilities.data import Data
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import ComboBox, PropertyBox, DeletionDialog
 from app.extensions.list_dialogs import MultiAttrListDialog
 from app.extensions.list_models import MultiAttrListModel
 
-from app.data.supports import SupportRank
+from app.data.database.supports import SupportRank
 
 class SupportRankMultiModel(MultiAttrListModel):
     def delete(self, idx):
         # Check to make sure nothing else is using this rank
         element = DB.support_ranks[idx]
-        affected_affinities = [affinity for affinity in DB.affinities if 
+        affected_affinities = [affinity for affinity in DB.affinities if
                                any(bon.support_rank == element.nid for bon in affinity.bonus)]
         affected_support_pairs = [support_pair for support_pair in DB.support_pairs if
                                   any(req.support_rank == element.nid for req in support_pair.requirements)]
@@ -61,5 +61,5 @@ class SupportRankDialog(MultiAttrListDialog):
         def deletion_func(model, index):
             return model.rowCount() > 1
 
-        return cls(DB.support_ranks, "Support Rank", 
+        return cls(DB.support_ranks, "Support Rank",
                    ("nid",), SupportRankMultiModel, (deletion_func, None, None))

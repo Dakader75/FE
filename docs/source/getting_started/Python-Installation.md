@@ -50,15 +50,6 @@ git clone --depth=1 https://gitlab.com/rainlash/lt-maker.git
 
 This will clone the repository to your machine, where you'll have access to it.
 
-<details><summary><strong>Updating the Engine</strong></summary><p>
-
-When I make changes to the Lex Talionis Engine, you can update to the newest changes by typing `git pull` in Git Bash while within the "lt-maker" directory. This will pull the newest changes from the git repo on Gitlab and automatically add them to your installation.
-
-If you've made significant changes to the engine, and `git pull` no longer works well for you, you may need to ask around on the Discord for advice.
-
----
-</p></details>
-
 ## Installing Python
 
 https://www.python.org/downloads/release/python-379/
@@ -77,7 +68,7 @@ Now you should have Python installed on your machine. Open a new Git Bash somewh
 
 Whichever one works (`python` or `py` or `python3`) will be the command you will use in the future to call Python. In the rest of this tutorial, I will be using `python` because that is how it is on my machine, but if `py` or `python3` works for you, use that one instead.
 
-## Overview
+## Python Overview
 
 You can type just `python` on the Git Bash command line to get the interactive Python REPL, which lets you enter in python commands interactively. For instance, typing in "2 + 2" gives you...
 
@@ -174,3 +165,11 @@ The editor should pop up and you should be able to begin making your own fangame
 > Some users have reported that on Linux systems (specifically Ubuntu), PyQt5 installation does not work. In that case, try: `sudo apt-get install python3-pyqt5` instead.
 
 Once installed, you can follow the second part of the [Build Engine](Build-Engine) guide to distribute your project as an executable.
+
+## Updating the Engine (Python/Git)
+
+If you are using Git and Python to download and run the engine, updating the engine is simple.
+
+When changes are made to the Lex Talionis Engine, you can update to the newest changes by typing `git pull` in Git Bash while within your "lt-maker" directory. This will pull the newest changes from the git repo on Gitlab and automatically add them to your installation.
+
+If you've made significant changes to the engine code itself, and `git pull` no longer works well for you, ask around on the Discord for advice.

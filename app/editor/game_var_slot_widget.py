@@ -1,6 +1,6 @@
-from app.data.varslot import VarSlot, VarSlotCatalog
+from app.data.database.varslot import VarSlot, VarSlotCatalog
 from app.editor.event_editor.event_inspector import EventInspectorEngine
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.list_dialogs import MultiAttrListDialog
 from app.extensions.list_models import MultiAttrListModel
@@ -12,7 +12,6 @@ class GameVarSlotMultiModel(MultiAttrListModel):
         DB.game_var_slots.remove_key(self._data[idx].nid)
         super().delete(idx)
 
-
     def create_new(self):
         new_slot = self._data.add_new_default(DB)
         DB.game_var_slots.append(VarSlot(new_slot.nid, new_slot.desc))
@@ -23,8 +22,11 @@ class GameVarSlotMultiModel(MultiAttrListModel):
         if attr == 'nid':
             original = DB.game_var_slots.get(data.nid)
             DB.game_var_slots.update_nid(original, new_value)
+            original = self._data.get(data.nid)
+            self._data.update_nid(original, new_value)
         elif attr == 'desc':
             DB.game_var_slots.get(data.nid).desc = new_value
+            self._data.get(data.nid).desc = new_value
 
 class GameVarSlotDialog(MultiAttrListDialog):
     @classmethod

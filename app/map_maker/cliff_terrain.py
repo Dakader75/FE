@@ -116,8 +116,6 @@ class CliffTerrain(WangCorner2Terrain):
             near_positions: set = flood_fill(tilemap, pos, diagonal=True)
             groupings.append(near_positions)
             positions -= near_positions
-            # for near_pos in near_positions:
-            #     positions.discard(near_pos)
             counter += 1
         if counter >= 99999:
             raise RuntimeError("Unexpected infinite loop in cliff flood_fill")
@@ -184,7 +182,7 @@ class CliffTerrain(WangCorner2Terrain):
             self.display_pixmap = main_pix
         return self.display_pixmap
 
-    def determine_sprite_coords(self, tilemap, pos: tuple) -> tuple:
+    def determine_sprite(self, tilemap, pos: tuple, autotile_num: int) -> QPixmap:
         index = self._determine_index(tilemap, pos)
         right, bottom, x_stronger = self._determine_cliff_vector(tilemap, pos)
         use_bottomright = True
@@ -207,17 +205,13 @@ class CliffTerrain(WangCorner2Terrain):
         else:
             new_coords = [(index, k + self.second_start_px//TILEHEIGHT) for k in range(self.second_limits[index])]
 
-        # So it always uses the same set of coords...
-        new_coords1 = [random_choice([(c[0]*2, c[1]*2) for c in new_coords], pos)]
-        new_coords2 = [random_choice([(c[0]*2 + 1, c[1]*2) for c in new_coords], pos)]
-        new_coords3 = [random_choice([(c[0]*2 + 1, c[1]*2 + 1) for c in new_coords], pos)]
-        new_coords4 = [random_choice([(c[0]*2, c[1]*2 + 1) for c in new_coords], pos)]
-        return new_coords1, new_coords2, new_coords3, new_coords4
+        coord = random_choice(new_coords, pos)
+        pix = self.get_pixmap(coord, autotile_num)
+        return pix
 
     def _determine_cliff_vector(self, tilemap, pos: tuple) -> tuple:
         """
-        Returns True is cliff should be facing bottom
-        Returns False if cliff should be facing top
+        Determines chirality of the cliff position
         """
         closest_cliff_marker = list(sorted(tilemap.cliff_markers, key=lambda x: utils.distance(pos, x)))[0]
         x_diff = closest_cliff_marker[0] - (pos[0] + .5)

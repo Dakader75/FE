@@ -5,11 +5,12 @@ from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QToolButton, \
     QGroupBox, QFormLayout
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QColor, QPixmap
+from app import dark_theme
 
 from app.editor.settings import MainSettingsController
 
 from app.constants import WINWIDTH, WINHEIGHT
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 
 from app.editor.combat_animation_editor.frame_selector import FrameSelector
 from app.extensions.color_icon import ColorIcon
@@ -27,12 +28,8 @@ class CombatCommand(QWidget):
 
         self.setToolTip(self._data.desc)
 
-        self.settings = MainSettingsController()
-        theme = self.settings.get_theme(0)
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
 
         icon_label = QLabel()
         pixmap = QPixmap(f"{icon_folder}/command_%s.png" % self._data.tag)

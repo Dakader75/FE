@@ -1,6 +1,6 @@
 import re, functools
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 class Parser():
     def __init__(self):

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from enum import Enum
 from app.utilities.data import Prefab
 
@@ -6,7 +8,9 @@ class RegionType(str, Enum):
     STATUS = 'status'
     EVENT = 'event'
     FORMATION = 'formation'
-    TIME = 'time'
+    FOG = 'fog'
+    VISION = 'vision'
+    TERRAIN = 'terrain'
 
 class Region(Prefab):
     def __init__(self, nid):
@@ -16,12 +20,26 @@ class Region(Prefab):
         self.size = [1, 1]
 
         self.sub_nid = None
-        self.condition = 'True'
-        self.only_once = False
-        self.interrupt_move = False
+        self.condition: str = 'True'
+        self.time_left: Optional[int] = None
+        self.only_once: bool = False
+        self.interrupt_move: bool = False
+
+    @classmethod
+    def restore(cls, s_dict):
+        self = super(Region, cls).restore(s_dict)
+        # Move time left from sub_nid
+        # to time left parameter
+        if s_dict['region_type'] == 'time':
+            self.time_left = self.sub_nid
+            self.sub_nid = None
+        return self
 
     def restore_attr(self, name, value):
         if name == 'region_type':
+            # Replace deprecated time region with normal region
+            if value == 'time':
+                value = 'normal'
             value = RegionType(value)
         else:
             value = super().save_attr(name, value)

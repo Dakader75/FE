@@ -172,6 +172,10 @@
         false
     ],
     [
+        "combat_art_category",
+        false
+    ],
+    [
         "reset_mana",
         true
     ],

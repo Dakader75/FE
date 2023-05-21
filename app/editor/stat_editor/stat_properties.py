@@ -2,10 +2,11 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QMessageBox, QVBoxLayout, \
     QSpinBox
 from PyQt5.QtCore import Qt
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.utilities import str_utils
 from app.extensions.custom_gui import PropertyBox, ComboBox
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 
 class StatTypeProperties(QWidget):
     def __init__(self, parent, current=None):
@@ -17,27 +18,27 @@ class StatTypeProperties(QWidget):
 
         name_section = QVBoxLayout()
 
-        self.nid_box = PropertyBox("Unique ID", QLineEdit, self)
+        self.nid_box = PropertyBox(_("Unique ID"), NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         name_section.addWidget(self.nid_box)
 
-        self.name_box = PropertyBox("Display Name", QLineEdit, self)
+        self.name_box = PropertyBox(_("Display Name"), QLineEdit, self)
 
         self.name_box.edit.textChanged.connect(self.name_changed)
         name_section.addWidget(self.name_box)
 
-        self.max_box = PropertyBox("Maximum", QSpinBox, self)
+        self.max_box = PropertyBox(_("Maximum"), QSpinBox, self)
         self.max_box.edit.setRange(0, 255)
         self.max_box.edit.setAlignment(Qt.AlignRight)
         self.max_box.edit.valueChanged.connect(self.maximum_changed)
         name_section.addWidget(self.max_box)
 
-        self.desc_box = PropertyBox("Description", QLineEdit, self)
+        self.desc_box = PropertyBox(_("Description"), QLineEdit, self)
         self.desc_box.edit.textChanged.connect(self.desc_changed)
         name_section.addWidget(self.desc_box)
 
-        self.position_box = PropertyBox("Position", ComboBox, self)
+        self.position_box = PropertyBox(_("Position"), ComboBox, self)
         self.position_box.edit.addItems(["hidden", "left", "right"])
         self.position_box.setToolTip("Column within Info Menu in engine")
         self.position_box.edit.currentTextChanged.connect(self.position_changed)
@@ -71,8 +72,8 @@ class StatTypeProperties(QWidget):
                     row.pop(stat)
 
     def nid_changed(self, text):
-        if self.current.name == self.current.nid:
-            self.name_box.edit.setText(text)
+        if self.current.name == self.current.nid.replace('_', ' '):
+            self.name_box.edit.setText(text.replace('_', ' '))
         self.current.nid = text
         self.window.update_list()
 

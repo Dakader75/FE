@@ -45,7 +45,7 @@ The item components in this dictionary are broken down by icon going from left t
 | **Hit** | The base hit value of the item. Factored into the overall hit equation. |
 | **Damage** | The base might of the item. |
 | **Crit** | The base crit of the item. |
-| **Weight** | Lowers attack speed. At first, subtracted from the CONSTITUTION equation. If negative, subtracts from overall attack speed. |
+| **Weight** | Lowers effective speed. At first, subtracted from the CONSTITUTION equation. If negative, subtracts from speed resulting in a unit's effective speed. |
 | **Unwieldy** | When equipped, defense is reduced by the specified integer. |
 | **Stat Change** | A list of stats that correspond to integers. When equipped, stats are changed by that amount. |
 

@@ -5,8 +5,8 @@ from PyQt5.QtGui import QImage, QPixmap, qRgb, QColor, QPainter
 
 from app.constants import COLORKEY
 from app.utilities import str_utils
-from app.resources.resources import RESOURCES
-from app.resources import combat_anims, combat_commands, combat_palettes
+from app.data.resources.resources import RESOURCES
+from app.data.resources import combat_anims, combat_commands, combat_palettes
 
 from app.editor.settings import MainSettingsController
 
@@ -255,6 +255,7 @@ def update_weapon_anim_full_image(weapon_anim):
         painter.drawPixmap(x, y, frame.pixmap)
     painter.end()
     weapon_anim.pixmap = new_pixmap
+    weapon_anim.full_path = None  # So we can save our changes
 
 def convert_gba(pixmap: QPixmap) -> QPixmap:
     im = pixmap.toImage()
@@ -415,6 +416,7 @@ def import_from_gba(current, fn):
         if (0, 0, 0) in all_palette_colors:
             idx = all_palette_colors.index((0, 0, 0))
             all_palette_colors[idx] = (40, 40, 40)
+
         my_palette.assign_colors(all_palette_colors)
 
     # Now do a simple crop to get rid of palette extras
@@ -476,10 +478,10 @@ def import_from_gba(current, fn):
         add_weapon(ranged_weapon_anim)        
     elif weapon_type == 'Handaxe':
         ranged_weapon_anim.nid = "RangedAxe"
-        add_weapon(ranged_weapon_anim)
+        add_weapon(ranged_weapon_anim)  
     elif weapon_type == 'Knife':
         ranged_weapon_anim.nid = "RangedSword"
-        add_weapon(ranged_weapon_anim)    
+        add_weapon(ranged_weapon_anim)       
     elif weapon_type == 'Bow':
         ranged_weapon_anim.nid = "RangedBow"
         add_weapon(ranged_weapon_anim)        
@@ -670,7 +672,9 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
         elif line.startswith('C'):
             command_code = line[1:3]
             write_extra_frame = True  # Most commands occur at the same time as the last frame
-            if command_code == '01':
+            if command_code == '00':
+                pass  # NOP
+            elif command_code == '01':
                 if throwing_axe:
                     parse_text('start_loop')
                     copy_frame(current_command)
@@ -739,6 +743,8 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
                 write_extra_frame = False
             elif command_code == '0E':  # Dodge Start
                 write_extra_frame = False
+            elif command_code in ('0F', '10', '11', '12'):
+                print("Unused command code C%s referenced! Skipping..." % command_code)
             elif command_code == '13':  # Throwing Axe
                 if current_command:
                     parse_text('start_loop')
@@ -749,9 +755,13 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
                 parse_text('screen_shake')
             elif command_code == '15':
                 parse_text('platform_shake')
+            elif command_code in ('16', '17'):
+                print("Unused command code C%s referenced! Skipping..." % command_code)
             elif command_code == '18':
                 dodge_front = True
                 write_extra_frame = False
+            elif command_code == '19':
+                parse_text('sound;Bow')
             elif command_code == '1A':  # Start hit
                 parse_text('enemy_flash_white;8')
                 if current_command:
@@ -759,11 +769,7 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
                 parse_text('screen_flash_white;4')
                 crit = False
                 start_hit = True
-            elif command_code in ('1F', '20', '21'):  # Actual hit
-                write_extra_frame = False
             # Sounds and other effects
-            elif command_code == '19':
-                parse_text('sound;Bow')
             elif command_code == '1B':
                 parse_text('sound;Foot Step')
             elif command_code == '1C':
@@ -772,6 +778,8 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
                 parse_text('sound;Horse Step 3')
             elif command_code == '1E':
                 parse_text('sound;Horse Step 2')
+            elif command_code in ('1F', '20', '21'):  # Actual hit
+                write_extra_frame = False
             elif command_code == '22':
                 parse_text('sound;Weapon Pull')
             elif command_code == '23':
@@ -793,7 +801,10 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
             elif command_code == '2F':
                 parse_text('sound;MageCrit')
                 logging.warning("Change MageCrit effect to SageCrit effect if working with Sage animations")
-            elif command_code == '30':
+            elif command_code in ('30', '31', '32'):  # TODO
+                # These commands are not actually identical.
+                # though they all make dirt effects
+                # TODO Figure out the difference
                 parse_text('effect;DirtKick')
             elif command_code == '33':
                 parse_text('sound;Battle Cry')
@@ -807,12 +818,24 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
                 parse_text('sound;Sheathe')
             elif command_code == '38':
                 parse_text('sound;Heavy Spear Spin')
+            elif command_code == '39':  
+                # Makes the attacker pretend to be hit
+                # Attacker flashes white, pauses attacker
+                # screen flashes white
+                parse_text('self_flash_white;8')
+                if current_command:
+                    copy_frame(current_command)
+                parse_text('screen_flash_white;4')
+                if current_command:
+                    copy_frame(current_command, 8)
             elif command_code == '3A':
                 parse_text('sound;RefreshDance')
             elif command_code == '3B':
                 parse_text('sound;RefreshFlute')
             elif command_code == '3C':
                 parse_text('sound;Sword Whoosh')
+            elif command_code == '3E':
+                parse_text('sound;Burning')
             elif command_code == '41':
                 parse_text('sound;Axe Pull')
             elif command_code == '42':
@@ -829,18 +852,75 @@ def parse_gba_script(fn, pixmaps, weapon_type, empty_pixmaps):
                 parse_text('sound;SageRune')
             elif command_code == '4B':
                 parse_text('sound;MonkRune')
+            elif command_code == '4E':
+                # These commands (30, 31, 32, 4E) are not actually identical.
+                # though they all make dirt effects
+                # TODO Figure out the difference
+                parse_text('effect;DirtKick')
             elif command_code == '4F':
                 parse_text('sound;DruidCrit')
             elif command_code == '51':
                 parse_text('screen_flash_white;4')
+            elif command_code == '56':
+                parse_text('sound;BaelWindup')
+            elif command_code == '57':
+                parse_text('sound;BaelHit')
+            elif command_code == '58':
+                parse_text('sound;BaelCrit')
+            elif command_code == '59':
+                parse_text('sound;Map_Step_Bael')
             elif command_code == '5A':
                 parse_text('sound;MautheDoogGrowl')
             elif command_code == '5B':
-                parse_text('sound;MautheDoogBark')
+                parse_text('sound;MautheDoogBite')
             elif command_code == '5C':
                 parse_text('sound;MautheDoogHowl')
             elif command_code == '5D':
                 parse_text('sound;MautheDoogWalk')
+            elif command_code == '5E':
+                parse_text('sound;GargoyleBattleCry')
+            elif command_code == '5F':
+                parse_text('sound;GargoyleLaugh')
+            elif command_code == '60':
+                parse_text('sound;GorgonMagic1')
+            elif command_code == '61':
+                parse_text('sound;GorgonMagic2')
+            elif command_code == '62':
+                parse_text('sound;GorgonMagic3')
+            elif command_code == '63':
+                parse_text('sound;GorgonScream')
+            elif command_code == '64':
+                parse_text('sound;ZombieWindup')
+            elif command_code == '65':
+                parse_text('sound;ZombieHit')
+            elif command_code == '66':
+                parse_text('sound;Map_Step_Zombie')
+            elif command_code == '67':
+                parse_text('sound;Map_Step_Skeleton')
+            elif command_code == '68':
+                parse_text('sound;MogallHit1')
+            elif command_code == '6A':
+                parse_text('sound;MogallHit2')
+            elif command_code == '6B':
+                parse_text('sound;MogallCrit1')
+            elif command_code == '6C':
+                parse_text('sound;MogallCrit2')
+            elif command_code == '6F':
+                parse_text('sound;GargoyleLanding')
+            elif command_code in ('71', '72'):
+                # Handles DemonKing transformation routines
+                # Unnecessary in LT engine
+                pass
+            elif command_code == '73':
+                parse_text('sound;ZombieCrit')
+            elif command_code == '74':
+                parse_text('sound;SkeletonCrit')
+            elif command_code == '75':
+                parse_text('sound;CyclopsBattleCry')
+            elif command_code == '76':  # TODO: Not quite correct
+                parse_text('sound;DemonKingRoar')
+            elif command_code == '77':
+                parse_text('sound;DemonKingRoar')
             elif command_code == '79':
                 parse_text('sound;StrategistRune')
             elif command_code == '7A':

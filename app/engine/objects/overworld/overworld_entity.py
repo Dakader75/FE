@@ -3,14 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict
 from enum import Enum
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 if TYPE_CHECKING:
     from app.engine.game_state import GameState
     from app.engine.objects.unit import UnitObject
 
-from app.engine.overworld.overworld_map_sprites import (
-                                                        OverworldUnitSprite)
+from app.engine.overworld.overworld_map_sprites import OverworldUnitSprite
 from app.engine.unit_sound import UnitSound
 from app.utilities.typing import NID, Point
 

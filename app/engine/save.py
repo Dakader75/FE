@@ -8,7 +8,7 @@ except ImportError:
     import pickle
 
 from app.utilities import str_utils
-from app.data.database import DB
+from app.data.database.database import DB
 
 import app.engine.config as cf
 from app.engine.objects.item import ItemObject
@@ -67,7 +67,9 @@ def dict_print(d):
         if isinstance(v, dict):
             dict_print(v)
         else:
-            print("{0} : {1}".format(k, v))
+            s = "{0} : {1}".format(k, v)
+            print(s)
+            logging.error(s)
 
 def save_io(s_dict, meta_dict, old_slot, slot, force_loc=None, name=None):
     if name:
@@ -104,7 +106,7 @@ def save_io(s_dict, meta_dict, old_slot, slot, force_loc=None, name=None):
         elif old_slot is not None:
             old_name = 'saves/' + GAME_NID() + '-restart' + str(old_slot) + '.p'
             old_name_meta = old_name + 'meta'
-            if old_name != r_save:
+            if old_name != r_save and os.path.exists(old_name):
                 shutil.copy(old_name, r_save)
                 shutil.copy(old_name_meta, r_save_meta)
 
@@ -202,7 +204,7 @@ def remove_suspend():
 
 def get_save_title(save_slots):
     options = [save_slot.get_name() for save_slot in save_slots]
-    colors = [DB.difficulty_modes.get(save_slot.mode).color if save_slot.mode else 'green' for save_slot in save_slots]
+    colors = [DB.difficulty_modes.get(save_slot.mode).color if (save_slot.mode and DB.difficulty_modes.get(save_slot.mode)) else 'green' for save_slot in save_slots]
     return options, colors
 
 def check_save_slots():

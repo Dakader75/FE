@@ -1,4 +1,9 @@
-from app.engine.objects.item import ItemObject
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.engine.objects.item import ItemObject
+    from app.engine.objects.unit import UnitObject
 
 class Defaults():
     @staticmethod
@@ -25,7 +30,11 @@ class Defaults():
 
     @staticmethod
     def can_trade(unit1, unit2) -> bool:
-        return unit2.position and unit1.team == unit2.team and check_ally(unit1, unit2)
+        return unit1.team == unit2.team and check_ally(unit1, unit2) and not no_trade(unit1) and not no_trade(unit2)
+
+    @staticmethod
+    def no_trade(unit) -> bool:
+        return False
 
     @staticmethod
     def num_items_offset(unit) -> int:
@@ -92,12 +101,12 @@ class Defaults():
         return 0
 
     @staticmethod
-    def limit_maximum_range(unit, item) -> int:
-        return 1000
+    def canto_movement(unit, unit2) -> int:
+        return unit.movement_left
 
     @staticmethod
-    def modify_maximum_range(unit, item) -> int:
-        return 0
+    def limit_maximum_range(unit, item) -> int:
+        return 1000
 
     @staticmethod
     def movement_type(unit):
@@ -163,10 +172,12 @@ class Defaults():
     def thracia_critical_multiplier_formula(unit) -> str:
         return 'THRACIA_CRIT'
 
-def condition(skill, unit) -> bool:
+def condition(skill, unit: UnitObject, item=None) -> bool:
+    if not item:
+        item = unit.equipped_weapon
     for component in skill.components:
         if component.defines('condition'):
-            if not component.condition(unit):
+            if not component.condition(unit, item):
                 return False
     return True
 
@@ -197,6 +208,21 @@ def stat_change(unit, stat_nid) -> int:
                 d_bonus = d.get(stat_nid, 0)
                 if d_bonus == 0:
                     continue
+                # Why did we write the component condition check after the evaluation of the bonus?
+                # Was there a good reason?
+                if component.ignore_conditional or condition(skill, unit):
+                    bonus += d_bonus
+    return bonus
+
+def subtle_stat_change(unit, stat_nid) -> int:
+    bonus = 0
+    for skill in unit.skills:
+        for component in skill.components:
+            if component.defines('subtle_stat_change'):
+                d = component.subtle_stat_change(unit)
+                d_bonus = d.get(stat_nid, 0)
+                if d_bonus == 0:
+                    continue
                 if component.ignore_conditional or condition(skill, unit):
                     bonus += d_bonus
     return bonus
@@ -205,7 +231,7 @@ def stat_change_contribution(unit, stat_nid) -> dict:
     contribution = {}
     for skill in unit.skills:
         for component in skill.components:
-            if component.defines('stat_change'):
+            if component.defines('stat_change') and not component.defines('subtle_stat_change'):
                 if component.ignore_conditional or condition(skill, unit):
                     d = component.stat_change(unit)
                     val = d.get(stat_nid, 0)
@@ -319,34 +345,58 @@ def init(skill):
         if component.defines('init'):
             component.init(skill)
 
-def on_add(unit, skill):
+def before_add(unit, skill):
     for component in skill.components:
-        if component.defines('on_add'):
-            component.on_add(unit, skill)
+        if component.defines('before_add'):
+            component.before_add(unit, skill)
     for other_skill in unit.skills:
         for component in other_skill.components:
-            if component.defines('on_gain_skill'):
-                component.on_gain_skill(unit, skill)
+            if component.defines('before_gain_skill'):
+                component.before_gain_skill(unit, skill)
 
-def on_remove(unit, skill):
+def after_add(unit, skill):
     for component in skill.components:
-        if component.defines('on_remove'):
-            component.on_remove(unit, skill)
+        if component.defines('after_add'):
+            component.after_add(unit, skill)
+    for other_skill in unit.skills:
+        for component in other_skill.components:
+            if component.defines('after_gain_skill'):
+                component.after_gain_skill(unit, skill)
 
-def re_add(unit, skill):
+def before_remove(unit, skill):
     for component in skill.components:
-        if component.defines('re_add'):
-            component.re_add(unit, skill)
+        if component.defines('before_remove'):
+            component.before_remove(unit, skill)
 
-def on_true_remove(unit, skill):
+def after_remove(unit, skill):
+    for component in skill.components:
+        if component.defines('after_remove'):
+            component.after_remove(unit, skill)
+
+def after_add_from_restore(unit, skill):
+    for component in skill.components:
+        if component.defines('after_add_from_restore'):
+            component.after_add_from_restore(unit, skill)
+
+def before_true_remove(unit, skill):
     """
-    This one does not intrinsically interact with the turnwheel
+    This does not intrinsically interact with the turnwheel
     It only fires when the skill is actually removed for the first time
     Not on execute or reverse
     """
     for component in skill.components:
-        if component.defines('on_true_remove'):
-            component.on_true_remove(unit, skill)
+        if component.defines('before_true_remove'):
+            component.before_true_remove(unit, skill)
+
+def after_true_remove(unit, skill):
+    """
+    This does not intrinsically interact with the turnwheel
+    It only fires when the skill is actually removed for the first time
+    Not on execute or reverse
+    """
+    for component in skill.components:
+        if component.defines('after_true_remove'):
+            component.after_true_remove(unit, skill)
 
 def get_text(skill) -> str:
     for component in skill.components:
@@ -359,6 +409,21 @@ def get_cooldown(skill) -> float:
         if component.defines('cooldown'):
             return component.cooldown()
     return None
+
+def get_hide_skill_icon(unit, skill) -> bool:
+    # Check if we should be hiding this skill
+    for component in skill.components:
+        if component.defines('hide_skill_icon') and \
+                component.hide_skill_icon(unit, skill):
+            return True
+    return False
+
+def get_show_skill_icon(unit, skill) -> bool:
+    for component in skill.components:
+        if component.defines('show_skill_icon') and \
+                component.show_skill_icon(unit):
+            return True
+    return False
 
 def trigger_charge(unit, skill):
     for component in skill.components:
@@ -378,38 +443,30 @@ def get_extra_abilities(unit):
     return abilities
 
 def get_combat_arts(unit):
-    from app.engine import item_funcs, target_system
+    from app.engine import item_funcs, target_system, action
     combat_arts = {}
     for skill in unit.skills:
         if not condition(skill, unit):
             continue
         combat_art = None
         combat_art_weapons = [item for item in item_funcs.get_all_items(unit) if item_funcs.available(unit, item)]
-        combat_art_set_max_range = None
-        combat_art_modify_max_range = None
         for component in skill.components:
             if component.defines('combat_art'):
                 combat_art = component.combat_art(unit)
             if component.defines('weapon_filter'):
                 combat_art_weapons = \
                     [item for item in combat_art_weapons if component.weapon_filter(unit, item)]
-            if component.defines('combat_art_set_max_range'):
-                combat_art_set_max_range = component.combat_art_set_max_range(unit)
-            if component.defines('combat_art_modify_max_range'):
-                combat_art_modify_max_range = component.combat_art_modify_max_range(unit)
 
         if combat_art and combat_art_weapons:
             good_weapons = []
             # Check which of the good weapons meet the range requirements
             for weapon in combat_art_weapons:
-                # Just for testing range
-                if combat_art_set_max_range:
-                    weapon._force_max_range = max(0, combat_art_set_max_range)
-                elif combat_art_modify_max_range:
-                    max_range = max(item_funcs.get_range(unit, weapon))
-                    weapon._force_max_range = max(0, max_range + combat_art_modify_max_range)
+                # activate_combat_art(unit, skill)
+                act = action.AddSkill(unit, skill.combat_art.value)
+                act.do()
                 targets = target_system.get_valid_targets(unit, weapon)
-                weapon._force_max_range = None
+                act.reverse()
+                # deactivate_combat_art(unit, skill)
                 if targets:
                     good_weapons.append(weapon)
 
@@ -423,11 +480,14 @@ def activate_combat_art(unit, skill):
         if component.defines('on_activation'):
             component.on_activation(unit)
 
+def deactivate_combat_art(unit, skill):
+    for component in skill.components:
+        if component.defines('on_deactivation'):
+            component.on_deactivation(unit)
+
 def deactivate_all_combat_arts(unit):
     for skill in unit.skills:
-        for component in skill.components:
-            if component.defines('on_deactivation'):
-                component.on_deactivation(unit)
+        deactivate_combat_art(unit, skill)
 
 def on_pairup(unit, leader):
     for skill in unit.skills:

@@ -1,6 +1,6 @@
 from app.engine.objects.unit import UnitObject
-from app.data.skill_components import SkillComponent, SkillTags
-from app.data.components import Type
+from app.data.database.skill_components import SkillComponent, SkillTags
+from app.data.database.components import ComponentType
 
 from app.engine import action
 from app.engine.game_state import game
@@ -21,7 +21,7 @@ class Oversplash(SkillComponent):
     desc = "Grants unit +X area of effect for regular and blast items"
     tag = SkillTags.ADVANCED
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 1
 
     def empower_splash(self, unit):
@@ -41,7 +41,10 @@ class EnemyOversplash(Oversplash, SkillComponent):
 
 class SmartOversplash(Oversplash, SkillComponent):
     nid = 'smart_oversplash'
-    desc = "Grants unit +X area of effect for regular and blast items"
+    desc = """
+        Grants unit +X area of effect for regular and blast items. If the main target is an enemy, then splash will only affect enemies. 
+        The same holds true for allies.
+        """
 
     def alternate_splash(self, unit):
         from app.engine.item_components.aoe_components import SmartBlastAOE
@@ -52,7 +55,7 @@ class EmpowerHeal(SkillComponent):
     desc = "Gives +X extra healing"
     tag = SkillTags.ADVANCED
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def empower_heal(self, unit, target):
         from app.engine import evaluate
@@ -67,7 +70,7 @@ class EmpowerHealReceived(SkillComponent):
     desc = "Gives +X extra healing received"
     tag = SkillTags.ADVANCED
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def empower_heal_received(self, target, unit):
         from app.engine import evaluate
@@ -83,7 +86,7 @@ class ManaOnHit(SkillComponent):
     tag = SkillTags.ADVANCED
     author = 'BigMood'
 
-    expose = Type.Int
+    expose = ComponentType.Int
 
     def mana(self, playback, unit, item, target):
         mark_playbacks = [p for p in playback if p.nid in ('mark_hit', 'mark_crit')]
@@ -97,7 +100,7 @@ class ManaOnKill(SkillComponent):
     desc = 'Gives +X mana on kill'
     tag = SkillTags.ADVANCED
 
-    expose = Type.Int
+    expose = ComponentType.Int
 
     def mana(self, playback, unit, item, target):
         if target and target.is_dying:
@@ -110,7 +113,7 @@ class EventAfterInitiatedCombat(SkillComponent):
     desc = 'calls event after combat initated by user'
     tag = SkillTags.ADVANCED
 
-    expose = Type.Event
+    expose = ComponentType.Event
     value = ''
 
     def end_combat(self, playback, unit: UnitObject, item, target: UnitObject, mode):

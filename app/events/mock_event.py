@@ -17,6 +17,7 @@ class MockGame():
     """
     def __init__(self):
         self.speak_styles = speak_style.SpeakStyleLibrary()
+        self.movement = None
 
 class MockEvent(Event):
     # These are the only commands that will be processed by this event
@@ -28,7 +29,7 @@ class MockEvent(Event):
                  "transition", "change_background", "table", 
                  "remove_table", "draw_overlay_sprite", 
                  "remove_overlay_sprite", "location_card", "credits", 
-                 "ending", "pop_dialog"}
+                 "ending", "pop_dialog", "unpause"}
 
     loop_commands = {'for', 'endf'}
 

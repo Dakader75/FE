@@ -1,12 +1,12 @@
-from app.data.item_components import ItemComponent, ItemTags
-from app.data.components import Type
+from app.data.database.item_components import ItemComponent, ItemTags
+from app.data.database.components import ComponentType
 
 class AlternateDamageFormula(ItemComponent):
     nid = 'alternate_damage_formula'
     desc = 'Item uses a different damage formula'
     tag = ItemTags.FORMULA
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
     value = 'DAMAGE'
 
     def damage_formula(self, unit, item):
@@ -17,7 +17,7 @@ class AlternateResistFormula(ItemComponent):
     desc = 'Item uses a different resist formula. Resist applies to both defense and resistance.'
     tag = ItemTags.FORMULA
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
     value = 'DEFENSE'
 
     def resist_formula(self, unit, item):
@@ -28,7 +28,7 @@ class AlternateAccuracyFormula(ItemComponent):
     desc = 'Item uses a different accuracy formula'
     tag = ItemTags.FORMULA
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
     value = 'HIT'
 
     def accuracy_formula(self, unit, item):
@@ -39,7 +39,7 @@ class AlternateAvoidFormula(ItemComponent):
     desc = 'Item uses a different avoid formula'
     tag = ItemTags.FORMULA
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
     value = 'AVOID'
 
     def avoid_formula(self, unit, item):
@@ -50,7 +50,7 @@ class AlternateCritAccuracyFormula(ItemComponent):
     desc = 'Item uses a different critical accuracy formula'
     tag = ItemTags.FORMULA
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
     value = 'CRIT_HIT'
 
     def crit_accuracy_formula(self, unit, item):
@@ -61,7 +61,7 @@ class AlternateCritAvoidFormula(ItemComponent):
     desc = 'Item uses a different critical avoid formula'
     tag = ItemTags.FORMULA
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
     value = 'CRIT_AVOID'
 
     def crit_avoid_formula(self, unit, item):
@@ -72,7 +72,7 @@ class AlternateAttackSpeedFormula(ItemComponent):
     desc = 'Item uses a different attack speed formula. Attack speed is used when initiating a combat.'
     tag = ItemTags.FORMULA
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
     value = 'HIT'
 
     def attack_speed_formula(self, unit, item):
@@ -83,7 +83,7 @@ class AlternateDefenseSpeedFormula(ItemComponent):
     desc = 'Item uses a different defense speed formula. Defense speed is used when being attacked.'
     tag = ItemTags.FORMULA
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
     value = 'HIT'
 
     def defense_speed_formula(self, unit, item):

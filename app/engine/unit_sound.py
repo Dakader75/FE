@@ -23,7 +23,7 @@ class UnitSound():
         else:
             self.current_sound = 'Infantry'
 
-    def update(self):
+    def update(self, volume=1):
         if self.current_sound:
             if self.frame in self.sound_catalog[self.current_sound]:
                 sound = self.sound_catalog[self.current_sound][self.frame]
@@ -31,7 +31,7 @@ class UnitSound():
                     self.frame = -1
                 else:
                     self.playing_sound = 'Map_Step_' + sound
-                    get_sound_thread().play_sfx(self.playing_sound)
+                    get_sound_thread().play_sfx(self.playing_sound, volume=volume)
             self.frame += 1
 
     def stop(self):

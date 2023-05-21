@@ -9,7 +9,7 @@ from PyQt5.QtGui import QColor, QPen, QPixmap, QImage, QPainter, qRgb
 from typing import List, Tuple
 
 from app.constants import WINWIDTH, WINHEIGHT
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 
 from app.editor.settings import MainSettingsController
 
@@ -19,8 +19,9 @@ from app.extensions.custom_gui import PropertyBox, ComboBox, Dialog
 from app.editor.combat_animation_editor.frame_selector import FrameSelector
 from app.editor.combat_animation_editor import combat_animation_model, combat_effect_display, combat_animation_display
 from app.editor.combat_animation_editor.color_editor import ColorEditorWidget
-from app.resources.combat_anims import Frame
-from app.resources.combat_palettes import Palette
+from app.editor.lib.components.validated_line_edit import NidLineEdit
+from app.data.resources.combat_anims import Frame
+from app.data.resources.combat_palettes import Palette
 from app.editor.icon_editor.icon_view import IconView
 import app.editor.utilities as editor_utilities
 
@@ -76,7 +77,7 @@ class CommandChangePaletteColor():
                     self.swap_coord = coord
                     break
 
-    def redo(self): 
+    def redo(self):
         if self.swap_coord:
             self.palette.colors[self.swap_coord] = self.old_color
         self.palette.colors[self.coord] = self.new_color
@@ -107,14 +108,14 @@ class CommandChangePaletteSlot():
             self.swap_coord = True
 
     def redo(self):
-        print(self.swap_coord) 
+        print(self.swap_coord)
         if self.swap_coord:
             # old_color = self.palette.colors[self.old_coord]
             # new_color = self.palette.colors[self.new_coord]
             # self.palette.colors[self.old_coord] = new_color
             # self.palette.colors[self.new_coord] = old_color
             temp_coord = (255, 255)
-            convert_dict = {qRgb(0, *self.old_coord): qRgb(0, *temp_coord), 
+            convert_dict = {qRgb(0, *self.old_coord): qRgb(0, *temp_coord),
                             qRgb(0, *self.new_coord): qRgb(0, *self.old_coord)}
             second_convert_dict = {qRgb(0, *temp_coord): qRgb(0, *self.new_coord)}
             for frame in self.frame_set.frames:
@@ -142,7 +143,7 @@ class CommandChangePaletteSlot():
             # self.palette.colors[self.new_coord] = new_color
             temp_coord = (255, 255)
             # Swap back
-            convert_dict = {qRgb(0, *self.old_coord): qRgb(0, *temp_coord), 
+            convert_dict = {qRgb(0, *self.old_coord): qRgb(0, *temp_coord),
                             qRgb(0, *self.new_coord): qRgb(0, *self.old_coord)}
             second_convert_dict = {qRgb(0, *temp_coord): qRgb(0, *self.new_coord)}
             for frame in self.frame_set.frames:
@@ -176,7 +177,7 @@ class CommandDeleteColor():
     def undo(self):
         self.palette.colors[self.coord] = self.old_color
 
-    def can_stack(self, other) -> bool: 
+    def can_stack(self, other) -> bool:
         return False
 
 class AnimView(IconView):
@@ -382,7 +383,7 @@ class WeaponAnimSelection(Dialog):
         self.combat_box.edit.addItems(RESOURCES.combat_anims.keys())
         self.current_combat_anim = RESOURCES.combat_anims[0]
         self.combat_box.edit.currentIndexChanged.connect(self.combat_changed)
-        
+
         self.weapon_box = PropertyBox("Weapon Animations", ComboBox, self)
         if RESOURCES.combat_anims:
             weapon_anims = self.current_combat_anim.weapon_anims
@@ -424,7 +425,7 @@ class EffectSelection(Dialog):
 
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
-        
+
         self.effect_box = PropertyBox("Combat Effects", ComboBox, self)
         if RESOURCES.combat_effects:
             self.effect_box.edit.addItems(RESOURCES.combat_effects.keys())
@@ -469,7 +470,7 @@ class PaletteProperties(QWidget):
         self.addAction(self.undo_action)
         self.addAction(self.redo_action)
 
-        self.nid_box = PropertyBox("Unique ID", QLineEdit, self)
+        self.nid_box = PropertyBox("Unique ID", NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
 
@@ -484,7 +485,7 @@ class PaletteProperties(QWidget):
         grid.addWidget(self.import_box, 3, 0, 1, 2)
         grid.addWidget(self.import_with_base_box, 4, 0, 1, 2)
         grid.addWidget(self.nid_box, 5, 0, 1, 2)
-        
+
         self.raw_view = AnimView(self)
         self.raw_view.static_size = True
         self.raw_view.setSceneRect(0, 0, WINWIDTH, WINHEIGHT)
@@ -507,7 +508,7 @@ class PaletteProperties(QWidget):
 
         self.easel_widget.selectionChanged.connect(self.easel_selection_changed)
         self.color_editor_widget.colorChanged.connect(self.set_painting_color)
-        
+
         main_layout = QVBoxLayout()
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.easel_widget)
@@ -687,12 +688,12 @@ class PaletteProperties(QWidget):
 
     def import_palette_from_image_with_base(self):
         """
-        Assumes you made a modification to an image in 
+        Assumes you made a modification to an image in
         some other program
         Uses that original image plus the new colors of your
         new image to find the new palette
         """
-        
+
         combat_anim_nid, weapon_anim_nid = WeaponAnimSelection.get(self)
         combat_anim = RESOURCES.combat_anims.get(combat_anim_nid)
         if not combat_anim:

@@ -9,7 +9,7 @@ from app.engine.objects.overworld.overworld_entity import OverworldEntityTypes
 from app.engine.objects.unit import UnitObject
 from app.engine.sound import get_sound_thread
 from app.engine.state import State
-from app.utilities.enums import Direction
+from app.utilities.direction import Direction
 
 
 class UnitMenuState(State):
@@ -24,7 +24,7 @@ class UnitMenuState(State):
         # if in level, all deploy units
         # else, all party units
         if self.in_level: # player is in a level, get deployed
-            self.all_player_units = game.get_player_units()
+            self.all_player_units = game.get_player_units_and_travelers()
         elif (game.is_displaying_overworld() and
               game.overworld_controller.selected_entity and
               game.overworld_controller.selected_entity.dtype == OverworldEntityTypes.PARTY): # overworld, get all party units

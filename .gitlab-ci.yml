@@ -81,10 +81,6 @@ build_editor:
         - echo "Generating component files"
         - "C:\\Python37\\python.exe -m app.engine.component_system_compiler.source_generator"
         - start powershell
-        - echo "Building autoupdater"
-        - cp ./utilities/build_tools/autoupdater.spec .
-        - "C:\\Python37\\Scripts\\pyinstaller.exe -y autoupdater.spec"
-        - rm autoupdater.spec -fo
         - echo "Now building main editor..."
         - cp ./utilities/build_tools/editor.spec .
         - "C:\\Python37\\Scripts\\pyinstaller.exe -y editor.spec"
@@ -92,8 +88,6 @@ build_editor:
         - mkdir lt_editor
         - mv dist/lt_editor ./lt_editor/lt_editor
         - cp utilities/install/double_click_to_run.bat ./lt_editor
-        - cp dist/autoupdater.exe ./lt_editor/lt_editor
-        - cp autoupdater.py ./lt_editor/lt_editor
         - mv build/editor ./lt_editor/lt_editor
         - echo "Copying default lt project..."
         - cp default.ltproj ./lt_editor/lt_editor -r

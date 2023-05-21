@@ -1,4 +1,4 @@
-from app.data.item_components import ItemComponent, ItemTags
+from app.data.database.item_components import ItemComponent, ItemTags
 
 class NoAI(ItemComponent):
     nid = 'no_ai'

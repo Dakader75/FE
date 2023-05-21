@@ -1,10 +1,12 @@
 from typing import Set, Tuple
-from app.data.skill_components import SkillComponent, SkillTags
-from app.data.components import Type
+from app.data.database.skill_components import SkillComponent, SkillTags
+from app.data.database.components import ComponentType
 
 from app.engine import equations, target_system, action
 from app.engine.game_state import game
 from app.engine.objects.unit import UnitObject
+
+import logging
 
 class Canto(SkillComponent):
     nid = 'canto'
@@ -32,13 +34,30 @@ class CantoSharp(SkillComponent):
 
     def has_canto(self, unit, unit2) -> bool:
         return not unit.has_attacked or unit.movement_left >= equations.parser.movement(unit)
+        
+class Canter(SkillComponent):
+    nid = 'canter'
+    desc = "Unit can move a specified number of spaces after any action"
+    tag = SkillTags.MOVEMENT
+    
+    expose = ComponentType.Int
+    value = 2
+    
+    def canto_movement(self, unit, unit2) -> int:
+        return self.value
+
+    def has_canto(self, unit, unit2) -> bool:
+        """
+        Can move again after any action, has exactly the number of movement that was determined in the component
+        """
+        return True        
 
 class MovementType(SkillComponent):
     nid = 'movement_type'
     desc = "Unit will have a non-default movement type"
     tag = SkillTags.MOVEMENT
 
-    expose = Type.MovementType
+    expose = ComponentType.MovementType
 
     def movement_type(self, unit):
         return self.value
@@ -101,7 +120,7 @@ class WitchWarp(SkillComponent):
                 left = (pos[0] - 1, pos[1])
                 right = (pos[0] + 1, pos[1])
                 for point in [up, down, left, right]:
-                    if game.board.check_bounds(point) and game.movement.check_traversable(unit, point):
+                    if game.board.check_bounds(point) and game.movement.check_weakly_traversable(unit, point) and not game.board.get_unit(point):
                         warp_spots.add(point)
         return warp_spots
 
@@ -110,7 +129,7 @@ class SpecificWitchWarp(SkillComponent):
     desc = "Allows unit to witch warp to the given units"
     tag = SkillTags.MOVEMENT
 
-    expose = (Type.List, Type.Unit)
+    expose = (ComponentType.List, ComponentType.Unit)
 
     def witch_warp(self, unit: UnitObject) -> list:
         positions = []
@@ -121,7 +140,28 @@ class SpecificWitchWarp(SkillComponent):
             else:
                 continue
             if partner_pos:
-                positions += [pos for pos in target_system.get_adjacent_positions(partner_pos) if game.movement.check_traversable(unit, pos)]
+                positions += [pos for pos in target_system.get_adjacent_positions(partner_pos) if game.movement.check_weakly_traversable(unit, pos) and not game.board.get_unit(pos)]
+        return positions
+
+class WitchWarpExpression(SkillComponent):
+    nid = 'witch_warp_expression'
+    desc = "Allows unit to witch warp to the units that satisfy the expression"
+    tag = SkillTags.MOVEMENT
+
+    expose = ComponentType.String
+    value = 'True'
+
+    def witch_warp(self, unit) -> list:
+        from app.engine import evaluate
+        positions = []
+        for target in game.units:
+            if target.position:
+                try:
+                    if evaluate.evaluate(self.value, target, unit, target.position):
+                        positions += target_system.get_adjacent_positions(target.position)
+                except Exception as e:
+                    logging.error("Could not evaluate %s (%s)", self.value, e)
+                    return positions
         return positions
 
 class Galeforce(SkillComponent):

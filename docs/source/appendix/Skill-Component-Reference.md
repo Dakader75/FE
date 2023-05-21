@@ -65,8 +65,8 @@ The item components in this dictionary are broken down by icon going from left t
 | **Avoid** | Unit gains X more avoid, where X is the specified integer. |
 | **Crit** | Unit gains X more critical chance, where X is the specified integer. |
 | **Crit Avoid** | Unit gains X more critical avoid, where X is the specified integer. Critical avoid is subtracted from the opponent's critical chance. |
-| **Attack Speed** | Unit gains X more attack speed, where X is the specified integer. Attack speed increases a unit's doubling capabilities when they initiate an attack. |
-| **Defense Speed** | Unit gains X more defense speed, where X is the specified integer. Defense speed increases a unit's doubling capabilities when they are under attack. |
+| **Attack Speed** | Unit gains X more attack speed, where X is the specified integer. A unit's attack speed is their speed for the purpose of determining whether they are able to double an opponent. |
+| **Defense Speed** | Unit gains X more defense speed, where X is the specified integer.  A unit's defense speed is their speed for the purpose of determining whether they are doubled by an opponent. |
 | **Damage Multiplier** | Multiplies damage dealt by the specified decimal number. |
 | **Dynamic Damage Multiplier** | Multiplies damage dealt by the result of the given equation. Equation must evaluate to either an integer or floating point number. |
 | **Resist Multiplier** | Multiplies damage taken by the specified decimal number. |

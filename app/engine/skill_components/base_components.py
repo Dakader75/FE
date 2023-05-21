@@ -1,5 +1,5 @@
-from app.data.skill_components import SkillComponent, SkillTags
-from app.data.components import Type
+from app.data.database.skill_components import SkillComponent, SkillTags
+from app.data.database.components import ComponentType
 
 from app.engine import equations, action, item_funcs, item_system
 from app.engine.game_state import game
@@ -29,12 +29,20 @@ class CannotUseMagicItems(SkillComponent):
     def available(self, unit, item) -> bool:
         return not item_funcs.is_magic(unit, item)
 
+class CannotTrade(SkillComponent):
+    nid = 'cannot_trade'
+    desc = "Unit cannot select Trade or be traded with"
+    tag = SkillTags.BASE
+
+    def no_trade(self, unit) -> bool:
+        return True
+
 class AdditionalAccessories(SkillComponent):
     nid = 'additional_accessories'
     desc = "Unit can hold additional accessories rather than regular items"
     tag = SkillTags.BASE
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 2
 
     def num_items_offset(self, unit) -> int:
@@ -59,7 +67,7 @@ class ChangeAI(SkillComponent):
     desc = "Unit's AI is forcibly changed"
     tag = SkillTags.BASE
 
-    expose = Type.AI
+    expose = ComponentType.AI
 
     def change_ai(self, unit):
         return self.value
@@ -69,7 +77,7 @@ class ChangeBuyPrice(SkillComponent):
     desc = "Unit's buy price for items is changed"
     tag = SkillTags.BASE
 
-    expose = Type.Float
+    expose = ComponentType.Float
 
     def modify_buy_price(self, unit, item):
         return self.value
@@ -79,7 +87,7 @@ class ExpMultiplier(SkillComponent):
     desc = "Unit receives a multiplier on exp gained"
     tag = SkillTags.BASE
 
-    expose = Type.Float
+    expose = ComponentType.Float
 
     def exp_multiplier(self, unit1, unit2):
         return self.value
@@ -89,7 +97,7 @@ class EnemyExpMultiplier(SkillComponent):
     desc = "Unit gives a multiplier to the exp gained by others in combat"
     tag = SkillTags.BASE
 
-    expose = Type.Float
+    expose = ComponentType.Float
 
     def enemy_exp_multiplier(self, unit1, unit2):
         return self.value
@@ -99,7 +107,7 @@ class WexpMultiplier(SkillComponent):
     desc = "Unit receives a multiplier on wexp gained"
     tag = SkillTags.BASE
 
-    expose = Type.Float
+    expose = ComponentType.Float
 
     def wexp_multiplier(self, unit1, unit2):
         return self.value
@@ -109,7 +117,7 @@ class CanUseWeaponType(SkillComponent):
     desc = 'Unit can use this weapon type, regardless of class'
     tag = SkillTags.BASE
 
-    expose = Type.WeaponType
+    expose = ComponentType.WeaponType
 
     def wexp_usable_skill(self, unit, item):
         try: # get type from item and then compare
@@ -122,7 +130,7 @@ class CannotUseWeaponType(SkillComponent):
     desc = 'Unit cannot use this weapon type, regardless of class'
     tag = SkillTags.BASE
 
-    expose = Type.WeaponType
+    expose = ComponentType.WeaponType
 
     def wexp_unusable_skill(self, unit, item):
         try: # get type from item and then compare
@@ -135,7 +143,7 @@ class EnemyWexpMultiplier(SkillComponent):
     desc = "Unit gives a multiplier to the wexp gained by others in combat"
     tag = SkillTags.BASE
 
-    expose = Type.Float
+    expose = ComponentType.Float
 
     def enemy_wexp_multiplier(self, unit1, unit2):
         return self.value
@@ -153,7 +161,7 @@ class SightRangeBonus(SkillComponent):
     desc = "Unit gains a bonus to sight range"
     tag = SkillTags.BASE
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 3
 
     def sight_range(self, unit):
@@ -164,7 +172,7 @@ class DecreasingSightRangeBonus(SkillComponent):
     desc = "Unit gains a bonus to sight range that decreases by 1 each turn"
     tag = SkillTags.BASE
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 3
 
     def init(self, skill):

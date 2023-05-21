@@ -27,11 +27,13 @@ class Timer(QWidget):
 
         self.passive_counter = counters.generic3counter(frames2ms(32), frames2ms(4))
         self.active_counter = counters.generic3counter(frames2ms(13), frames2ms(6))
+        self.move_sprite_counter = counters.simplecounter((frames2ms(13), frames2ms(6), frames2ms(13), frames2ms(6)))
 
     def tick(self):
         current_time = int(round(time.time() * 1000))
         self.passive_counter.update(current_time)
         self.active_counter.update(current_time)
+        self.move_sprite_counter.update(current_time)
         self.tick_elapsed.emit()
 
     def start(self):

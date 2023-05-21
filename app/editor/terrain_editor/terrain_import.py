@@ -1,8 +1,8 @@
 import xml.etree.ElementTree as ET
 
 from app.utilities import utils, str_utils
-from app.data.database import DB
-from app.data import terrain
+from app.data.database.database import DB
+from app.data.database import terrain
 
 def get_from_xml(parent_dir: str, xml_fn: str) -> list:
     terrain_xml = ET.parse(xml_fn)

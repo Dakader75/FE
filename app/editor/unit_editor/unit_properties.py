@@ -1,5 +1,6 @@
+from app.editor.lib.components.database_delegate import DBNamesDelegate, UnitFieldDelegate
 from app.extensions.key_value_delegate import KeyValueDelegate, KeyValueDoubleListModel
-from app.data.database import DB
+from app.data.database.database import DB
 from app.editor.custom_widgets import AffinityBox, ClassBox
 from app.editor.icons import UnitPortrait
 from app.editor.item_list_widget import ItemListWidget
@@ -8,6 +9,7 @@ from app.editor.stat_widget import (StatAverageDialog, StatListWidget,
                                     UnitStatAveragesModel)
 from app.editor.tag_widget import TagDialog
 from app.editor.weapon_editor import weapon_model
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 from app.extensions.custom_gui import ComboBox, PropertyBox, QHLine
 from app.extensions.list_models import ReverseDoubleListModel, VirtualListModel
 from app.extensions.list_widgets import (AppendMultiListWidget,
@@ -138,12 +140,12 @@ class UnitProperties(QWidget):
 
         # name_section = QVBoxLayout()
 
-        self.nid_box = PropertyBox("Unique ID", QLineEdit, self)
+        self.nid_box = PropertyBox(_("Unique ID"), NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         main_section.addWidget(self.nid_box, 0, 1)
 
-        self.name_box = PropertyBox("Display Name", QLineEdit, self)
+        self.name_box = PropertyBox(_("Display Name"), QLineEdit, self)
 
         self.name_box.edit.textChanged.connect(self.name_changed)
         main_section.addWidget(self.name_box, 0, 2)
@@ -155,13 +157,13 @@ class UnitProperties(QWidget):
         self.variant_box.edit.setPlaceholderText("No Variant")
         main_section.addWidget(self.variant_box, 1, 2)
 
-        self.desc_box = PropertyBox("Description", QTextEdit, self)
+        self.desc_box = PropertyBox(_("Description"), QTextEdit, self)
         self.desc_box.edit.textChanged.connect(self.desc_changed)
         font_height = QFontMetrics(self.desc_box.edit.font())
         self.desc_box.edit.setFixedHeight(font_height.lineSpacing() * 3 + 20)
         main_section.addWidget(self.desc_box, 2, 0, 1, 3)
 
-        self.level_box = PropertyBox("Level", QSpinBox, self)
+        self.level_box = PropertyBox(_("Level"), QSpinBox, self)
         self.level_box.edit.setRange(1, 255)
         self.level_box.edit.setAlignment(Qt.AlignRight)
         self.level_box.edit.valueChanged.connect(self.level_changed)
@@ -173,8 +175,8 @@ class UnitProperties(QWidget):
 
         tag_section = QHBoxLayout()
 
-        self.tag_box = PropertyBox("Personal Tags", MultiSelectComboBox, self)
-        self.tag_box.edit.setPlaceholderText("No tag")
+        self.tag_box = PropertyBox(_("Personal Tags"), MultiSelectComboBox, self)
+        self.tag_box.edit.setPlaceholderText(_("No tag"))
         self.tag_box.edit.addItems(DB.tags.keys())
         self.tag_box.edit.updated.connect(self.tags_changed)
         tag_section.addWidget(self.tag_box)
@@ -185,7 +187,7 @@ class UnitProperties(QWidget):
 
         main_section.addLayout(tag_section, 3, 1, 1, 2)
 
-        self.unit_stat_widget = StatListWidget(self.current, "Stats", reset_button=True, parent=self)
+        self.unit_stat_widget = StatListWidget(self.current, _("Stats"), reset_button=True, parent=self)
         self.unit_stat_widget.button.clicked.connect(self.display_averages)
         self.unit_stat_widget.reset_button.clicked.connect(self.reset_stats)
         self.unit_stat_widget.model.dataChanged.connect(self.stat_list_model_data_changed)
@@ -195,7 +197,7 @@ class UnitProperties(QWidget):
         # Changing of stats done automatically by using model view framework within
 
         attrs = ("level", "skill_nid")
-        self.personal_skill_widget = AppendMultiListWidget([], "Personal Skills", attrs, LearnedSkillDelegate, self, model=ReverseDoubleListModel)
+        self.personal_skill_widget = AppendMultiListWidget([], _("Personal Skills"), attrs, LearnedSkillDelegate, self, model=ReverseDoubleListModel)
         self.personal_skill_widget.view.setMaximumHeight(120)
         # Changing of Personal skills done automatically also
         # self.personal_skill_widget.activated.connect(self.learned_skills_changed)
@@ -207,7 +209,7 @@ class UnitProperties(QWidget):
             self.unit_notes_widget.hide()
 
         fieldAttrs = ("Field", "Value")
-        self.unit_fields_widget = AppendMultiListWidget([], "Unit Fields", fieldAttrs, KeyValueDelegate, self, model=KeyValueDoubleListModel)
+        self.unit_fields_widget = AppendMultiListWidget([], "Unit Fields", fieldAttrs, UnitFieldDelegate, self, model=KeyValueDoubleListModel)
         self.unit_fields_widget.view.setMaximumHeight(120)
 
         default_weapons = {weapon_nid: DB.weapons.default() for weapon_nid in DB.weapons.keys()}
@@ -217,7 +219,7 @@ class UnitProperties(QWidget):
         # self.wexp_gain_widget.activated.connect(self.wexp_gain_changed)
 
         item_section = QHBoxLayout()
-        self.item_widget = ItemListWidget("Starting Items", self)
+        self.item_widget = ItemListWidget(_("Starting Items"), self)
         self.item_widget.items_updated.connect(self.items_changed)
         # self.item_widget.setMaximumHeight(200)
         item_section.addWidget(self.item_widget)
@@ -263,8 +265,8 @@ class UnitProperties(QWidget):
 
     def nid_changed(self, text):
         # Also change name if they are identical
-        if self.current.name == self.current.nid:
-            self.name_box.edit.setText(text)
+        if self.current.name == self.current.nid.replace('_', ' '):
+            self.name_box.edit.setText(text.replace('_', ' '))
         self.current.nid = text
         self.window.update_list()
 

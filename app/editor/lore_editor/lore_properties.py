@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFontMetrics
 
 from app.extensions.custom_gui import PropertyBox
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 
 from app.utilities import str_utils
 
@@ -16,7 +17,7 @@ class LoreProperties(QWidget):
 
         name_section = QVBoxLayout()
 
-        self.nid_box = PropertyBox("Unique ID", QLineEdit, self)
+        self.nid_box = PropertyBox("Unique ID", NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         name_section.addWidget(self.nid_box)
@@ -50,10 +51,10 @@ class LoreProperties(QWidget):
 
     def nid_changed(self, text):
         # Also change name if they are identical
-        if self.current.name == self.current.nid:
-            self.short_name_box.edit.setText(text)
-        if self.current.title == self.current.nid:
-            self.long_name_box.edit.setText(text)
+        if self.current.name == self.current.nid.replace('_', ' '):
+            self.short_name_box.edit.setText(text.replace('_', ' '))
+        if self.current.title == self.current.nid.replace('_', ' '):
+            self.long_name_box.edit.setText(text.replace('_', ' '))
         self.current.nid = text
         self.window.update_list()
 

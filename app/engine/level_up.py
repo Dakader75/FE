@@ -2,18 +2,21 @@ from app.engine.objects.unit import UnitObject
 import math
 
 from app.constants import TILEWIDTH, TILEHEIGHT, WINWIDTH, WINHEIGHT
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 
 from app.utilities import utils
 from app.engine import engine, image_mods, icons, unit_funcs, action, banner, skill_system
 from app.engine.sprites import SPRITES
 from app.engine.sound import get_sound_thread
 from app.engine.fonts import FONT
+from app.events import triggers
 from app.engine.state import State
 from app.engine.state_machine import SimpleStateMachine
 from app.engine.animations import Animation
 from app.engine.game_state import game
+from app.engine.graphics.text.text_renderer import render_text
+from app.utilities.enums import HAlignment
 
 class ExpState(State):
     name = 'exp'
@@ -46,12 +49,12 @@ class ExpState(State):
         self.max_mana = self.unit.get_max_mana()
         self.mana_to_gain = 0
         if game.mana_instance:
-            mana_instances_for_unit = [idx for idx, instance in enumerate(game.mana_instance) if instance[0].nid == self.unit.nid]
-            if mana_instances_for_unit:
-                mana_instance = game.mana_instance.pop(mana_instances_for_unit[-1])
-                self.mana_to_gain = mana_instance[1]
-                if self.mana_to_gain + self.old_mana > self.max_mana:
-                    self.mana_to_gain = self.max_mana - self.old_mana
+            mana_instances_for_unit = [instance for instance in game.mana_instance if instance[0].nid == self.unit.nid]
+            for instance in mana_instances_for_unit:
+                self.mana_to_gain += instance[1]
+                game.mana_instance.remove(instance)
+            if self.mana_to_gain + self.old_mana > self.max_mana:
+                self.mana_to_gain = self.max_mana - self.old_mana
         self.mana_bar = None
 
         self.state = SimpleStateMachine(self.starting_state)
@@ -65,20 +68,35 @@ class ExpState(State):
             max_exp = 100 * (self.unit_klass.max_level - self.old_level) - self.old_exp
             self.exp_gain = min(self.exp_gain, max_exp)
 
-        self.total_time_for_exp = utils.frames2ms(abs(self.exp_gain))  # 1 frame per exp
+        self.total_time_for_exp = max(1, utils.frames2ms(abs(self.exp_gain)))  # 1 frame per exp
 
         self.stat_changes = None
         self.new_wexp = None
 
-        if self.unit.level >= self.unit_klass.max_level and not (self.auto_promote or self.starting_state in ('promote', 'class_change')):
-            # We're done here
+        if self.unit.level >= self.unit_klass.max_level and not self.mana_to_gain and \
+                not self.auto_promote and self.starting_state not in ('promote', 'class_change', 'stat_booster'):
+            # We're done here, since the unit is at max level and has no stats to gain
             game.state.back()
             return 'repeat'
+
+        # determine source for trigger later
+        # purposefully explicit here
+        self.source = 'exp_gain'
+        if self.starting_state == 'stat_booster':
+            self.source = 'stat_change'
+        elif self.starting_state == 'class_change':
+            self.source = 'class_change'
+        elif self.starting_state == 'promote':
+            self.source = 'promote'
 
         self.level_up_sound_played = False
 
     def begin(self):
         game.cursor.hide()
+
+    def end(self):
+        # Just in case, make sure this doesn't last forever
+        get_sound_thread().stop_sfx('Experience Gain')
 
     def create_level_up_logo(self):
         if self.combat_object:
@@ -108,7 +126,7 @@ class ExpState(State):
             self.exp_bar = ExpBar(self.old_exp, center=not self.combat_object)
             self.start_time = current_time
 
-            if self.mana_to_gain or (self.unit.get_max_mana() > 0 and self.unit.get_mana() != self.unit.get_max_mana()):
+            if self.mana_to_gain:
                 self.mana_bar = ManaBar(self.old_mana, center=not self.combat_object)
                 self.mana_bar.bar_max = self.unit.get_max_mana()
 
@@ -251,7 +269,7 @@ class ExpState(State):
                     self, self.unit, self.stat_changes, self.old_level, self.unit.level)
             if self.level_up_screen.update(current_time):
                 game.state.back()
-                game.events.trigger('unit_level_up', self.unit, local_args={'stat_changes': self.stat_changes})
+                game.events.trigger(triggers.UnitLevelUp(self.unit, self.stat_changes, self.source))
                 if self.combat_object:
                     self.combat_object.lighten_ui()
 
@@ -264,7 +282,12 @@ class ExpState(State):
                 # get to this screen
                 if self.starting_state != "stat_booster":
                     ExpState.give_new_personal_skills(self.unit)
-                    ExpState.give_new_class_skills(self.unit)
+                    if self.starting_state == 'class_change' and not DB.constants.value('learn_skills_on_reclass'):
+                        pass
+                    elif self.starting_state == 'promote' and not DB.constants.value('learn_skills_on_promote'):
+                        pass
+                    else:
+                        ExpState.give_new_class_skills(self.unit)
 
         # Wait 100 ms before transferring to the promotion state
         elif self.state.get_state() == 'prepare_promote':
@@ -406,6 +429,7 @@ class LevelUpScreen():
 
         self.animations = []
         self.arrow_animations = []
+        self.simple_nums = []
 
         self.state = 'scroll_in'
         self.start_time = 0
@@ -475,7 +499,7 @@ class LevelUpScreen():
         elif self.state == 'get_next_spark':
             done = self.inc_spark()
             if done:
-                game.events.trigger('during_unit_level_up', self.unit, local_args={'stat_changes': self.parent.stat_changes})
+                game.events.trigger(triggers.DuringUnitLevelUp(self.unit, self.parent.stat_changes, self.parent.source))
                 self.state = 'level_up_wait'
                 self.start_time = current_time
             else:
@@ -506,6 +530,11 @@ class LevelUpScreen():
                 if anim:
                     number_animation = Animation(anim, (offset_pos[0] + 37, offset_pos[1] + 4), delay=80, hold=True)
                     self.animations.append(number_animation)
+                else:
+                    if increase > 0:
+                        self.simple_nums.append(('stat', 'white', '+' + str(increase), (offset_pos[0] + 57, offset_pos[1] - 2), current_time))
+                    elif increase < 0:
+                        self.simple_nums.append(('stat', 'purple', str(increase), (offset_pos[0] + 57, offset_pos[1] - 2), current_time))
 
                 get_sound_thread().play_sfx('Stat Up')
                 self.underline_offset = 36 # for underline growing
@@ -519,6 +548,7 @@ class LevelUpScreen():
         elif self.state == 'level_up_wait':
             if current_time - self.start_time > self.level_up_wait:
                 self.animations.clear()
+                self.simple_nums.clear()
                 self.state = 'scroll_out'
                 self.start_time = current_time
 
@@ -573,7 +603,7 @@ class LevelUpScreen():
                 continue
             pos = self.get_position(idx)
             name = DB.stats.get(stat).name
-            FONT['text-yellow'].blit(name, sprite, pos)
+            render_text(sprite, ['text'], [name], ['yellow'], pos)
             text = self.unit.stats[stat] - (self.stat_list[idx] if self.current_spark < idx else 0)
             width = FONT['text-blue'].width(str(text))
             FONT['text-blue'].blit(str(text), sprite, (pos[0] + 40 - width, pos[1]))
@@ -591,6 +621,10 @@ class LevelUpScreen():
         # offset = game.camera.get_x() * TILEWIDTH, game.camera.get_y() * TILEHEIGHT
         for animation in self.animations:
             animation.draw(surf)
+
+        for font, color, text, pos, time in self.simple_nums:
+            if engine.get_time() - time > 80:
+                render_text(surf, [font], [text], [color], pos, align=HAlignment.RIGHT)
 
         return surf
 

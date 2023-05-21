@@ -1,6 +1,7 @@
+from app.editor.lib.components.validated_line_edit import NidLineEdit
 from functools import partial
 
-from app.data.database import DB
+from app.data.database.database import DB
 from app.editor import timer
 from app.editor.custom_widgets import PartyBox, UnitBox
 from app.editor.sound_editor import sound_tab
@@ -24,7 +25,7 @@ class MusicDialog(SimpleDialog):
         self.setLayout(layout)
 
         self.boxes = {}
-        for idx, key in enumerate(self.current.music.keys()):
+        for key in DB.music_keys:
             title = key.replace('_', ' ').title()
             box = PropertyBox(title, QLineEdit, self)
             box.edit.setReadOnly(True)
@@ -72,7 +73,7 @@ class PropertiesMenu(QWidget):
         form = QVBoxLayout(self)
         form.setAlignment(Qt.AlignTop)
 
-        self.nid_box = PropertyBox("Level ID", QLineEdit, self)
+        self.nid_box = PropertyBox("Level ID", NidLineEdit, self)
         self.nid_box.edit.textChanged.connect(self.nid_changed)
         self.nid_box.edit.editingFinished.connect(self.nid_done_editing)
         form.addWidget(self.nid_box)
@@ -154,7 +155,6 @@ class PropertiesMenu(QWidget):
         current = self.current
         if not current:
             return
-
         self.title_box.edit.setText(current.name)
         self.nid_box.edit.setText(current.nid)
         if current.party in DB.parties.keys():
@@ -169,11 +169,11 @@ class PropertiesMenu(QWidget):
         if DB.units:
             self.unit_box.model._data = DB.units
             self.unit_box.model.layoutChanged.emit()
-        self.free_roam_box.edit.setChecked(bool(current.roam))
         if current.roam_unit:
             self.unit_box.edit.setValue(current.roam_unit)
         elif DB.units:
             self.unit_box.edit.setValue(DB.units[0].nid)
+        self.free_roam_box.edit.setChecked(bool(current.roam))
         if bool(current.roam):
             self.unit_box.show()
         else:
@@ -228,19 +228,23 @@ class PropertiesMenu(QWidget):
         elif key == 'loss':
             self.current.objective[key] = self.loss_condition.edit.text()
 
+    def check_positions(self, tilemap):
+        # Tilemap is the tilemap itself, not a nid
+        # Reset the positions of units who are now off the side of the map
+        for unit in self.current.units:
+            if unit.starting_position:
+                if unit.starting_position[0] >= tilemap.width or unit.starting_position[1] >= tilemap.height:
+                    unit.starting_position = None
+        # Reset any illegal positions for groups
+        for group in self.current.unit_groups:
+            group.positions = {k: v for k, v in group.positions.items() if v[0] < tilemap.width and v[1] < tilemap.height}
+
     def select_tilemap(self):
         res, ok = tile_tab.get_tilemaps()
         if ok and res:
             nid = res.nid
             self.current.tilemap = nid
-            # Reset the positions of units who are now off the side of the map
-            for unit in self.current.units:
-                if unit.starting_position:
-                    if unit.starting_position[0] >= res.width or unit.starting_position[1] >= res.height:
-                        unit.starting_position = None
-            # Reset any illegal positions for groups
-            for group in self.current.unit_groups:
-                group.positions = {k: v for k, v in group.positions.items() if v[0] < res.width and v[1] < res.height}
+            self.check_positions(res)
             self.state_manager.change_and_broadcast('ui_refresh_signal', None)
 
     def select_bg_tilemap(self):
@@ -260,6 +264,7 @@ class PropertiesMenu(QWidget):
         self.current.roam = bool(state)
         if self.current.roam:
             self.unit_box.show()
+            self.current.roam_unit = self.unit_box.edit.currentText()
             # self.unit_changed() - This line seems only to cause issues due to it reseting the roam_unit in line 265. Functionality appears to work correctly with it removed
         else:
             self.unit_box.hide()

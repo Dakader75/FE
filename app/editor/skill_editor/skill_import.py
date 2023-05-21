@@ -2,10 +2,10 @@ import xml.etree.ElementTree as ET
 
 from app.utilities import str_utils, utils
 from app.utilities.data import Data
-from app.data.database import DB
-from app.data import skills
+from app.data.database.database import DB
+from app.data.database import skills
 
-from app.data.components import Type
+from app.data.database.components import ComponentType
 
 import app.engine.skill_component_access as SCA
 
@@ -211,11 +211,11 @@ def load_skill(skill):
             if comp:
                 try:
                     value = skill.find(component).text
-                    if comp.expose == Type.Int:
+                    if comp.expose == ComponentType.Int:
                         value = int(value)
-                    elif comp.expose == Type.Float:
+                    elif comp.expose == ComponentType.Float:
                         value = float(value)
-                    elif comp.expose == Type.Color3 or comp.expose == Type.Color4:
+                    elif comp.expose == ComponentType.Color3 or comp.expose == ComponentType.Color4:
                         value = [utils.clamp(int(c), 0, 255) for c in value.split(',')]
                     elif isinstance(comp.expose, tuple):
                         logging.warning("%s: Could not determine value for component %s" % (nid, component))

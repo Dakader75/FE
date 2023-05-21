@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTableView
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.editor.base_database_gui import DatabaseTab
 from app.extensions.custom_gui import TableView

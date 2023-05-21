@@ -2,7 +2,7 @@ import os
 
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
-from app.data.database import DB
+from app.data.database.database import DB
 from app.editor.data_editor import SingleDatabaseEditor
 from app.editor.base_database_gui import DatabaseTab
 from app.editor.settings import MainSettingsController
@@ -16,7 +16,7 @@ class UnitDatabase(DatabaseTab):
     @classmethod
     def create(cls, parent=None):
         data = DB.units
-        title = "Unit"
+        title = _("Unit")
         right_frame = unit_properties.UnitProperties
         deletion_criteria = (None, None, None)
         collection_model = unit_model.UnitModel
@@ -26,7 +26,7 @@ class UnitDatabase(DatabaseTab):
     def import_data(self):
         settings = MainSettingsController()
         starting_path = settings.get_last_open_path()
-        fn, ok = QFileDialog.getOpenFileName(self, "Import units from units.xml", starting_path, "Units XML (units.xml);;All Files(*)")
+        fn, ok = QFileDialog.getOpenFileName(self, _("Import units from units.xml"), starting_path, "Units XML (units.xml);;All Files(*)")
         if ok and fn:
             parent_dir = os.path.split(fn)[0]
             settings.set_last_open_path(parent_dir)
@@ -38,7 +38,7 @@ class UnitDatabase(DatabaseTab):
     def import_csv(self):
         settings = MainSettingsController()
         starting_path = settings.get_last_open_path()
-        fn, ok = QFileDialog.getOpenFileName(self, "Import units from csv", starting_path, "Units csv (*.csv);;All Files(*)")
+        fn, ok = QFileDialog.getOpenFileName(self, _("Import units from csv"), starting_path, "Units csv (*.csv);;All Files(*)")
         if ok and fn:
             parent_dir = os.path.split(fn)[0]
             settings.set_last_open_path(parent_dir)
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     from app import dark_theme
     d = dark_theme.QDarkPalette()
     d.set_app(app)
-    from app.resources.resources import RESOURCES
+    from app.data.resources.resources import RESOURCES
     RESOURCES.load('default.ltproj')
     DB.load('default.ltproj')
     window = SingleDatabaseEditor(UnitDatabase)

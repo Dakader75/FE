@@ -7,12 +7,13 @@ from pathlib import Path
 from time import time_ns
 
 from app.constants import VERSION
-from app.data.database import DB, Database
+from app.data.database.database import DB, Database
 from app.editor import timer
-from app.editor.lib.csv.csv_exporter import dump_as_csv
+from app.editor.lib.csv import text_data_exporter, csv_data_exporter
 from app.editor.new_game_dialog import NewGameDialog
 from app.editor.settings import MainSettingsController
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
+from app.utilities import exceptions
 from PyQt5.QtCore import QDir, Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QProgressDialog
 
@@ -31,7 +32,9 @@ class ProjectFileBackend():
         self.save_progress.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.save_progress.reset()
 
-        self.autosave_progress = QProgressDialog("Autosaving project to %s" % os.path.abspath('autosave.ltproj'), None, 0, 100, self.parent)
+        project_nid = DB.constants.value('game_nid').replace(' ', '_')
+        autosave_path = os.path.abspath('autosave_%s.ltproj' % project_nid)
+        self.autosave_progress = QProgressDialog("Autosaving project to %s" % autosave_path, None, 0, 100, self.parent)
         self.autosave_progress.setAutoClose(True)
         self.autosave_progress.setWindowTitle("Autosaving Project")
         self.autosave_progress.setWindowModality(Qt.WindowModal)
@@ -85,8 +88,7 @@ class ProjectFileBackend():
 
         # Make directory for saving if it doesn't already exist
         if not new and self.settings.get_should_make_backup_save():
-            # to make sure we don't accidentally make a bad save
-            # we will copy either the autosave, or the existing save (whichever is more recent)
+            # we will copy the existing save (whichever is more recent)
             # as a backup
             self.tmp_proj = self.current_proj + '.lttmp'
             self.save_progress.setLabelText("Making backup to %s" % self.tmp_proj)
@@ -95,21 +97,6 @@ class ProjectFileBackend():
                 shutil.rmtree(self.tmp_proj)
 
             most_recent_path = self.current_proj
-            # check if autosave or current save is more recent
-            # try:
-            #     autosave_dir = os.path.abspath('autosave.ltproj')
-            #     autosave_meta = json.load(open(autosave_dir + '/metadata.json'))
-            #     curr_meta = json.load(open(self.current_proj + '/metadata.json'))
-            #     if autosave_meta['project'] == curr_meta['project']: # make sure same project
-            #         autosave_ts = datetime.strptime(autosave_meta['date'], '%Y-%m-%d %H:%M:%S.%f')
-            #         curr_ts = datetime.strptime(curr_meta['date'], '%Y-%m-%d %H:%M:%S.%f')
-            #         if autosave_ts > curr_ts:
-            #             most_recent_path = autosave_dir
-            # except Exception as e:
-            #     print(e)
-            #     # autosave doesn't have metadata, autosave doesn't exist, etc.
-            #     # just copy the previous save
-            #     pass
             shutil.move(most_recent_path, self.tmp_proj)
         self.save_progress.setLabelText("Saving project to %s" % self.current_proj)
         self.save_progress.setValue(10)
@@ -164,7 +151,7 @@ class ProjectFileBackend():
         curr_path.cdUp()
         starting_path = curr_path.path() + '/' + title + '.ltproj'
         fn, ok = QFileDialog.getSaveFileName(self.parent, "Save Project", starting_path,
-                                                "All Files (*)")
+                                             "All Files (*)")
         if not ok:
             return
         shutil.copytree(QDir.currentPath() + '/' + 'default.ltproj', fn)
@@ -213,6 +200,14 @@ class ProjectFileBackend():
                 self.settings.set_current_project(self.current_proj)
                 self.load()
                 return True
+            except exceptions.CustomComponentsException as e:
+                logging.exception(e)
+                logging.error("Failed to load project at %s due to syntax error. Likely there's a problem in your Custom Components file, located at %s. See error above." % (path, RESOURCES.get_custom_components_path()))
+                QMessageBox.warning(self.parent, "Load of project failed",
+                                    "Failed to load project at %s due to syntax error. Likely there's a problem in your Custom Components file, located at %s. Exception:\n%s." % (path, RESOURCES.get_custom_components_path(), e))
+                logging.warning("falling back to default.ltproj")
+                self.auto_open_fallback()
+                return False
             except Exception as e:
                 logging.exception(e)
                 backup_project_name = path + '.lttmp'
@@ -250,11 +245,12 @@ class ProjectFileBackend():
         if os.path.exists(self.current_proj):
             RESOURCES.load(self.current_proj)
             DB.load(self.current_proj)
-            from app.engine import equations
-            equations.clear()
 
     def autosave(self):
-        autosave_dir = os.path.abspath('autosave.ltproj')
+        project_nid = DB.constants.value('game_nid').replace(' ', '_')
+        autosave_path = os.path.abspath('autosave_%s.ltproj' % project_nid)
+        self.autosave_progress.setLabelText("Autosaving project to %s" % autosave_path)
+        autosave_dir = os.path.abspath(autosave_path)
         # Make directory for saving if it doesn't already exist
         if not os.path.isdir(autosave_dir):
             os.mkdir(autosave_dir)
@@ -268,7 +264,7 @@ class ProjectFileBackend():
 
         # Actually save project
         logging.info("Autosaving project to %s..." % autosave_dir)
-        RESOURCES.save(autosave_dir, specific='autosave', progress=self.autosave_progress)
+        RESOURCES.autosave(self.current_proj, autosave_dir, self.autosave_progress)
         self.autosave_progress.setValue(75)
         DB.serialize(autosave_dir)
         self.autosave_progress.setValue(99)
@@ -298,11 +294,41 @@ class ProjectFileBackend():
     def dump_csv(self, db: Database):
         starting_path = self.current_proj or QDir.currentPath()
         fn = QFileDialog.getExistingDirectory(
-                self.parent, "Choose dump location", starting_path)
+            self.parent, "Choose dump location", starting_path)
         if fn:
             csv_direc = fn
-            for ttype, tstr in dump_as_csv(db):
+            for ttype, tstr in csv_data_exporter.dump_as_csv(db):
                 with open(os.path.join(csv_direc, ttype + '.csv'), 'w') as f:
                     f.write(tstr)
+        else:
+            return False
+
+    def dump_script(self, db: Database, single_block=True):
+        starting_path = self.current_proj or QDir.currentPath()
+        fn = QFileDialog.getExistingDirectory(
+            self.parent, "Choose dump location", starting_path)
+        if fn:
+            script_direc = os.path.join(fn, 'script')
+            if not os.path.exists(script_direc):
+                os.mkdir(script_direc)
+            else:
+                shutil.rmtree(script_direc)
+                os.mkdir(script_direc)
+            if single_block:
+                with open(os.path.join(script_direc, "script.txt"), 'w') as f:
+                    for level_nid, event_dict in text_data_exporter.dump_script(db.events, db.levels).items():
+                        for event_nid, event_script in event_dict.items():
+                            f.write(event_script + "\n")
+            else:
+                for level_nid, event_dict in text_data_exporter.dump_script(db.events, db.levels).items():
+                    level_direc = os.path.join(script_direc, level_nid)
+                    if not os.path.exists(level_direc):
+                        os.mkdir(level_direc)
+                    else:
+                        shutil.rmtree(level_direc)
+                        os.mkdir(level_direc)
+                    for event_nid, event_script in event_dict.items():
+                        with open(os.path.join(level_direc, event_nid + '.txt'), 'w') as f:
+                            f.write(event_script)
         else:
             return False

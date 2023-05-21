@@ -21,5 +21,9 @@ class WidgetList(QListWidget):
 
     def row_moved(self, parent, start, end, destination, row):
         elem = self.index_list.pop(start)
-        self.index_list.insert(row, elem)
-        self.order_swapped.emit(start, row)
+        if row > start:
+            self.index_list.insert(row - 1, elem)
+            self.order_swapped.emit(start, row - 1)
+        else:
+            self.index_list.insert(row, elem)
+            self.order_swapped.emit(start, row)

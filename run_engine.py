@@ -1,8 +1,8 @@
 import os, sys
 
 from app.constants import VERSION
-from app.resources.resources import RESOURCES
-from app.data.database import DB
+from app.data.resources.resources import RESOURCES
+from app.data.database.database import DB
 from app.engine import engine
 from app.engine import config as cf
 from app.engine import driver
@@ -10,6 +10,10 @@ from app.engine import game_state
 from app.engine.component_system_compiler import source_generator
 
 def main(name: str = 'testing_proj'):
+    # Translation currently unused within engine proper
+    # If you need to use translation, remember to copy the locale folder to your build.
+    # from app.editor.editor_locale import init_locale
+    # init_locale()
     if not os.path.exists(name + '.ltproj'):
         raise ValueError("Could not locate LT project %s" % (name + '.ltproj'))
     RESOURCES.load(name + '.ltproj')
@@ -46,7 +50,7 @@ def find_and_run_project():
     for name in os.listdir('./'):
         if name.endswith(proj):
             name = name.replace(proj, '')
-            if name not in ('autosave',):
+            if not name.startswith('autosave'):
                 main(name)
 
 if __name__ == '__main__':

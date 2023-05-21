@@ -1,26 +1,59 @@
 import os
 import json
 
-from PyQt5.QtWidgets import QSplitter, QFrame, QVBoxLayout, \
+from PyQt5.QtWidgets import QLineEdit, QFrame, QVBoxLayout, \
     QToolBar, QSpinBox, QAction, QMenu, QDockWidget, \
     QActionGroup, QWidget, QMainWindow, QLabel, QSizePolicy, \
-    QDesktopWidget, QFileDialog, QHBoxLayout, QMessageBox
+    QDesktopWidget, QFileDialog, QHBoxLayout, QMessageBox, \
+    QDialogButtonBox, QDialog
 from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QImage, QPainter, QColor
 
-from app.extensions.custom_gui import PropertyBox, ComboBox
+from app.constants import TILEWIDTH, TILEHEIGHT, AUTOTILE_FRAMES
+
+from app.extensions.custom_gui import PropertyBox, ComboBox, Dialog
 from app.editor.settings import MainSettingsController
 
 from app.map_maker.resize_dialog import ResizeDialog
 from app.map_maker.terrain_painter_menu import TerrainPainterMenu
 from app.map_maker.map_editor_view import PaintTool, MapEditorView
-from app.map_maker.draw_tilemap import draw_tilemap
+from app.map_maker.draw_tilemap import simple_draw_tilemap
 from app.map_maker.map_prefab import MapPrefab
 from app.map_maker import map_maker_palette
 from app.map_maker.terrain_database import DB_terrain
 import app.map_maker.utilities as map_utils
 
-from app.map_maker import meta_generation
+class NidDialog(Dialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Set Tileset Nid")
+        self.window = parent
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.new_nid_box = PropertyBox("Tileset Nid", QLineEdit, self)
+        self.new_nid_box.edit.setPlaceholderText("Give the tileset a unique nid")
+        self.new_nid_box.edit.textChanged.connect(self.text_changed)
+        layout.addWidget(self.new_nid_box)
+
+        layout.addWidget(self.buttonbox)
+        self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+    def text_changed(self, text):
+        if self.new_nid_box.edit.text():
+            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+        else:
+            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+    @classmethod
+    def get(cls, parent=None):
+        dialog = cls(parent)
+        result = dialog.exec_()
+        if result == QDialog.Accepted:
+            return dialog.new_nid_box.edit.text()
+        else:
+            return None
 
 class CliffMarkerWidget(QWidget):
     def __init__(self, parent=None, tilemap=None):
@@ -58,6 +91,7 @@ class CliffMarkerWidget(QWidget):
 
     def reset(self):
         self.window.add_cliff_marker_action.setChecked(False)
+        self.toggle_remove_button()
 
     def add_new_marker(self, pos):
         self.reset()
@@ -163,26 +197,24 @@ class MapEditor(QMainWindow):
         self.view.update_view()
 
     def create_actions(self):
-        theme = self.settings.get_theme()
-        if theme == 0:
-            icon_folder = 'icons/icons'
-        else:
-            icon_folder = 'icons/dark_icons'
+        theme = dark_theme.get_theme()
+        icon_folder = theme.icon_dir()
+
 
         paint_group = QActionGroup(self)
-        self.brush_action = QAction(QIcon(f"{icon_folder}/brush.png"), "&Brush", self, shortcut="B", triggered=self.set_brush)
+        self.brush_action = QAction(QIcon(f"{icon_folder}/brush.png"), "Brush", self, shortcut="B", triggered=self.set_brush)
         self.brush_action.setCheckable(True)
         paint_group.addAction(self.brush_action)
-        self.paint_action = QAction(QIcon(f"{icon_folder}/fill.png"), "&Fill", self, shortcut="F", triggered=self.set_fill)
+        self.paint_action = QAction(QIcon(f"{icon_folder}/fill.png"), "Fill", self, shortcut="F", triggered=self.set_fill)
         self.paint_action.setCheckable(True)
         paint_group.addAction(self.paint_action)
-        self.erase_action = QAction(QIcon(f"{icon_folder}/eraser.png"), "&Erase", self, shortcut="E", triggered=self.set_erase)
+        self.erase_action = QAction(QIcon(f"{icon_folder}/eraser.png"), "Erase", self, shortcut="E", triggered=self.set_erase)
         self.erase_action.setCheckable(True)
         paint_group.addAction(self.erase_action)
-        self.resize_action = QAction(QIcon(f"{icon_folder}/resize.png"), "&Resize", self, shortcut="R", triggered=self.resize_map)
+        self.resize_action = QAction(QIcon(f"{icon_folder}/resize.png"), "Resize", self, shortcut="R", triggered=self.resize_map)
 
-        self.export_as_png_action = QAction(QIcon(f"{icon_folder}/export_as_png.png"), "E&xport Current Image as PNG", self, triggered=self.export_as_png)
-        self.export_to_lt_action = QAction("Export to LT-maker", self, triggered=self.export_to_lt)
+        self.export_as_png_action = QAction(QIcon(f"{icon_folder}/export_as_png.png"), "Export Current Image as PNG", self, triggered=self.export_as_png)
+        self.export_to_lt_action = QAction(QIcon("favicon.ico"), "Export to LT-maker", self, triggered=self.export_to_lt)
 
         self.show_gridlines_action = QAction(QIcon(f"{icon_folder}/gridlines.png"), "Show GridLines", self, triggered=self.gridline_toggle)
         self.show_gridlines_action.setCheckable(True)
@@ -344,11 +376,12 @@ class MapEditor(QMainWindow):
         for terrain in DB_terrain:
             terrain.palette_path = palette.palette_path
             terrain.set_tileset()
-        # self.current.reset_all()
+        self.current.reset_all()
+        self.terrain_painter_menu.reset()
 
     def export_as_png(self):
         if self.current:
-            image = draw_tilemap(self.current, autotile_fps=0)
+            image = simple_draw_tilemap(self.current)
             starting_path = self.settings.get_last_open_path()
             fn, ok = QFileDialog.getSaveFileName(
                 self, "Export Current Image", starting_path,
@@ -359,14 +392,81 @@ class MapEditor(QMainWindow):
                 self.settings.set_last_open_path(parent_dir)
 
     def export_to_lt(self):
-        if self.current:
-            pass
+        if not self.current:
+            QMessageBox.critical(self, self.title, "There is no current map!")
+            return
+
+        QMessageBox.warning(self, self.title, "Do not select a .ltproj that's currently open in the LT Editor!\n"
+                            "Doing so may cause corruption of your files!")
+
+        image: QImage = simple_draw_tilemap(self.current)
+
+        starting_path = self.settings.get_last_open_path()
+        fn = QFileDialog.getExistingDirectory(
+            self, "Select LT Project", starting_path)
+
+        if fn:
+            parent_dir = os.path.split(fn)[0]
+            self.settings.set_last_open_path(parent_dir)
+
+            nid = NidDialog.get(self)
+            if not nid:
+                return
+
+            loc = os.path.join(fn, 'resources', 'tilesets')
+            assert os.path.isdir(loc)
+            manifest = os.path.join(loc, 'tileset.json')
+            full_path = os.path.join(loc, nid + '.png')
+            autotile_path = os.path.join(loc, nid + '_autotiles.png')
+            image.save(full_path)
+
+            s_dict = {}
+            s_dict['nid'] = nid
+            s_dict['terrain_grid'] = {}
+
+            # Build autotiles
+            s_dict['autotiles'] = {}
+            all_autotile_positions = []
+            for pos in sorted(self.current.terrain_grid):
+                # Determine what terrain is in this position
+                terrain_nid = self.current.get_terrain(pos)
+                if not terrain_nid:
+                    continue
+                terrain = DB_terrain.get(terrain_nid)
+                if terrain.has_autotiles():
+                    all_autotile_positions.append((pos, terrain))
+
+            width = TILEWIDTH * len(all_autotile_positions)
+            height = TILEHEIGHT * AUTOTILE_FRAMES
+            autotile_image = QImage(width, height, QImage.Format_ARGB32)
+            autotile_image.fill(QColor(255, 255, 255, 0))
+
+            painter = QPainter(autotile_image)
+            for idx, (pos, terrain) in enumerate(all_autotile_positions):
+                str_coord = "%d,%d" % (pos[0], pos[1])
+                s_dict['autotiles'][str_coord] = idx
+                for pidx in range(AUTOTILE_FRAMES):
+                    sprite = terrain.determine_sprite(self.current, pos, pidx)
+                    painter.drawPixmap(idx * TILEWIDTH, pidx * TILEHEIGHT, sprite)
+            painter.end()
+            autotile_image.save(autotile_path)
+            # Completed creating autotiles
+
+            # Modify the tileset manifest of the project
+            import json
+            with open(manifest) as fp:
+                data = json.load(fp)
+            data.append(s_dict)
+            with open(manifest, 'w') as fp:
+                json.dump(data, fp, indent=4)
+
+            QMessageBox.information(self, self.title, "Map successfully exported as tileset with nid *%s* to %s" % (nid, fn))
 
     def update_view(self):
         self.view.update_view()
 
     def maybe_save(self):
-        ret = QMessageBox.warning(self, "Map Maker", "The current map may have been modified.\n"
+        ret = QMessageBox.warning(self, self.title, "The current map may have been modified.\n"
                                   "Do you want to save your changes?",
                                   QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
         if ret == QMessageBox.Save:
@@ -443,8 +543,13 @@ class MapEditor(QMainWindow):
             with open(self.current_map_save_location) as load_file:
                 s_dict = json.load(load_file)
                 self.current = MapPrefab.restore(s_dict)
-            self.current.reset_all()
-            self.view.set_current(self.current)
+        if self.current.current_palette:
+            idx = map_maker_palette.PALETTES.index(self.current.current_palette)
+            self.palette_selector.edit.setCurrentIndex(idx)
+            self.palette_changed(idx)
+        else:
+            self.palette_changed(0)  # Apply it for the current palette
+        self.set_current(self.current)
 
     def closeEvent(self, event):
         if self.maybe_save():
@@ -459,7 +564,7 @@ class MapEditor(QMainWindow):
                           "<p>Check out <a href='https://lt-maker.readthedocs.io/'>https://lt-maker.readthedocs.io/</a> "
                           "for more information and helpful tutorials.</p>"
                           "<p>This program has been freely distributed under the MIT License.</p>"
-                          "<p>Copyright 2014-2022 rainlash.</p>")
+                          "<p>Copyright 2014-2023 rainlash.</p>")
 
     def display_help(self):
         QMessageBox.about(self, "Help for Lex Talionis Map Maker",
@@ -481,10 +586,15 @@ if __name__ == "__main__":
     import sys
     from PyQt5.QtWidgets import QApplication
     from app import dark_theme
+
+    # For High DPI displays
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+
     ap = QApplication(sys.argv)
     ap.setWindowIcon(QIcon('favicon.ico'))
     settings = MainSettingsController()
-    theme = settings.get_theme(0)
+    theme = dark_theme.get_theme()
     dark_theme.set(ap, theme)
     sample_tilemap = MapPrefab('sample')
     # sample_tilemap = meta_generation.generate(sample_tilemap)

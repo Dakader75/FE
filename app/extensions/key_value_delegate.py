@@ -17,8 +17,6 @@ class FixedKeyMutableValueDelegate(QItemDelegate):
             return editor
         else:
             return super().createEditor(parent, option, index)
-
-
 class KeyValueDelegate(QItemDelegate):
     key_column = 0
     value_column = 1

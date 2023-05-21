@@ -6,10 +6,115 @@
         "condition": "True",
         "commands": [
             [
+                "create_achievement",
+                [
+                    "Sample",
+                    "Test Goal",
+                    "It's only a test!"
+                ]
+            ],
+            [
+                "create_achievement",
+                [
+                    "Smaple2",
+                    "Kill God",
+                    "You managed to beat a JRPG"
+                ]
+            ],
+            [
+                "complete_achievement",
+                [
+                    "Smaple2",
+                    "t"
+                ]
+            ],
+            [
+                "update_achievement",
+                [
+                    "Sample",
+                    "Sample",
+                    "It's just a test"
+                ]
+            ],
+            [
+                "create_achievement",
+                [
+                    "Sample3",
+                    "Waffles",
+                    "This is hidden",
+                    "hidden"
+                ]
+            ],
+            [
+                "create_achievement",
+                [
+                    "Sample4",
+                    "Easy Mode",
+                    "This is automatically completed",
+                    "completed"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "complete_achievement",
+                [
+                    "Sample",
+                    "t",
+                    "banner"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "2000"
+                ]
+            ],
+            [
+                "complete_achievement",
+                [
+                    "Sample3",
+                    "t",
+                    "banner"
+                ]
+            ],
+            [
+                "base",
+                [
+                    "Arena"
+                ]
+            ],
+            [
+                "alert",
+                [
+                    "<blue>Eirika</> got <blue>Iron Sword</>.",
+                    "Iron Sword (Iron Sword)"
+                ]
+            ],
+            [
                 "add_portrait",
                 [
                     "Eirika",
                     "Left"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Eirika",
+                    "<red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green>\u2028<red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green><red>.</red><green>.</green>"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Eirika",
+                    "Test red testing red <red>okay red lines,\u2028is this a problematic issue let's check.</>",
+                    "NumLines=3"
                 ]
             ],
             [

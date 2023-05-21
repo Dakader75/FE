@@ -1,8 +1,9 @@
-from app.data.database import DB
-from app.data.difficulty_modes import GrowthOption
-from app.engine import item_funcs, static_random
+from app.data.database.database import DB
+from app.data.database.difficulty_modes import GrowthOption
+from app.engine import item_funcs
 from app.engine.game_state import game
-from app.utilities import utils
+from app.events import triggers
+from app.utilities import utils, static_random
 
 import logging
 
@@ -44,7 +45,6 @@ def _fixed_levelup(unit, level, get_growth_rate=growth_rate) -> dict:
             growth_inc = (50 + growth * level) % 100
             if growth_inc > 100 - growth or growth_inc == 0:
                 stat_changes[nid] -= 1
-            
     return stat_changes
 
 def _random_levelup(unit, level) -> dict:
@@ -164,14 +164,13 @@ def get_next_level_up(unit, level, custom_method=None) -> dict:
         stat_changes[nid] = utils.clamp(stat_changes[nid], -unit.stats[nid], klass.max_stats.get(nid, 30) - unit.stats[nid])
     return stat_changes
 
-def auto_level(unit, num_levels: int, custom_method=None):
+def auto_level(unit, base_level: int, num_levels: int, custom_method=None):
     """
     Primarily for generics
     """
     total_stat_changes = {nid: 0 for nid in DB.stats.keys()}
-    
+
     if num_levels > 0:
-        base_level = unit.get_internal_level()
         for i in range(num_levels):
             level = base_level + i
             stat_changes = get_next_level_up(unit, level, custom_method)
@@ -180,9 +179,8 @@ def auto_level(unit, num_levels: int, custom_method=None):
                 total_stat_changes[nid] += stat_changes[nid]
 
     elif num_levels < 0:
-        starting_level = unit.get_internal_level()
-        ending_level = starting_level + num_levels
-        for level in reversed(range(ending_level, starting_level)):
+        ending_level = base_level + num_levels
+        for level in reversed(range(ending_level, base_level)):
             stat_changes = get_next_level_up(unit, level, custom_method)
             # Add reversed stat_changes to total
             for nid in total_stat_changes.keys():
@@ -191,23 +189,22 @@ def auto_level(unit, num_levels: int, custom_method=None):
     klass = DB.classes.get(unit.klass)
     for nid in DB.stats.keys():
         total_stat_changes[nid] = utils.clamp(total_stat_changes[nid], -unit.stats[nid], klass.max_stats.get(nid, 30) - unit.stats[nid])
-    
+
     for nid in total_stat_changes.keys():
         unit.stats[nid] += total_stat_changes[nid]
     unit.set_hp(1000)  # Go back to full hp
     unit.set_mana(1000)  # Go back to full mana
 
-def difficulty_auto_level(unit, num_levels: int):
+def difficulty_auto_level(unit, base_level, num_levels: int):
     total_stat_changes = {nid: 0 for nid in DB.stats.keys()}
     if num_levels > 0:
-        level = unit.get_internal_level()
         for i in range(num_levels):
-            stat_changes = _fixed_levelup(unit, level + i, difficulty_growth_rate)
+            stat_changes = _fixed_levelup(unit, base_level + i, difficulty_growth_rate)
             # Add to total
             for nid in total_stat_changes.keys():
                 total_stat_changes[nid] += stat_changes[nid]
     # No reason to be less than 0
-    
+
     klass = DB.classes.get(unit.klass)
     for nid in DB.stats.keys():
         total_stat_changes[nid] = utils.clamp(total_stat_changes[nid], -unit.stats[nid], klass.max_stats.get(nid, 30) - unit.stats[nid])
@@ -216,7 +213,7 @@ def difficulty_auto_level(unit, num_levels: int):
         unit.stats[nid] += total_stat_changes[nid]
     unit.set_hp(1000)  # Go back to full hp
     unit.set_mana(1000)  # Go back to full mana
-    
+
 def apply_stat_changes(unit, stat_changes: dict, increase_current_stats: bool = True):
     """
     Assumes stat changes are valid!
@@ -250,14 +247,15 @@ def get_starting_skills(unit) -> list:
     klass_obj = DB.classes.get(unit.klass)
     current_klass = klass_obj
     all_klasses = [klass_obj]
-    counter = 5
-    while current_klass and current_klass.tier > 1 and counter > 0:
-        counter -= 1  # Prevent infinite loops
-        if current_klass.promotes_from:
-            current_klass = DB.classes.get(current_klass.promotes_from)
-            all_klasses.append(current_klass)
-        else:
-            break
+    if DB.constants.value('promote_skill_inheritance'):
+        counter = 5
+        while current_klass and current_klass.tier > 1 and counter > 0:
+            counter -= 1  # Prevent infinite loops
+            if current_klass.promotes_from:
+                current_klass = DB.classes.get(current_klass.promotes_from)
+                all_klasses.append(current_klass)
+            else:
+                break
     all_klasses.reverse()
 
     skills_to_add = []
@@ -343,5 +341,5 @@ def wait(unit):
     from app.engine import action
     if not unit.finished:  # Only wait if we aren't finished
         # To prevent double-waiting
-        game.events.trigger('unit_wait', unit, position=unit.position, local_args={'region': game.get_region_under_pos(unit.position)})
+        game.events.trigger(triggers.UnitWait(unit, unit.position, game.get_region_under_pos(unit.position)))
         action.do(action.Wait(unit))

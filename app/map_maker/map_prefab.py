@@ -13,7 +13,8 @@ class MapPrefab(Prefab):
         
         self.terrain_grid = {}  # Key: Position, Value: Terrain Nids
         self.terrain_grid_to_update = set()  # Positions
-        self.tile_grid = {}  # Key: Position, Value: Tileset Coordinate (twice as large on each axis)
+        self.tile_grid = {}  # Key: Position, Value: Tileset Coordinate (same size as terrain_grid)
+        self.autotile_set = set()  # Positions
 
         self.cliff_markers = [(7, 5)]  # Markers for how to point cliffs
 
@@ -30,8 +31,13 @@ class MapPrefab(Prefab):
         self.terrain_grid_to_update.add(pos)
         self._update_adjacent(pos)
         self._update_diagonal(pos)
-        if new_terrain.check_flood_fill and pos not in self.terrain_grid_to_update:
+        if new_terrain.check_flood_fill:
             self._update_flood_fill(pos, new_terrain.check_flood_fill == 'diagonal')
+
+        if new_terrain.has_autotiles():
+            self.autotile_set.add(pos)
+        else:
+            self.autotile_set.discard(pos)
 
     def _update_adjacent(self, pos):
         # Now ask to update all the adjacent ones as well
@@ -70,15 +76,10 @@ class MapPrefab(Prefab):
             self._update_flood_fill(pos, old_terrain.check_flood_fill == 'diagonal')
         if pos in self.terrain_grid:
             del self.terrain_grid[pos]
+        self.autotile_set.discard(pos)
 
-        if (pos[0] * 2, pos[1] * 2) in self.tile_grid:
-            del self.tile_grid[(pos[0] * 2, pos[1] * 2)]
-        if (pos[0] * 2 + 1, pos[1] * 2) in self.tile_grid:
-            del self.tile_grid[(pos[0] * 2 + 1, pos[1] * 2)]
-        if (pos[0] * 2 + 1, pos[1] * 2 + 1) in self.tile_grid:
-            del self.tile_grid[(pos[0] * 2 + 1, pos[1] * 2 + 1)]
-        if (pos[0] * 2, pos[1] * 2 + 1) in self.tile_grid:
-            del self.tile_grid[(pos[0] * 2, pos[1] * 2 + 1)]
+        if pos in self.tile_grid:
+            del self.tile_grid[pos]
 
         self._update_adjacent(pos)
         self._update_diagonal(pos)
@@ -102,8 +103,9 @@ class MapPrefab(Prefab):
         self.terrain_grid.clear()
         self.terrain_grid_to_update.clear()
         self.tile_grid.clear()
+        self.autotile_set.clear()
 
-    def check_bounds(self, pos):
+    def check_bounds(self, pos: tuple):
         return 0 <= pos[0] < self.width and 0 <= pos[1] < self.height
 
     def get_all_terrain(self, terrain_nid: str) -> set:
@@ -127,9 +129,15 @@ class MapPrefab(Prefab):
         new_tile_grid = {}
         for pos, tile_coord in self.tile_grid.items():
             new_pos = pos[0] + x_offset * 2, pos[1] + y_offset * 2
-            if self.check_bounds((new_pos[0]//2, new_pos[1]//2)):
+            if self.check_bounds(new_pos):
                 new_tile_grid[new_pos] = tile_coord
         self.tile_grid = new_tile_grid
+
+        for pos in list(self.autotile_set):
+            if self.check_bounds(pos):
+                pass
+            else:
+                self.autotile_set.remove(pos)
 
     def save(self):
         s_dict = {}
@@ -143,11 +151,7 @@ class MapPrefab(Prefab):
         for coord, terrain_nid in self.terrain_grid.items():
             str_coord = "%d,%d" % (coord[0], coord[1])
             s_dict['terrain_grid'][str_coord] = terrain_nid
-        s_dict['tile_grid'] = {}
-        for coord, tile_coord in self.tile_grid.items():
-            str_coord = "%d,%d" % (coord[0], coord[1])
-            str_tile_coord = "%d,%d" % (tile_coord[0], tile_coord[1])
-            s_dict['tile_grid'][str_coord] = str_tile_coord
+        s_dict['autotile_set'] = ["%d,%d" % (coord[0], coord[1]) for coord in self.autotile_set]
         s_dict['seed'] = map_utils.get_random_seed()
         s_dict['palette'] = self.current_palette
         return s_dict
@@ -162,10 +166,10 @@ class MapPrefab(Prefab):
         for str_coord, terrain_nid in s_dict['terrain_grid'].items():
             coord = tuple(int(_) for _ in str_coord.split(','))
             self.terrain_grid[coord] = terrain_nid
-        for str_coord, str_tile_coord in s_dict['tile_grid'].items():
+        self.autotile_set.clear()
+        for str_coord in s_dict['autotile_set']:
             coord = tuple(int(_) for _ in str_coord.split(','))
-            tile_coord = tuple(int(_) for _ in str_tile_coord.split(','))
-            self.tile_grid[coord] = tile_coord
+            self.autotile_set.add(coord)
         map_utils.set_random_seed(s_dict.get('seed', 0))
         self.current_palette = s_dict.get('palette')
         return self

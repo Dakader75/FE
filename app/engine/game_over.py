@@ -1,3 +1,5 @@
+from app.data.database.database import DB
+
 from app.engine.sound import get_sound_thread
 from app.engine.sprites import SPRITES
 from app.engine.state import State
@@ -19,7 +21,8 @@ class GameOverState(State):
         self.state = initial_state
         self.text_transparency = 1
         # Music
-        get_sound_thread().fade_in('Game Over')
+        if DB.constants.value('music_game_over'):
+            get_sound_thread().fade_in(DB.constants.value('music_game_over'))
 
         self.text_surf = SPRITES.get('game_over_text')
 

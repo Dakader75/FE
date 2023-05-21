@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QSpinBox, QItemDelegate
 from PyQt5.QtGui import QIcon
 
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import ComboBox
 from app.editor.skill_editor import skill_model

@@ -1,8 +1,13 @@
-from PyQt5.QtWidgets import QSpinBox, QComboBox, QDialog, QWidget, QHBoxLayout, \
-    QLineEdit, QPushButton, QAction, QMenu, QSizePolicy, QFrame, \
-    QDialogButtonBox, QListView, QTreeView, QTableView, QItemDelegate, QLabel, QVBoxLayout, QApplication, \
-    QAbstractItemView
-from PyQt5.QtCore import Qt, QSize, QItemSelectionModel
+from typing import Generic, Type, TypeVar
+
+from PyQt5.QtCore import QItemSelectionModel, QSize, Qt
+from PyQt5.QtWidgets import (QAbstractItemView, QAction, QApplication,
+                             QComboBox, QDialog, QDialogButtonBox, QFrame,
+                             QHBoxLayout, QItemDelegate, QLabel, QLineEdit,
+                             QListView, QMenu, QPushButton, QSizePolicy,
+                             QSpinBox, QTableView, QTreeView, QVBoxLayout,
+                             QWidget)
+
 
 class SimpleDialog(QDialog):
     def __init__(self, parent=None):
@@ -110,8 +115,10 @@ class LineSearch(QWidget):
         layout.addWidget(self.search_button)
         self.setLayout(layout)
 
-class PropertyBox(QWidget):
-    def __init__(self, label, widget, parent=None, horiz_layout=False):
+T = TypeVar('T')
+
+class PropertyBox(QWidget, Generic[T]):
+    def __init__(self, label, widget: Type[T], parent=None, horiz_layout=False):
         super().__init__(parent)
         self.window = parent
 
@@ -132,7 +139,7 @@ class PropertyBox(QWidget):
             self.label.setAlignment(Qt.AlignBottom)
         size_policy = QSizePolicy.Preferred
         self.label.setSizePolicy(size_policy, QSizePolicy.Fixed)
-        self.edit = widget(self)
+        self.edit: T = widget(self)
         self.edit.setSizePolicy(size_policy, QSizePolicy.Fixed)
         self.bottom_section = QHBoxLayout()
         self.bottom_section.addWidget(self.edit)

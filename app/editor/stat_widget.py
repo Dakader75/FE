@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
 from app.utilities import utils
-from app.data.database import DB
+from app.data.database.database import DB
 
 from app.extensions.custom_gui import IntDelegate, PropertyBox, SimpleDialog
 from app.extensions.list_models import VirtualListModel

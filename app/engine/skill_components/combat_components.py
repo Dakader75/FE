@@ -1,6 +1,6 @@
-from app.data.database import DB
-from app.data.skill_components import SkillComponent, SkillTags
-from app.data.components import Type
+from app.data.database.database import DB
+from app.data.database.skill_components import SkillComponent, SkillTags
+from app.data.database.components import ComponentType
 from app.engine import equations
 
 import logging
@@ -10,7 +10,7 @@ class StatChange(SkillComponent):
     desc = "Gives stat bonuses"
     tag = SkillTags.COMBAT
 
-    expose = (Type.Dict, Type.Stat)
+    expose = (ComponentType.Dict, ComponentType.Stat)
     value = []
 
     def stat_change(self, unit=None):
@@ -28,7 +28,7 @@ class StatChangeExpression(SkillComponent):
     desc = "Gives stat bonuses based on expression"
     tag = SkillTags.COMBAT
 
-    expose = (Type.StringDict, Type.Stat)
+    expose = (ComponentType.StringDict, ComponentType.Stat)
     value = []
 
     def stat_change(self, unit=None):
@@ -44,18 +44,32 @@ class StatMultiplier(SkillComponent):
     desc = "Gives stat bonuses"
     tag = SkillTags.COMBAT
 
-    expose = (Type.FloatDict, Type.Stat)
+    expose = (ComponentType.FloatDict, ComponentType.Stat)
     value = []
 
     def stat_change(self, unit):
         return {stat[0]: int((stat[1]-1)*unit.stats[stat[0]]) for stat in self.value}
+
+class SubtleStatChange(SkillComponent):
+    nid = 'subtle_stat_change'
+    desc = "Gives stat bonuses that appear as regular stat increases within in-game ui"
+    tag = SkillTags.COMBAT
+
+    expose = (ComponentType.Dict, ComponentType.Stat)
+    value = []
+
+    def stat_change(self, unit=None):
+        return {stat[0]: stat[1] for stat in self.value}
+
+    def subtle_stat_change(self, unit=None):
+        return {stat[0]: stat[1] for stat in self.value}
 
 class GrowthChange(SkillComponent):
     nid = 'growth_change'
     desc = "Gives growth rate % bonuses"
     tag = SkillTags.COMBAT
 
-    expose = (Type.Dict, Type.Stat)
+    expose = (ComponentType.Dict, ComponentType.Stat)
     value = []
 
     def growth_change(self, unit):
@@ -66,7 +80,7 @@ class EquationGrowthChange(SkillComponent):
     desc = "Gives growth rate % bonuses equal to chosen equation"
     tag = SkillTags.COMBAT
 
-    expose = Type.Equation
+    expose = ComponentType.Equation
 
     def growth_change(self, unit):
         value = equations.parser.get(self.value, unit)
@@ -77,7 +91,7 @@ class Damage(SkillComponent):
     desc = "Gives +X damage"
     tag = SkillTags.COMBAT
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 3
 
     def modify_damage(self, unit, item):
@@ -88,7 +102,7 @@ class EvalDamage(SkillComponent):
     desc = "Gives +X damage solved using evaluate"
     tag = SkillTags.COMBAT
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def modify_damage(self, unit, item):
         from app.engine import evaluate
@@ -103,7 +117,7 @@ class Resist(SkillComponent):
     desc = "Gives +X damage resist"
     tag = SkillTags.COMBAT
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 2
 
     def modify_resist(self, unit, item_to_avoid):
@@ -114,7 +128,7 @@ class Hit(SkillComponent):
     desc = "Gives +X accuracy"
     tag = SkillTags.COMBAT
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 15
 
     def modify_accuracy(self, unit, item):
@@ -122,10 +136,10 @@ class Hit(SkillComponent):
 
 class EvalHit(SkillComponent):
     nid = 'eval_hit'
-    desc = "Gives +X damage solved using evaluate"
+    desc = "Gives +X accuracy solved using evaluate"
     tag = SkillTags.COMBAT
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def modify_accuracy(self, unit, item):
         from app.engine import evaluate
@@ -140,7 +154,7 @@ class Avoid(SkillComponent):
     desc = "Gives +X avoid"
     tag = SkillTags.COMBAT
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 20
 
     def modify_avoid(self, unit, item_to_avoid):
@@ -154,7 +168,7 @@ class Crit(SkillComponent):
     desc = "Gives +X crit"
     tag = SkillTags.COMBAT
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 30
 
     def modify_crit_accuracy(self, unit, item):
@@ -165,7 +179,7 @@ class EvalCrit(SkillComponent):
     desc = "Gives +X crit solved using evaluate"
     tag = SkillTags.COMBAT
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def modify_crit_accuracy(self, unit, item):
         from app.engine import evaluate
@@ -180,7 +194,7 @@ class CritAvoid(SkillComponent):
     desc = "Gives +X crit avoid"
     tag = SkillTags.COMBAT
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 10
 
     def modify_crit_avoid(self, unit, item_to_avoid):
@@ -191,7 +205,7 @@ class AttackSpeed(SkillComponent):
     desc = "Gives +X attack speed"
     tag = SkillTags.COMBAT
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 4
 
     def modify_attack_speed(self, unit, item):
@@ -202,7 +216,7 @@ class DefenseSpeed(SkillComponent):
     desc = "Gives +X defense speed"
     tag = SkillTags.COMBAT
 
-    expose = Type.Int
+    expose = ComponentType.Int
     value = 4
 
     def modify_defense_speed(self, unit, item_to_avoid):
@@ -213,7 +227,7 @@ class DamageMultiplier(SkillComponent):
     desc = "Multiplies damage given by a fraction"
     tag = SkillTags.COMBAT
 
-    expose = Type.Float
+    expose = ComponentType.Float
     value = 0.5
 
     def damage_multiplier(self, unit, item, target, mode, attack_info, base_value):
@@ -224,7 +238,7 @@ class DynamicDamageMultiplier(SkillComponent):
     desc = "Multiplies damage given by a fraction"
     tag = SkillTags.COMBAT
 
-    expose = Type.String
+    expose = ComponentType.String
 
     def damage_multiplier(self, unit, item, target, mode, attack_info, base_value):
         from app.engine import evaluate
@@ -240,7 +254,7 @@ class ResistMultiplier(SkillComponent):
     desc = "Multiplies damage taken by a fraction"
     tag = SkillTags.COMBAT
 
-    expose = Type.Float
+    expose = ComponentType.Float
     value = 0.5
 
     def resist_multiplier(self, unit, item, target, mode, attack_info, base_value):
@@ -251,7 +265,7 @@ class PCC(SkillComponent):
     desc = "Multiplies crit chance by a stat on second strike"
     tag = SkillTags.COMBAT
 
-    expose = Type.Stat
+    expose = ComponentType.Stat
 
     def crit_multiplier(self, unit, item, target, mode, attack_info, base_value):
         return unit.get_stat(self.value) if attack_info[0] > 0 else 1
@@ -263,7 +277,7 @@ class PCCStatic(SkillComponent):
     tag = SkillTags.COMBAT
     author = 'BigMood'
 
-    expose = Type.Float
+    expose = ComponentType.Float
     value = 1
 
     def crit_multiplier(self, unit, item, target, mode, attack_info, base_value):
@@ -274,7 +288,7 @@ class ResistFollowUp(SkillComponent):
     desc = "Multiplies damage taken by a fraction after the first strike"
     tag = SkillTags.COMBAT
 
-    expose = Type.Float
+    expose = ComponentType.Float
     value = 0.5
 
     def resist_multiplier(self, unit, item, target, mode, attack_info, base_value):

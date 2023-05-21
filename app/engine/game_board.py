@@ -1,61 +1,35 @@
-from app.data.database import DB
+from app.engine.objects.unit import UnitObject
+from typing import Any, Dict, List, Optional, Tuple
 
-from app.engine import target_system, line_of_sight
+from app.data.database.database import DB
+from app.engine import line_of_sight, target_system
+from app.engine.pathfinding.node import Node
 from app.engine.game_state import game
-
-class Node():
-    __slots__ = ['reachable', 'cost', 'x', 'y', 'parent', 'g', 'h', 'f', 'true_f']
-
-    def __init__(self, x: int, y: int, reachable: bool, cost: float):
-        """
-        Initialize new cell
-        reachable - is cell reachable? is not a wall?
-        cost - how many movement points to reach
-        """
-        self.reachable = reachable
-        self.cost = cost
-        self.x = x
-        self.y = y
-        self.reset()
-
-    def reset(self):
-        self.parent = None
-        self.g = 0
-        self.h = 0
-        self.f = 0
-        self.true_f = 0
-
-    def __gt__(self, n):
-        return self.cost > n
-
-    def __lt__(self, n):
-        return self.cost < n
-
-    def __repr__(self):
-        return "Node(%d, %d): cost=%d, g=%d, h=%d, f=%f, %s" % (self.x, self.y, self.cost, self.g, self.h, self.f, self.reachable)
+from app.utilities.typing import NID
+from app.utilities import utils
 
 class GameBoard(object):
-    # __slots__ = ['width', 'height', 'grids', 'team_grid', 'unit_grid',
-    #              'aura_grid', 'known_auras']
-
     def __init__(self, tilemap):
-        self.width = tilemap.width
-        self.height = tilemap.height
-        self.bounds = (0, 0, self.width - 1, self.height - 1)
+        self.width: int = tilemap.width
+        self.height: int = tilemap.height
+        self.bounds: Tuple[int, int, int, int] = (0, 0, self.width - 1, self.height - 1)
         self.mcost_grids = {}
 
         self.reset_grid(tilemap)
 
         # Keeps track of what team occupies which tile
-        self.team_grid = self.init_unit_grid()
+        self.team_grid: List[List[str]] = self.init_unit_grid()
         # Keeps track of which unit occupies which tile
-        self.unit_grid = self.init_unit_grid()
+        self.unit_grid: List[List[UnitObject]] = self.init_unit_grid()
 
         # Fog of War -- one for each team
         self.fog_of_war_grids = {}
         for team in DB.teams:
             self.fog_of_war_grids[team] = self.init_aura_grid()
         self.fow_vantage_point = {}  # Unit: Position where the unit is that's looking
+        self.fog_regions = self.init_aura_grid()
+        self.fog_region_set = set()  # Set of Fog region nids so we can tell how many fog regions exist at all times
+        self.vision_regions = self.init_aura_grid()
 
         # For Auras
         self.aura_grid = self.init_aura_grid()
@@ -73,21 +47,29 @@ class GameBoard(object):
 
     def reset_grid(self, tilemap):
         # For each movement type
+        mtype_grid = [[None for j in range(self.height)] for i in range(self.width)]
+        for x in range(self.width):
+            for y in range(self.height):
+                if DB.terrain:
+                    terrain_nid = game.get_terrain_nid(tilemap, (x, y))
+                    terrain_type = DB.terrain.get(terrain_nid)
+                    if not terrain_type:
+                        terrain_type = DB.terrain[0]
+                    mtype_grid[x][y] = terrain_type.mtype
+                else:
+                    mtype_grid[x][y] = None
         for idx, mode in enumerate(DB.mcost.unit_types):
-            self.mcost_grids[mode] = self.init_grid(mode, tilemap)
+            self.mcost_grids[mode] = self.init_grid(mode, tilemap, mtype_grid)
         self.opacity_grid = self.init_opacity_grid(tilemap)
 
     # For movement
-    def init_grid(self, movement_group, tilemap):
+    def init_grid(self, movement_group, tilemap, mtype_grid: Dict[int, Dict[int, int]]):
         cells = []
         for x in range(self.width):
             for y in range(self.height):
-                terrain_nid = tilemap.get_terrain((x, y))
-                if DB.terrain:
-                    terrain = DB.terrain.get(terrain_nid)
-                    if not terrain:
-                        terrain = DB.terrain[0]
-                    tile_cost = DB.mcost.get_mcost(movement_group, terrain.mtype)
+                mtype = mtype_grid[x][y]
+                if mtype:
+                    tile_cost = DB.mcost.get_mcost(movement_group, mtype)
                 else:
                     tile_cost = 1
                 cells.append(Node(x, y, tile_cost < 99, tile_cost))
@@ -97,25 +79,25 @@ class GameBoard(object):
     def get_grid(self, movement_group):
         return self.mcost_grids[movement_group]
 
-    def init_unit_grid(self):
-        cells = []
+    def init_unit_grid(self) -> List[List[Any]]:
+        cells: List[List[Any]] = []
         for x in range(self.width):
             for y in range(self.height):
                 cells.append([])
         return cells
 
-    def set_unit(self, pos, unit):
+    def set_unit(self, pos: Tuple[int, int], unit: UnitObject):
         idx = pos[0] * self.height + pos[1]
         self.unit_grid[idx].append(unit)
         self.team_grid[idx].append(unit.team)
 
-    def remove_unit(self, pos, unit):
+    def remove_unit(self, pos: Tuple[int, int], unit: UnitObject):
         idx = pos[0] * self.height + pos[1]
         if unit in self.unit_grid[idx]:
             self.unit_grid[idx].remove(unit)
             self.team_grid[idx].remove(unit.team)
 
-    def get_unit(self, pos):
+    def get_unit(self, pos: Tuple[int, int]) -> Optional[UnitObject]:
         if not pos:
             return None
         idx = pos[0] * self.height + pos[1]
@@ -136,6 +118,24 @@ class GameBoard(object):
             return self.team_grid[idx][0]
         return None
 
+    def can_move_through(self, team, adj) -> bool:
+        unit_team = self.get_team((adj.x, adj.y))
+        if not unit_team or utils.compare_teams(team, unit_team):
+            return True
+        if team == 'player' or DB.constants.value('ai_fog_of_war'):
+            if not self.in_vision((adj.x, adj.y), team):
+                return True  # Can always move through what you can't see
+        return False
+
+    def can_move_through_ally_block(self, team, adj) -> bool:
+        unit_team = self.get_team((adj.x, adj.y))
+        if not unit_team:
+            return True
+        if team == 'player' or DB.constants.value('ai_fog_of_war'):
+            if not self.in_vision((adj.x, adj.y), team):
+                return True
+        return False
+
     # Fog of war
     def update_fow(self, pos, unit, sight_range: int):
         grid = self.fog_of_war_grids[unit.team]
@@ -152,32 +152,73 @@ class GameBoard(object):
                 idx = position[0] * self.height + position[1]
                 grid[idx].add(unit.nid)
 
+    def add_fog_region(self, region):
+        if region.position:
+            self.fog_region_set.add(region.nid)
+            fog_range = int(region.sub_nid) if region.sub_nid else 0
+            positions = set()
+            for pos in region.get_all_positions():
+                positions |= target_system.find_manhattan_spheres(range(fog_range + 1), pos[0], pos[1])
+            positions = {pos for pos in positions if 0 <= pos[0] < self.width and 0 <= pos[1] < self.height}
+            for position in positions:
+                idx = position[0] * self.height + position[1]
+                self.fog_regions[idx].add(region.nid)
+
+    def remove_fog_region(self, region):
+        self.fog_region_set.discard(region.nid)
+        for cell in self.fog_regions:
+            cell.discard(region.nid)
+
+    def add_vision_region(self, region):
+        if region.position:
+            vision_range = int(region.sub_nid) if region.sub_nid else 0
+            positions = set()
+            for pos in region.get_all_positions():
+                positions |= target_system.find_manhattan_spheres(range(vision_range + 1), pos[0], pos[1])
+            positions = {pos for pos in positions if 0 <= pos[0] < self.width and 0 <= pos[1] < self.height}
+            for position in positions:
+                idx = position[0] * self.height + position[1]
+                self.vision_regions[idx].add(region.nid)
+
+    def remove_vision_region(self, region):
+        for cell in self.vision_regions:
+            cell.discard(region.nid)
+
     def in_vision(self, pos, team='player') -> bool:
-        if not game.level_vars.get('_fog_of_war'):
-            return True  # Always in vision if not in fog of war
         idx = pos[0] * self.height + pos[1]
-        if team == 'player':
-            if DB.constants.value('fog_los'):
-                fog_of_war_radius = game.level_vars.get('_fog_of_war_radius', 0)
-                valid = line_of_sight.simple_check(pos, 'player', fog_of_war_radius) or line_of_sight.simple_check(pos, 'other', fog_of_war_radius)
-                if not valid:
-                    return False
-            player_grid = self.fog_of_war_grids['player']
-            if player_grid[idx]:
-                return True
-            other_grid = self.fog_of_war_grids['other']
-            if other_grid[idx]:
-                return True
+
+        # Anybody can see things in vision regions no matter what
+        # So don't use vision regions with fog line of sight
+        if self.vision_regions[idx]:
+            return True
+
+        if game.level_vars.get('_fog_of_war') or self.fog_regions[idx]:
+            if team == 'player':
+                # Right now, line of sight doesn't interact at all with vision regions
+                # Since I'm not sure how we'd handle cases where a vision region is obscured by an opaque tile
+                if DB.constants.value('fog_los'):
+                    fog_of_war_radius = game.level_vars.get('_fog_of_war_radius', 0)
+                    valid = line_of_sight.simple_check(pos, 'player', fog_of_war_radius) or line_of_sight.simple_check(pos, 'other', fog_of_war_radius)
+                    if not valid:
+                        return False
+                player_grid = self.fog_of_war_grids['player']
+                if player_grid[idx]:
+                    return True
+                other_grid = self.fog_of_war_grids['other']
+                if other_grid[idx]:
+                    return True
+            else:
+                if DB.constants.value('fog_los'):
+                    fog_of_war_radius = self.get_fog_of_war_radius(team)
+                    valid = line_of_sight.simple_check(pos, team, fog_of_war_radius)
+                    if not valid:
+                        return False
+                grid = self.fog_of_war_grids[team]
+                if grid[idx]:
+                    return True
+            return False
         else:
-            if DB.constants.value('fog_los'):
-                fog_of_war_radius = self.get_fog_of_war_radius(team)
-                valid = line_of_sight.simple_check(pos, team, fog_of_war_radius)
-                if not valid:
-                    return False
-            grid = self.fog_of_war_grids[team]
-            if grid[idx]:
-                return True
-        return False
+            return True
 
     def get_fog_of_war_radius(self, team: str) -> int:
         ai_fog_of_war_radius = game.level_vars.get('_ai_fog_of_war_radius', game.level_vars.get('_fog_of_war_radius', 0))
@@ -194,8 +235,8 @@ class GameBoard(object):
         cells = []
         for x in range(self.width):
             for y in range(self.height):
-                terrain = tilemap.get_terrain((x, y))
-                t = DB.terrain.get(terrain)
+                terrain_nid = game.get_terrain_nid(tilemap, (x, y))
+                t = DB.terrain.get(terrain_nid)
                 if t:
                     cells.append(t.opaque)
                 else:

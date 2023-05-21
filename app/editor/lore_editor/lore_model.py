@@ -1,10 +1,10 @@
 from PyQt5.QtCore import Qt
 
-from app.data.database import DB
+from app.data.database.database import DB
 from app.editor.base_database_gui import DragDropCollectionModel
 from app.utilities import str_utils
 
-from app.data import lore
+from app.data.database import lore
 
 class LoreModel(DragDropCollectionModel):
     def data(self, index, role):

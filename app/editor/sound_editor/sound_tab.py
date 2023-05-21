@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, \
     QDialog, QAbstractItemView, QHBoxLayout
 from PyQt5.QtCore import Qt
 
-from app.resources.resources import RESOURCES
+from app.data.resources.resources import RESOURCES
 from app.extensions.custom_gui import ResourceTableView, MultiselectTableView
 from app.editor.data_editor import SingleResourceEditor, MultiResourceEditor
 from app.editor.sound_editor.sound_model import SFXModel, MusicModel
@@ -109,7 +109,7 @@ def get_music():
         return None, False
 
 def get_full_editor():
-    return MultiResourceEditor((MusicDatabase, SFXDatabase), 
+    return MultiResourceEditor((MusicDatabase, SFXDatabase),
                                ("music", "sfx"))
 
 # Testing
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     RESOURCES.load('default.ltproj')
     # DB.load('default.ltproj')
-    window = MultiResourceEditor((MusicDatabase, SFXDatabase), 
+    window = MultiResourceEditor((MusicDatabase, SFXDatabase),
                                  ("music", "sfx"))
     # window = SingleResourceEditor(SFXDatabase, ['sfx'])
     window.show()

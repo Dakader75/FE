@@ -1,47 +1,8 @@
-from typing import List, Dict, Set
+from typing import List, Optional
 
 from app.events import event_commands
 from app.utilities.data import Data, Prefab
-
-
-class Trigger(object):
-    def __init__(self, nid, unit1=False, unit2=False, position=False, local_args=None):
-        self.nid: str = nid
-        self.unit1: bool = unit1
-        self.unit2: bool = unit2
-        self.position: bool = position
-        self.local_args: Set = local_args or set()
-
-all_triggers = Data([
-    Trigger('level_start'),
-    Trigger('level_end'),
-    Trigger('overworld_start'),
-    Trigger('level_select'),
-    Trigger('turn_change'),
-    Trigger('enemy_turn_change'),
-    Trigger('enemy2_turn_change'),
-    Trigger('other_turn_change'),
-    Trigger('on_region_interact', True, False, True, {'region'}),
-    Trigger('unit_death', True, False, True),
-    Trigger('unit_wait', True, False, True, {'region'}),
-    Trigger('unit_select', True, False, True),
-    Trigger('unit_level_up', True, False, False, {'stat_changes'}),
-    Trigger('during_unit_level_up', True, False, False, {'stat_changes'}),
-    Trigger('combat_start', True, True, True, {'item', 'is_animation_combat'}),
-    Trigger('combat_end', True, True, True, {'item'}),
-    Trigger('on_talk', True, True, True),
-    Trigger('on_support', True, True, True, {'support_rank_nid'}),  # Item is support rank nid
-    Trigger('on_base_convo', True, True, False),
-    Trigger('on_prep_start'),
-    Trigger('on_base_start'),
-    Trigger('on_turnwheel'),
-    Trigger('on_title_screen'),
-    Trigger('time_region_complete', False, False, False, {'region'}),
-    Trigger('on_overworld_node_select', False, False, False, {'entity_nid', 'node_nid'}), # unit1 is entity nid, region is node nid
-    Trigger('roam_press_start', True, False, False),
-    Trigger('roam_press_info', True, True, False),
-    Trigger('roaming_interrupt', True, False, True, {'region'})
-])
+from app.utilities.typing import NID
 
 class EventPrefab(Prefab):
     def __init__(self, name):
@@ -89,11 +50,11 @@ class EventPrefab(Prefab):
 class EventCatalog(Data[EventPrefab]):
     datatype = EventPrefab
 
-    def get(self, trigger, level_nid):
-        return [event for event in self._list if event.trigger == trigger and
+    def get(self, trigger_nid, level_nid):
+        return [event for event in self._list if event.trigger == trigger_nid and
                 (not event.level_nid or event.level_nid == level_nid)]
 
-    def get_by_level(self, level_nid: str) -> List[EventPrefab]:
+    def get_by_level(self, level_nid: Optional[NID]) -> List[EventPrefab]:
         return [event for event in self._list if (not event.level_nid or not level_nid or event.level_nid == level_nid)]
 
     def get_by_nid_or_name(self, name_or_nid: str, level_nid: None) -> List[EventPrefab]:

@@ -3,6 +3,7 @@
         "nid": "0",
         "name": "Prologue",
         "tilemap": "Prologue",
+        "bg_tilemap": null,
         "party": "Eirika",
         "music": {
             "player_phase": "Distant Roads",
@@ -27,6 +28,7 @@
                 "nid": "Eirika",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     4,
@@ -39,6 +41,7 @@
                 "nid": "Seth",
                 "team": "player",
                 "ai": "None",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     4,
@@ -61,6 +64,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     9,
@@ -83,6 +87,7 @@
                 ],
                 "team": "enemy",
                 "ai": "Attack",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     8,
@@ -95,6 +100,7 @@
                 "nid": "O'Neill",
                 "team": "enemy",
                 "ai": "Guard",
+                "roam_ai": null,
                 "ai_group": null,
                 "starting_position": [
                     10,

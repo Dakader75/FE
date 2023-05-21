@@ -10,8 +10,11 @@ These are guides on various useful skills and items.
     Creating-Items
     Direct-Passives
     Conditional-Passives-I
-    Auras
     Conditional-Passives-II
+    Conditional-Passives-III
+    Tile-Passives
+    Auras
+    Skill-Swap
 
 .. toctree::
     :maxdepth: 2

@@ -7,25 +7,32 @@
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Attack",
@@ -35,25 +42,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -3,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Pursue",
@@ -63,25 +77,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "PursueSupport",
@@ -91,25 +112,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Support",
                 "target": "Ally",
                 "target_spec": null,
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Defend",
@@ -119,25 +147,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Move_to",
                 "target": "Position",
                 "target_spec": "Starting",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Guard",
@@ -147,25 +182,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -1,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "AttackTile",
@@ -175,7 +217,9 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Attack",
@@ -185,18 +229,23 @@
                     "Tile"
                 ],
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "PursueVillage",
@@ -206,25 +255,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Interact",
                 "target": "Event",
                 "target_spec": "Destructible",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Destroy",
@@ -234,25 +290,32 @@
                 "target": "Event",
                 "target_spec": "Destructible",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": "Destructible",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 0.01
+        "offense_bias": 0.01,
+        "roam_ai": false
     },
     {
         "nid": "FollowBoss",
@@ -262,7 +325,9 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Move_to",
@@ -272,18 +337,23 @@
                     "Boss"
                 ],
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 15,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "FollowWagon",
@@ -293,7 +363,9 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Move_to",
@@ -303,18 +375,23 @@
                     "Wagon"
                 ],
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 15,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Berserk",
@@ -324,25 +401,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 10,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Heal",
@@ -352,25 +436,32 @@
                 "target": "Ally",
                 "target_spec": null,
                 "view_range": -3,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Move_away_from",
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -3,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 15,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Thief",
@@ -380,25 +471,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Interact",
                 "target": "Event",
                 "target_spec": "Door",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Interact",
                 "target": "Event",
                 "target_spec": "Chest",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 12,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "SimpleThief",
@@ -408,25 +506,32 @@
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Attack",
                 "target": "Enemy",
                 "target_spec": "Door",
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": "Chest",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 12,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "Seize",
@@ -436,25 +541,32 @@
                 "target": "Event",
                 "target_spec": "Enemy_Seize",
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Attack",
                 "target": "Enemy",
                 "target_spec": null,
                 "view_range": -2,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Interact",
                 "target": "Event",
                 "target_spec": "Enemy_Seize",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     },
     {
         "nid": "JoshuaDefend",
@@ -467,24 +579,31 @@
                     "Natasha"
                 ],
                 "view_range": -2,
-                "invert_targeting": true
+                "invert_targeting": true,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "Move_to",
                 "target": "Position",
                 "target_spec": "Starting",
                 "view_range": -4,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             },
             {
                 "action": "None",
                 "target": "None",
                 "target_spec": null,
                 "view_range": 0,
-                "invert_targeting": false
+                "invert_targeting": false,
+                "roam_speed": 100,
+                "desired_proximity": 0
             }
         ],
         "priority": 20,
-        "offense_bias": 2.0
+        "offense_bias": 2.0,
+        "roam_ai": false
     }
 ]
