@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Blueblood",
+        "name": "Blueblood",
+        "desc": "Grants X to user's Atk. Calculate X by (User's lvl - Foe's lvl). Add +10 levels for each tier of promotion.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            2,
+            9
+        ],
+        "components": [
+            [
+                "dynamic_damage",
+                "unit.level - target.level if (unit.level - target.level) > 0 else 0"
+            ]
+        ]
+    }
+]

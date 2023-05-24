@@ -1,0 +1,90 @@
+[
+    {
+        "nid": "Gazelle",
+        "name": "Gazelle",
+        "desc": "A young villager. He longs to be a warrior, like his father.",
+        "variant": null,
+        "level": 2,
+        "klass": "Archer",
+        "tags": [],
+        "bases": {
+            "HP": 24,
+            "SKL": 4,
+            "SPD": 6,
+            "LCK": 6,
+            "DEF": 4,
+            "RES": 6,
+            "MOV": 5,
+            "ATK": 9
+        },
+        "growths": {
+            "HP": 60,
+            "SKL": 35,
+            "SPD": 50,
+            "LCK": 50,
+            "DEF": 25,
+            "RES": 5,
+            "MOV": 0,
+            "ATK": 30
+        },
+        "starting_items": [
+            [
+                "Iron Bow",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Procrastination"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                0
+            ],
+            "Bow": [
+                false,
+                1
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Forde",
+        "affinity": "Wind",
+        "fields": []
+    }
+]

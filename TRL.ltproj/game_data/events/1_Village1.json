@@ -1,0 +1,31 @@
+[
+    {
+        "name": "Village1",
+        "trigger": "Visit",
+        "level_nid": "1",
+        "condition": "region.nid == 'Village1'",
+        "commands": [
+            [
+                "show_layer",
+                [
+                    "Village1_close"
+                ]
+            ],
+            [
+                "give_item",
+                [
+                    "{unit}",
+                    "Iron Sword (Iron Sword)"
+                ]
+            ],
+            [
+                "has_traded",
+                [
+                    "{unit}"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

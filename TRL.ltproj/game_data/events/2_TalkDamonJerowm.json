@@ -1,0 +1,80 @@
+[
+    {
+        "name": "TalkDamonJerowm",
+        "trigger": "on_talk",
+        "level_nid": "2",
+        "condition": "unit2.nid == \"Damon\" and unit.nid == \"Jerowm\"",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Glen",
+                    "Left"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Innes",
+                    "Right"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "Well Damon, my disscussion with the prince has been successful.|We are now working with the Rigelian army.|"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Glen",
+                    "Very well. What is our next move?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "Protect me and I will make sure that my father is taken care of."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Glen",
+                    "Of course milord. Glory be to House Aston."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Innes",
+                    "And glory we shall have, Damon."
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Glen"
+                ]
+            ],
+            [
+                "remove_portrait",
+                [
+                    "Innes"
+                ]
+            ],
+            [
+                "change_ai",
+                [
+                    "Damon",
+                    "FollowJerowm"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

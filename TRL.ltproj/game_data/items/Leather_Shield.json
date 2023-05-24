@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Leather Shield",
+        "name": "Leather Shield",
+        "desc": "A shield with light protection. Grants +2 Def when equipped.",
+        "icon_nid": "Echoes_items",
+        "icon_index": [
+            0,
+            0
+        ],
+        "components": [
+            [
+                "equippable_accessory",
+                null
+            ],
+            [
+                "status_on_equip",
+                "Leather Shield"
+            ]
+        ]
+    }
+]

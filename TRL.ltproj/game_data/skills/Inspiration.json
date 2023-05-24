@@ -1,0 +1,34 @@
+[
+    {
+        "nid": "Inspiration",
+        "name": "Inspiration",
+        "desc": "This unit and all allies in 2 spaces deal 2 more damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            10,
+            4
+        ],
+        "components": [
+            [
+                "class_skill",
+                null
+            ],
+            [
+                "aura",
+                "Inspiration_child"
+            ],
+            [
+                "aura_range",
+                2
+            ],
+            [
+                "aura_target",
+                "ally"
+            ],
+            [
+                "damage",
+                2
+            ]
+        ]
+    }
+]

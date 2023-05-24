@@ -1,0 +1,94 @@
+[
+    {
+        "nid": "Zach",
+        "name": "Zach",
+        "desc": "A mature priest of Frelia. He's gentle and reassuring.",
+        "variant": null,
+        "level": 4,
+        "klass": "Soldier",
+        "tags": [],
+        "bases": {
+            "HP": 28,
+            "SKL": 5,
+            "SPD": 6,
+            "LCK": 4,
+            "DEF": 9,
+            "RES": 2,
+            "MOV": 5,
+            "ATK": 10
+        },
+        "growths": {
+            "HP": 70,
+            "SKL": 25,
+            "SPD": 35,
+            "LCK": 30,
+            "DEF": 40,
+            "RES": 1,
+            "MOV": 0,
+            "ATK": 60
+        },
+        "starting_items": [
+            [
+                "Iron Lance",
+                false
+            ],
+            [
+                "Vulnerary",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Extravagant"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                31
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                true,
+                71
+            ],
+            "Light": [
+                false,
+                71
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Zaxon",
+        "affinity": "Fire",
+        "fields": []
+    }
+]

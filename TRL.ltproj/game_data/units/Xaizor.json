@@ -1,0 +1,94 @@
+[
+    {
+        "nid": "Xaizor",
+        "name": "Xaizor",
+        "desc": "An earnest and compassionate cavalier from Renais.",
+        "variant": null,
+        "level": 3,
+        "klass": "Mercenary",
+        "tags": [],
+        "bases": {
+            "HP": 24,
+            "SKL": 9,
+            "SPD": 11,
+            "LCK": 3,
+            "DEF": 6,
+            "MOV": 5,
+            "RES": 3,
+            "ATK": 8
+        },
+        "growths": {
+            "HP": 70,
+            "SKL": 40,
+            "SPD": 55,
+            "LCK": 20,
+            "DEF": 30,
+            "MOV": 0,
+            "RES": 1,
+            "ATK": 35
+        },
+        "starting_items": [
+            [
+                "Iron Sword",
+                false
+            ],
+            [
+                "Silver Sword",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Swift_Strokes"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                181
+            ],
+            "Lance": [
+                true,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Xaizor",
+        "affinity": "Dark",
+        "fields": []
+    }
+]

@@ -1,0 +1,118 @@
+[
+    {
+        "nid": "Warrior",
+        "name": "Warrior",
+        "desc": "Determined fighters who relish battle.",
+        "tier": 2,
+        "movement_group": "Regular",
+        "promotes_from": "Fighter",
+        "turns_into": [],
+        "tags": [],
+        "max_level": 20,
+        "bases": {
+            "HP": 28,
+            "SKL": 5,
+            "SPD": 6,
+            "LCK": 0,
+            "DEF": 5,
+            "RES": 0,
+            "MOV": 6,
+            "ATK": 8
+        },
+        "growths": {
+            "HP": 80,
+            "SKL": 25,
+            "SPD": 20,
+            "LCK": 15,
+            "DEF": 16,
+            "RES": 17,
+            "MOV": 0,
+            "ATK": 45
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 3,
+            "SKL": 2,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 3,
+            "RES": 3,
+            "MOV": -99,
+            "ATK": 1
+        },
+        "max_stats": {
+            "HP": 60,
+            "SKL": 28,
+            "SPD": 26,
+            "LCK": 30,
+            "DEF": 26,
+            "RES": 22,
+            "MOV": 15,
+            "ATK": 30
+        },
+        "learned_skills": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                40
+            ],
+            "Bow": [
+                true,
+                1
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ]
+        },
+        "icon_nid": "Generic_Portrait_Warrior",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "Warrior",
+        "combat_anim_nid": "Warrior",
+        "fields": []
+    }
+]

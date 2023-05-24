@@ -1,0 +1,26 @@
+[
+    {
+        "nid": "Sympathy",
+        "name": "Sympathy",
+        "desc": "Grants Aegis to all adjacent allies unless they already have it.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            8,
+            3
+        ],
+        "components": [
+            [
+                "aura",
+                "Aegis"
+            ],
+            [
+                "aura_range",
+                1
+            ],
+            [
+                "aura_target",
+                "ally"
+            ]
+        ]
+    }
+]

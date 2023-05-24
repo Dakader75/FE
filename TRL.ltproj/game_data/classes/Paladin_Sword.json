@@ -1,0 +1,123 @@
+[
+    {
+        "nid": "Paladin_Sword",
+        "name": "Paladin",
+        "desc": "A title earned only by those cavaliers whose lives have been dedicated to justice.",
+        "tier": 2,
+        "movement_group": "Heavy Cav",
+        "promotes_from": "Cavalier",
+        "turns_into": [
+            "Gold_Knight"
+        ],
+        "tags": [
+            "Horse",
+            "Mounted"
+        ],
+        "max_level": 10,
+        "bases": {
+            "HP": 24,
+            "SKL": 3,
+            "SPD": 5,
+            "LCK": 0,
+            "DEF": 5,
+            "MOV": 8,
+            "RES": 2,
+            "ATK": 7
+        },
+        "growths": {
+            "HP": 100,
+            "SKL": 45,
+            "SPD": 45,
+            "LCK": 50,
+            "DEF": 50,
+            "MOV": 0,
+            "RES": 10,
+            "ATK": 50
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "MOV": 0,
+            "RES": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 2,
+            "SKL": 1,
+            "SPD": 2,
+            "LCK": 0,
+            "DEF": 2,
+            "MOV": -99,
+            "RES": 2,
+            "ATK": 1
+        },
+        "max_stats": {
+            "HP": 52,
+            "SKL": 25,
+            "SPD": 25,
+            "LCK": 25,
+            "DEF": 25,
+            "MOV": 15,
+            "RES": 25,
+            "ATK": 25
+        },
+        "learned_skills": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                31
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ]
+        },
+        "icon_nid": "Generic_Portrait_Paladin",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "Paladin",
+        "combat_anim_nid": "Paladin",
+        "fields": []
+    }
+]

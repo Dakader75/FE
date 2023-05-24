@@ -1,0 +1,11 @@
+[
+    {
+        "name": "Intro",
+        "trigger": "level_start",
+        "level_nid": "2x",
+        "condition": "True",
+        "commands": [],
+        "only_once": false,
+        "priority": 20
+    }
+]

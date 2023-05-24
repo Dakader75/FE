@@ -1,0 +1,118 @@
+[
+    {
+        "nid": "Hero",
+        "name": "Hero",
+        "desc": "",
+        "tier": 2,
+        "movement_group": "Light Foot",
+        "promotes_from": "Mercenary",
+        "turns_into": [
+            "Dreadfighter"
+        ],
+        "tags": [
+            "Sword"
+        ],
+        "max_level": 10,
+        "bases": {
+            "HP": 30,
+            "SKL": 13,
+            "SPD": 14,
+            "LCK": 5,
+            "DEF": 9,
+            "RES": 2,
+            "MOV": 6,
+            "ATK": 11
+        },
+        "growths": {
+            "HP": 90,
+            "SKL": 50,
+            "SPD": 50,
+            "LCK": 50,
+            "DEF": 35,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 50
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 4,
+            "SKL": 2,
+            "SPD": 2,
+            "LCK": 0,
+            "DEF": 2,
+            "RES": 2,
+            "MOV": -99,
+            "ATK": 2
+        },
+        "max_stats": {
+            "HP": 52,
+            "SKL": 25,
+            "SPD": 25,
+            "LCK": 25,
+            "DEF": 25,
+            "RES": 25,
+            "MOV": 15,
+            "ATK": 25
+        },
+        "learned_skills": [],
+        "wexp_gain": {
+            "Sword": [
+                2,
+                40
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                0,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "icon_nid": "Generic_Portrait_Vanguard",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "Myrmidon_alt",
+        "combat_anim_nid": "Vanguard",
+        "fields": []
+    }
+]

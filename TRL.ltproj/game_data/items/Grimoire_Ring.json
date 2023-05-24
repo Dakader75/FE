@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Grimoire Ring",
+        "name": "Grimoire Ring",
+        "desc": "A ring with unique properties. Grants +5 damage and +10 hit to magic attacks.",
+        "icon_nid": "Echoes_items",
+        "icon_index": [
+            1,
+            1
+        ],
+        "components": [
+            [
+                "equippable_accessory",
+                null
+            ],
+            [
+                "status_on_equip",
+                "Grimoire Ring"
+            ]
+        ]
+    }
+]

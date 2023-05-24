@@ -1,0 +1,120 @@
+[
+    {
+        "nid": "Mage (F)",
+        "name": "Mage",
+        "desc": "Curious practioners of anima magic.",
+        "tier": 1,
+        "movement_group": "Mages",
+        "promotes_from": null,
+        "turns_into": [
+            "Priestess"
+        ],
+        "tags": [],
+        "max_level": 15,
+        "bases": {
+            "HP": 26,
+            "SKL": 1,
+            "SPD": 7,
+            "LCK": 5,
+            "DEF": 1,
+            "RES": 10,
+            "MOV": 5,
+            "ATK": 7
+        },
+        "growths": {
+            "HP": 80,
+            "SKL": 45,
+            "SPD": 50,
+            "LCK": 50,
+            "DEF": 40,
+            "RES": 15,
+            "MOV": 0,
+            "ATK": 50
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 1,
+            "SKL": 1,
+            "SPD": 2,
+            "LCK": 0,
+            "DEF": 1,
+            "RES": 2,
+            "MOV": -99,
+            "ATK": 0
+        },
+        "max_stats": {
+            "HP": 52,
+            "SKL": 20,
+            "SPD": 20,
+            "LCK": 20,
+            "DEF": 20,
+            "RES": 20,
+            "MOV": 15,
+            "ATK": 20
+        },
+        "learned_skills": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                0,
+                0
+            ],
+            "Black": [
+                2,
+                1
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                true,
+                31
+            ],
+            "Anima": [
+                true,
+                31
+            ]
+        },
+        "icon_nid": "Generic_Portrait_Mage (1)",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "Mage (F)",
+        "combat_anim_nid": "Mage",
+        "fields": []
+    }
+]

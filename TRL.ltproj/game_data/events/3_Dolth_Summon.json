@@ -1,0 +1,294 @@
+[
+    {
+        "name": "Dolth Summon",
+        "trigger": "turn_change",
+        "level_nid": "3",
+        "condition": "(game.turncount % 2 == 1) and game.turncount != 1",
+        "commands": [
+            [
+                "if",
+                [
+                    "game.check_alive('Dolth')"
+                ]
+            ],
+            [
+                "if",
+                [
+                    "game.turncount == 3"
+                ]
+            ],
+            [
+                "for",
+                [
+                    "count",
+                    "['201', '202', '203', '204']"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "Dolth"
+                ]
+            ],
+            [
+                "make_generic",
+                [
+                    "{count}",
+                    "Revenant (Revenant)",
+                    "3",
+                    "enemy",
+                    "Pursue",
+                    "Soldier (Soldier)",
+                    "",
+                    "Fetid Claw"
+                ]
+            ],
+            [
+                "add_unit",
+                [
+                    "{count}",
+                    "Dolth",
+                    "warp",
+                    "closest",
+                    "fade"
+                ]
+            ],
+            [
+                "give_skill",
+                [
+                    "{count}",
+                    "Void Curse (Void Curse)",
+                    "FLAG(no_banner)"
+                ]
+            ],
+            [
+                "has_finished",
+                [
+                    "{count}"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "endf",
+                []
+            ],
+            [
+                "has_finished",
+                [
+                    "201"
+                ]
+            ],
+            [
+                "elif",
+                [
+                    "game.turncount == 5"
+                ]
+            ],
+            [
+                "for",
+                [
+                    "count",
+                    "['205', '206', '207', '208']"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "Dolth"
+                ]
+            ],
+            [
+                "make_generic",
+                [
+                    "{count}",
+                    "Sword_Bonewalker",
+                    "3",
+                    "enemy",
+                    "Pursue",
+                    "Soldier (Soldier)",
+                    "",
+                    "Iron Sword"
+                ]
+            ],
+            [
+                "add_unit",
+                [
+                    "{count}",
+                    "Dolth",
+                    "warp",
+                    "closest",
+                    "fade"
+                ]
+            ],
+            [
+                "give_skill",
+                [
+                    "{count}",
+                    "Void Curse (Void Curse)",
+                    "FLAG(no_banner)"
+                ]
+            ],
+            [
+                "has_finished",
+                [
+                    "{count}"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "endf",
+                []
+            ],
+            [
+                "elif",
+                [
+                    "game.turncount == 7"
+                ]
+            ],
+            [
+                "for",
+                [
+                    "count",
+                    "['209', '210', '211', '212']"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "Dolth"
+                ]
+            ],
+            [
+                "make_generic",
+                [
+                    "{count}",
+                    "Gargoyle",
+                    "3",
+                    "enemy",
+                    "Pursue",
+                    "Soldier (Soldier)",
+                    "",
+                    "Iron Lance"
+                ]
+            ],
+            [
+                "add_unit",
+                [
+                    "{count}",
+                    "Dolth",
+                    "warp",
+                    "closest",
+                    "fade"
+                ]
+            ],
+            [
+                "give_skill",
+                [
+                    "{count}",
+                    "Void Curse (Void Curse)",
+                    "FLAG(no_banner)"
+                ]
+            ],
+            [
+                "has_finished",
+                [
+                    "{count}"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "endf",
+                []
+            ],
+            [
+                "elif",
+                [
+                    "game.turncount == 9"
+                ]
+            ],
+            [
+                "for",
+                [
+                    "count",
+                    "['213', '214', '215', '216']"
+                ]
+            ],
+            [
+                "center_cursor",
+                [
+                    "Dolth"
+                ]
+            ],
+            [
+                "make_generic",
+                [
+                    "{count}",
+                    "Necrodragon",
+                    "1",
+                    "enemy",
+                    "Pursue",
+                    "Soldier (Soldier)",
+                    "",
+                    "Wretched Air"
+                ]
+            ],
+            [
+                "add_unit",
+                [
+                    "{count}",
+                    "Dolth",
+                    "warp",
+                    "closest",
+                    "fade"
+                ]
+            ],
+            [
+                "give_skill",
+                [
+                    "{count}",
+                    "Void Curse (Void Curse)",
+                    "FLAG(no_banner)"
+                ]
+            ],
+            [
+                "has_finished",
+                [
+                    "{count}"
+                ]
+            ],
+            [
+                "wait",
+                [
+                    "500"
+                ]
+            ],
+            [
+                "endf",
+                []
+            ],
+            [
+                "has_finished",
+                [
+                    "Dolth (Dolth)"
+                ]
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]

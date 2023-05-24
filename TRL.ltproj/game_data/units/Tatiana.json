@@ -1,0 +1,90 @@
+[
+    {
+        "nid": "Tatiana",
+        "name": "Tatiana",
+        "desc": "A young lady of Frelia. She is both cheery and sociable.",
+        "variant": null,
+        "level": 4,
+        "klass": "Cleric",
+        "tags": [],
+        "bases": {
+            "HP": 26,
+            "SKL": 10,
+            "SPD": 7,
+            "LCK": 1,
+            "DEF": 5,
+            "RES": 18,
+            "MOV": 5,
+            "ATK": 12
+        },
+        "growths": {
+            "HP": 30,
+            "SKL": 45,
+            "SPD": 40,
+            "LCK": 45,
+            "DEF": 30,
+            "RES": 4,
+            "MOV": 0,
+            "ATK": 50
+        },
+        "starting_items": [
+            [
+                "Iron Sword",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Sympathy"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                71
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Tana",
+        "affinity": "Light",
+        "fields": []
+    }
+]

@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Blessed",
+        "name": "Blessed",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            2
+        ],
+        "components": [
+            [
+                "hidden",
+                null
+            ]
+        ]
+    }
+]

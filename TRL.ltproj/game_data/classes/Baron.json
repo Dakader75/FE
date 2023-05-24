@@ -1,0 +1,127 @@
+[
+    {
+        "nid": "Baron",
+        "name": "Baron",
+        "desc": "",
+        "tier": 3,
+        "movement_group": "Armors",
+        "promotes_from": "Knight",
+        "turns_into": [
+            "Knight"
+        ],
+        "tags": [
+            "Armor"
+        ],
+        "max_level": 10,
+        "bases": {
+            "HP": 26,
+            "SKL": 3,
+            "SPD": 3,
+            "LCK": 0,
+            "DEF": 6,
+            "RES": 0,
+            "MOV": 5,
+            "ATK": 8
+        },
+        "growths": {
+            "HP": 110,
+            "SKL": 50,
+            "SPD": 40,
+            "LCK": 50,
+            "DEF": 60,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 60
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": -99,
+            "ATK": 0
+        },
+        "max_stats": {
+            "HP": 52,
+            "SKL": 30,
+            "SPD": 30,
+            "LCK": 30,
+            "DEF": 30,
+            "RES": 30,
+            "MOV": 15,
+            "ATK": 30
+        },
+        "learned_skills": [
+            [
+                1,
+                "Regal Armor"
+            ]
+        ],
+        "wexp_gain": {
+            "Sword": [
+                0,
+                0
+            ],
+            "Lance": [
+                2,
+                40
+            ],
+            "Axe": [
+                0,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ]
+        },
+        "icon_nid": "Generic_Portrait_General",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "General",
+        "combat_anim_nid": "General",
+        "fields": []
+    }
+]

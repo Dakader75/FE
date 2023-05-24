@@ -1,0 +1,123 @@
+[
+    {
+        "nid": "Cantor",
+        "name": "Cantor",
+        "desc": "Impulsive mages with a tenous grasp on their magic.",
+        "tier": 2,
+        "movement_group": "Mages",
+        "promotes_from": "Arcanist",
+        "turns_into": [],
+        "tags": [],
+        "max_level": 15,
+        "bases": {
+            "HP": 28,
+            "SKL": 3,
+            "SPD": 4,
+            "LCK": 0,
+            "DEF": 5,
+            "RES": 8,
+            "MOV": 5,
+            "ATK": 7
+        },
+        "growths": {
+            "HP": 100,
+            "SKL": 50,
+            "SPD": 45,
+            "LCK": 50,
+            "DEF": 45,
+            "RES": 15,
+            "MOV": 0,
+            "ATK": 45
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": -99,
+            "ATK": 0
+        },
+        "max_stats": {
+            "HP": 52,
+            "SKL": 30,
+            "SPD": 30,
+            "LCK": 30,
+            "DEF": 30,
+            "RES": 30,
+            "MOV": 15,
+            "ATK": 30
+        },
+        "learned_skills": [
+            [
+                1,
+                "Blessed"
+            ]
+        ],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                2,
+                1
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                true,
+                1
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ]
+        },
+        "icon_nid": "Generic_Portrait_Shaman",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "Cantor",
+        "combat_anim_nid": "Warlock",
+        "fields": []
+    }
+]

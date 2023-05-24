@@ -1,0 +1,61 @@
+[
+    {
+        "nid": "Rapier",
+        "name": "Rapier",
+        "desc": "Effective against calvary and armored units.",
+        "icon_nid": "Sword",
+        "icon_index": [
+            0,
+            8
+        ],
+        "components": [
+            [
+                "weapon",
+                null
+            ],
+            [
+                "target_enemy",
+                null
+            ],
+            [
+                "min_range",
+                1
+            ],
+            [
+                "max_range",
+                1
+            ],
+            [
+                "damage",
+                6
+            ],
+            [
+                "hit",
+                90
+            ],
+            [
+                "crit",
+                10
+            ],
+            [
+                "level_exp",
+                null
+            ],
+            [
+                "weapon_type",
+                "Sword"
+            ],
+            [
+                "effective",
+                14
+            ],
+            [
+                "effective_tag",
+                [
+                    "Horse",
+                    "Armor"
+                ]
+            ]
+        ]
+    }
+]

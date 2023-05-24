@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Heavy Fighter",
+        "name": "Heavy Fighter",
+        "desc": "Grants X to unit's damage and  reduces damage by X. Calculate X by (Spd penalty).",
+        "icon_nid": "Skills",
+        "icon_index": [
+            6,
+            0
+        ],
+        "components": [
+            [
+                "dynamic_damage",
+                "unit.stats['SPD'] - combat_calcs.attack_speed(unit) if (unit.stats['SPD'] - combat_calcs.attack_speed(unit) > 0) else 0"
+            ],
+            [
+                "dynamic_resist",
+                "unit.stats['SPD'] - combat_calcs.attack_speed(unit) if (unit.stats['SPD'] - combat_calcs.attack_speed(unit) > 0) else 0"
+            ]
+        ]
+    }
+]

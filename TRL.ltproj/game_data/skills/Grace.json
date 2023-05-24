@@ -1,0 +1,30 @@
+[
+    {
+        "nid": "Grace",
+        "name": "Grace",
+        "desc": "This unit and all enemies in 2 spaces deal -2 damage.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            6,
+            2
+        ],
+        "components": [
+            [
+                "aura",
+                "Grace_Child"
+            ],
+            [
+                "aura_range",
+                2
+            ],
+            [
+                "aura_target",
+                "enemy"
+            ],
+            [
+                "damage",
+                -2
+            ]
+        ]
+    }
+]

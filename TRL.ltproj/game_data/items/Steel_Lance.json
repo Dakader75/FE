@@ -1,0 +1,71 @@
+[
+    {
+        "nid": "Steel Lance",
+        "name": "Steel Lance",
+        "desc": "-1 Spd penalty.",
+        "icon_nid": "Lance",
+        "icon_index": [
+            0,
+            2
+        ],
+        "components": [
+            [
+                "weapon",
+                null
+            ],
+            [
+                "target_enemy",
+                null
+            ],
+            [
+                "level_exp",
+                null
+            ],
+            [
+                "damage",
+                6
+            ],
+            [
+                "hit",
+                70
+            ],
+            [
+                "weapon_type",
+                "Lance"
+            ],
+            [
+                "weapon_rank",
+                "D"
+            ],
+            [
+                "wexp",
+                2
+            ],
+            [
+                "crit",
+                0
+            ],
+            [
+                "value",
+                480
+            ],
+            [
+                "min_range",
+                1
+            ],
+            [
+                "max_range",
+                1
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        -1
+                    ]
+                ]
+            ]
+        ]
+    }
+]

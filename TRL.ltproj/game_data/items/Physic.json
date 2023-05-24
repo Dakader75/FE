@@ -1,0 +1,66 @@
+[
+    {
+        "nid": "Physic",
+        "name": "Physic",
+        "desc": "Restores an ally's HP from afar.",
+        "icon_nid": "Staff",
+        "icon_index": [
+            0,
+            3
+        ],
+        "components": [
+            [
+                "spell",
+                null
+            ],
+            [
+                "target_ally",
+                null
+            ],
+            [
+                "weapon_type",
+                "White"
+            ],
+            [
+                "weapon_rank",
+                "E"
+            ],
+            [
+                "magic",
+                null
+            ],
+            [
+                "wexp",
+                3
+            ],
+            [
+                "exp",
+                22
+            ],
+            [
+                "map_hit_add_blend",
+                [
+                    96,
+                    144,
+                    232
+                ]
+            ],
+            [
+                "magic_heal",
+                8
+            ],
+            [
+                "max_equation_range",
+                "MAGIC_RANGE"
+            ],
+            [
+                "min_range",
+                1
+            ],
+            [
+                "hp_cost",
+                3
+            ]
+        ]
+    }
+]

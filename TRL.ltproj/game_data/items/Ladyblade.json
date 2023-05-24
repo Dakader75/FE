@@ -1,0 +1,63 @@
+[
+    {
+        "nid": "Ladyblade",
+        "name": "Ladyblade",
+        "desc": "Doubles might if equiped by a female unit. -1 Spd penalty.",
+        "icon_nid": "Sword",
+        "icon_index": [
+            0,
+            18
+        ],
+        "components": [
+            [
+                "weapon",
+                null
+            ],
+            [
+                "target_enemy",
+                null
+            ],
+            [
+                "min_range",
+                1
+            ],
+            [
+                "max_range",
+                1
+            ],
+            [
+                "damage",
+                8
+            ],
+            [
+                "hit",
+                85
+            ],
+            [
+                "crit",
+                5
+            ],
+            [
+                "level_exp",
+                null
+            ],
+            [
+                "weapon_type",
+                "Sword"
+            ],
+            [
+                "weapon_rank",
+                "B"
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        -1
+                    ]
+                ]
+            ]
+        ]
+    }
+]

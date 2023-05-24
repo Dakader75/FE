@@ -1,0 +1,61 @@
+[
+    {
+        "name": "FightBoneJerowm",
+        "trigger": "combat_start",
+        "level_nid": "2",
+        "condition": "(unit.nid == \"Bone\" and unit2.nid == \"Jerowm\") or (unit2.nid == \"Bone\" and unit.nid = \"Jerowm\")",
+        "commands": [
+            [
+                "add_portrait",
+                [
+                    "Bone",
+                    "Right"
+                ]
+            ],
+            [
+                "add_portrait",
+                [
+                    "Jerowm",
+                    "Left"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Jerowm",
+                    "Your tme had run out father."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Bone",
+                    "Jerowm? What is happening?"
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Jerowm",
+                    "You supported the losing side.|It's time I restore House Aston to the glory it should've had year ago!."
+                ]
+            ],
+            [
+                "speak",
+                [
+                    "Bone",
+                    "What are you doing?|Stop this at once!"
+                ]
+            ],
+            [
+                "multi_remove_portrait",
+                [
+                    "Bone",
+                    "Jerowm"
+                ]
+            ]
+        ],
+        "only_once": true,
+        "priority": 20
+    }
+]

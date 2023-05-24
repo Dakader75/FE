@@ -1,0 +1,90 @@
+[
+    {
+        "nid": "Blake",
+        "name": "Blake",
+        "desc": "A wandering sword fighter from Jehanna. He loves to gamble.",
+        "variant": "",
+        "level": 1,
+        "klass": "Hero",
+        "tags": [],
+        "bases": {
+            "HP": 35,
+            "SKL": 12,
+            "SPD": 15,
+            "LCK": 7,
+            "DEF": 10,
+            "RES": 4,
+            "MOV": 5,
+            "ATK": 15
+        },
+        "growths": {
+            "HP": 75,
+            "SKL": 30,
+            "SPD": 40,
+            "LCK": 45,
+            "DEF": 40,
+            "RES": 1,
+            "MOV": 0,
+            "ATK": 40
+        },
+        "starting_items": [
+            [
+                "Shadow Sword",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Heavy Fighter"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                71
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Gerik",
+        "affinity": "Wind",
+        "fields": []
+    }
+]

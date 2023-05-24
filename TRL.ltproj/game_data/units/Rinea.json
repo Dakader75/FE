@@ -1,0 +1,92 @@
+[
+    {
+        "nid": "Rinea",
+        "name": "Rinea",
+        "desc": "A young commander of Renais.\nHe's calm, composed, and skilled.",
+        "variant": null,
+        "level": 4,
+        "klass": "Cleric",
+        "tags": [
+            "Female"
+        ],
+        "bases": {
+            "HP": 18,
+            "SKL": 2,
+            "SPD": 6,
+            "LCK": 7,
+            "DEF": 3,
+            "MOV": 5,
+            "RES": 12,
+            "ATK": 8
+        },
+        "growths": {
+            "HP": 50,
+            "SKL": 30,
+            "SPD": 55,
+            "LCK": 60,
+            "DEF": 20,
+            "MOV": 0,
+            "RES": 6,
+            "ATK": 50
+        },
+        "starting_items": [
+            [
+                "Rinea's Magic",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Grace"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                0
+            ],
+            "Lance": [
+                true,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                1
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Rinea",
+        "affinity": "Ice",
+        "fields": []
+    }
+]

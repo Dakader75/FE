@@ -1,0 +1,118 @@
+[
+    {
+        "nid": "HITPOINTS",
+        "expression": "HP"
+    },
+    {
+        "nid": "MOVEMENT",
+        "expression": "MOV"
+    },
+    {
+        "nid": "ATTACK_SPEED",
+        "expression": "SPD"
+    },
+    {
+        "nid": "DEFENSE_SPEED",
+        "expression": "SPD"
+    },
+    {
+        "nid": "HIT",
+        "expression": "SKL*2 + LCK"
+    },
+    {
+        "nid": "AVOID",
+        "expression": "SPD*2 + LCK"
+    },
+    {
+        "nid": "CRIT_HIT",
+        "expression": "SKL//2 + LCK"
+    },
+    {
+        "nid": "CRIT_AVOID",
+        "expression": "LCK"
+    },
+    {
+        "nid": "DAMAGE",
+        "expression": "ATK"
+    },
+    {
+        "nid": "DEFENSE",
+        "expression": "DEF"
+    },
+    {
+        "nid": "MAGIC_DAMAGE",
+        "expression": "ATK"
+    },
+    {
+        "nid": "MAGIC_DEFENSE",
+        "expression": "RES"
+    },
+    {
+        "nid": "MAGIC_RANGE",
+        "expression": "max(5, ATK//2)"
+    },
+    {
+        "nid": "CRIT_ADD",
+        "expression": "0"
+    },
+    {
+        "nid": "CRIT_MULT",
+        "expression": "3"
+    },
+    {
+        "nid": "SPEED_TO_DOUBLE",
+        "expression": "1"
+    },
+    {
+        "nid": "RATING",
+        "expression": "HP + ATK + SKL + SPD + LCK + DEF + RES"
+    },
+    {
+        "nid": "RESCUE_AID",
+        "expression": "0"
+    },
+    {
+        "nid": "RESCUE_WEIGHT",
+        "expression": "0"
+    },
+    {
+        "nid": "STEAL_ATK",
+        "expression": "SPD"
+    },
+    {
+        "nid": "STEAL_DEF",
+        "expression": "SPD"
+    },
+    {
+        "nid": "HEAL",
+        "expression": "ATK"
+    },
+    {
+        "nid": "CONSTITUTION",
+        "expression": "0"
+    },
+    {
+        "nid": "INITIATIVE",
+        "expression": "SPD"
+    },
+    {
+        "nid": "MANA",
+        "expression": "0"
+    },
+    {
+        "nid": "ZERO",
+        "expression": "0"
+    },
+    {
+        "nid": "TRANSMUTE",
+        "expression": "max(ATK, ATK)"
+    },
+    {
+        "nid": "MAGIC_HIT",
+        "expression": "LCK"
+    },
+    {
+        "nid": "MAGIC_AVOID",
+        "expression": "LCK"
+    }
+]

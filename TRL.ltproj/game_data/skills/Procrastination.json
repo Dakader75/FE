@@ -1,0 +1,18 @@
+[
+    {
+        "nid": "Procrastination",
+        "name": "Procrastination",
+        "desc": "If unit waits, unit gains +3 Spd next turn.",
+        "icon_nid": "Skills",
+        "icon_index": [
+            1,
+            10
+        ],
+        "components": [
+            [
+                "condition",
+                "unit.finished"
+            ]
+        ]
+    }
+]

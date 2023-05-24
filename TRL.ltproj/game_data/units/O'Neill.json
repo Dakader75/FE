@@ -1,0 +1,87 @@
+[
+    {
+        "nid": "O'Neill",
+        "name": "O'Neill",
+        "desc": "A troop leader in Grado's army.",
+        "variant": null,
+        "level": 1,
+        "klass": "Knight",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 37,
+            "SKL": 8,
+            "SPD": 7,
+            "LCK": 5,
+            "DEF": 11,
+            "MOV": 4,
+            "RES": 3,
+            "ATK": 14
+        },
+        "growths": {
+            "HP": 110,
+            "SKL": 50,
+            "SPD": 40,
+            "LCK": 50,
+            "DEF": 50,
+            "MOV": 0,
+            "RES": 0,
+            "ATK": 60
+        },
+        "starting_items": [
+            [
+                "Silver Lance",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                121
+            ],
+            "Axe": [
+                true,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Mercenary1",
+        "affinity": "None",
+        "fields": []
+    }
+]

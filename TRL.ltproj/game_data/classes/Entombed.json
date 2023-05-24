@@ -1,0 +1,120 @@
+[
+    {
+        "nid": "Entombed",
+        "name": "Entombed",
+        "desc": "Reanimated corpses. They're not fast,\nbut their talons rend flesh with ease.",
+        "tier": 3,
+        "movement_group": "Regular",
+        "promotes_from": "Revenant",
+        "turns_into": [],
+        "tags": [
+            "Monster"
+        ],
+        "max_level": 15,
+        "bases": {
+            "HP": 18,
+            "SKL": 1,
+            "SPD": 1,
+            "LCK": 0,
+            "DEF": 1,
+            "RES": 0,
+            "MOV": 4,
+            "ATK": 5
+        },
+        "growths": {
+            "HP": 100,
+            "SKL": 55,
+            "SPD": 50,
+            "LCK": 60,
+            "DEF": 30,
+            "RES": 30,
+            "MOV": 0,
+            "ATK": 65
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "max_stats": {
+            "HP": 52,
+            "SKL": 30,
+            "SPD": 30,
+            "LCK": 30,
+            "DEF": 30,
+            "RES": 30,
+            "MOV": 15,
+            "ATK": 30
+        },
+        "learned_skills": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ]
+        },
+        "icon_nid": "Generic_Portrait_Entombed",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "Entombed",
+        "combat_anim_nid": "Eirika Lord",
+        "fields": []
+    }
+]

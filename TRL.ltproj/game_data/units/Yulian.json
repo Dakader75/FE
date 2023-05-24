@@ -1,0 +1,85 @@
+[
+    {
+        "nid": "Yulian",
+        "name": "Yulian",
+        "desc": "A young girl from a small village in Grado. She is honest and sincere.",
+        "variant": null,
+        "level": 1,
+        "klass": "Mercenary",
+        "tags": [],
+        "bases": {
+            "HP": 16,
+            "SKL": 3,
+            "SPD": 4,
+            "LCK": 6,
+            "DEF": 2,
+            "RES": 3,
+            "MOV": 4,
+            "ATK": 4
+        },
+        "growths": {
+            "HP": 70,
+            "SKL": 50,
+            "SPD": 50,
+            "LCK": 60,
+            "DEF": 35,
+            "RES": 20,
+            "MOV": 0,
+            "ATK": 45
+        },
+        "starting_items": [
+            [
+                "Iron Sword",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                1
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Gilliam",
+        "affinity": "Thunder",
+        "fields": []
+    }
+]

@@ -1,0 +1,34 @@
+[
+    {
+        "nid": "Swamp",
+        "name": "Swamp",
+        "desc": "",
+        "icon_nid": "Skills",
+        "icon_index": [
+            3,
+            4
+        ],
+        "components": [
+            [
+                "is_terrain",
+                null
+            ],
+            [
+                "condition",
+                "'Monster' not in unit.tags"
+            ],
+            [
+                "upkeep_damage",
+                5
+            ],
+            [
+                "upkeep_animation",
+                "MapPoison"
+            ],
+            [
+                "upkeep_sound",
+                "Poison"
+            ]
+        ]
+    }
+]

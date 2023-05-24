@@ -1,0 +1,94 @@
+[
+    {
+        "nid": "Jerowm",
+        "name": "Jerowm",
+        "desc": "A young monk from Renais. He is a very forthright and pious man.",
+        "variant": null,
+        "level": 8,
+        "klass": "Cavalier_Sword",
+        "tags": [],
+        "bases": {
+            "HP": 31,
+            "SKL": 9,
+            "SPD": 10,
+            "LCK": 7,
+            "DEF": 9,
+            "RES": 3,
+            "MOV": 5,
+            "ATK": 12
+        },
+        "growths": {
+            "HP": 60,
+            "SKL": 55,
+            "SPD": 50,
+            "LCK": 40,
+            "DEF": 25,
+            "RES": 3,
+            "MOV": 0,
+            "ATK": 30
+        },
+        "starting_items": [
+            [
+                "Silver Sword",
+                false
+            ],
+            [
+                "Door Key",
+                true
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Blueblood"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                121
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                true,
+                1
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                true,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Innes",
+        "affinity": "Anima",
+        "fields": []
+    }
+]

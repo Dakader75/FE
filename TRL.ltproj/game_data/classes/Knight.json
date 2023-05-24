@@ -1,0 +1,127 @@
+[
+    {
+        "nid": "Knight",
+        "name": "Knight",
+        "desc": "Heavily armored knights with poor movement.",
+        "tier": 2,
+        "movement_group": "Armors",
+        "promotes_from": "Soldier",
+        "turns_into": [
+            "Baron"
+        ],
+        "tags": [
+            "Armor"
+        ],
+        "max_level": 10,
+        "bases": {
+            "HP": 26,
+            "SKL": 3,
+            "SPD": 3,
+            "LCK": 0,
+            "DEF": 6,
+            "MOV": 4,
+            "RES": 0,
+            "ATK": 8
+        },
+        "growths": {
+            "HP": 110,
+            "SKL": 50,
+            "SPD": 40,
+            "LCK": 50,
+            "DEF": 50,
+            "MOV": 0,
+            "RES": 0,
+            "ATK": 60
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "MOV": 0,
+            "RES": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "MOV": 0,
+            "RES": 0,
+            "ATK": 0
+        },
+        "max_stats": {
+            "HP": 52,
+            "SKL": 25,
+            "SPD": 25,
+            "LCK": 25,
+            "DEF": 25,
+            "MOV": 15,
+            "RES": 25,
+            "ATK": 25
+        },
+        "learned_skills": [
+            [
+                1,
+                "Heavy Armor"
+            ]
+        ],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                31
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ]
+        },
+        "icon_nid": "Generic_Portrait_Knight",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "Knight_alt",
+        "combat_anim_nid": "Knight",
+        "fields": []
+    }
+]

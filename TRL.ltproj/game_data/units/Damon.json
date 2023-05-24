@@ -1,0 +1,77 @@
+[
+    {
+        "nid": "Damon",
+        "name": "Damon",
+        "desc": "",
+        "variant": null,
+        "level": 1,
+        "klass": "Bow_Knight",
+        "tags": [],
+        "bases": {
+            "HP": 40,
+            "SKL": 11,
+            "SPD": 11,
+            "LCK": 10,
+            "DEF": 12,
+            "RES": 2,
+            "MOV": 8,
+            "ATK": 17
+        },
+        "growths": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "starting_items": [
+            [
+                "Killer Bow",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                181
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Glen",
+        "affinity": "None",
+        "fields": []
+    }
+]

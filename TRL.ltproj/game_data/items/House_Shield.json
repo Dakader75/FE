@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "House Shield",
+        "name": "House Shield",
+        "desc": "A shield with special attributes. Grants +2 Def/Res and +10 hit/avoid when equipped.",
+        "icon_nid": "Echoes_items",
+        "icon_index": [
+            6,
+            0
+        ],
+        "components": [
+            [
+                "equippable_accessory",
+                null
+            ],
+            [
+                "status_on_equip",
+                "House Shield"
+            ]
+        ]
+    }
+]

@@ -1,0 +1,72 @@
+[
+    {
+        "nid": "Gharn",
+        "name": "Gharn",
+        "desc": "",
+        "variant": null,
+        "level": 15,
+        "klass": "Cantor",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "SKL": 15,
+            "SPD": 15,
+            "LCK": 20,
+            "DEF": 16,
+            "RES": 8,
+            "MOV": 0,
+            "ATK": 19
+        },
+        "growths": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "starting_items": [],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                181
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                181
+            ],
+            "Default": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Riev",
+        "affinity": null,
+        "fields": []
+    }
+]

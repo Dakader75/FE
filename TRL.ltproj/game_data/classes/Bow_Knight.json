@@ -1,0 +1,126 @@
+[
+    {
+        "nid": "Bow_Knight",
+        "name": "Bow Knight",
+        "desc": "Devotees of the bow. Possess incredible range.",
+        "tier": 3,
+        "movement_group": "Light Cav",
+        "promotes_from": "Sniper",
+        "turns_into": [],
+        "tags": [
+            "Horse",
+            "Mounted"
+        ],
+        "max_level": 10,
+        "bases": {
+            "HP": 24,
+            "SKL": 1,
+            "SPD": 2,
+            "LCK": 0,
+            "DEF": 3,
+            "RES": 0,
+            "MOV": 8,
+            "ATK": 7
+        },
+        "growths": {
+            "HP": 100,
+            "SKL": 50,
+            "SPD": 30,
+            "LCK": 50,
+            "DEF": 30,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 50
+        },
+        "growth_bonus": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": 0,
+            "ATK": 0
+        },
+        "promotion": {
+            "HP": 0,
+            "SKL": 0,
+            "SPD": 0,
+            "LCK": 0,
+            "DEF": 0,
+            "RES": 0,
+            "MOV": -99,
+            "ATK": 0
+        },
+        "max_stats": {
+            "HP": 52,
+            "SKL": 30,
+            "SPD": 30,
+            "LCK": 30,
+            "DEF": 30,
+            "RES": 30,
+            "MOV": 15,
+            "ATK": 30
+        },
+        "learned_skills": [
+            [
+                1,
+                "Duma's Scourge"
+            ]
+        ],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                31
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                true,
+                1
+            ],
+            "White": [
+                false,
+                0
+            ],
+            "Black": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ]
+        },
+        "icon_nid": "Generic_Portrait_Ranger",
+        "icon_index": [
+            0,
+            0
+        ],
+        "map_sprite_nid": "Ranger",
+        "combat_anim_nid": "Eirika Lord",
+        "fields": []
+    }
+]

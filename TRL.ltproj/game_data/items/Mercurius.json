@@ -1,0 +1,63 @@
+[
+    {
+        "nid": "Mercurius",
+        "name": "Mercurius",
+        "desc": "A legendary weapon. -2 Spd penalty.",
+        "icon_nid": "Sword",
+        "icon_index": [
+            0,
+            19
+        ],
+        "components": [
+            [
+                "weapon",
+                null
+            ],
+            [
+                "target_enemy",
+                null
+            ],
+            [
+                "level_exp",
+                null
+            ],
+            [
+                "damage",
+                14
+            ],
+            [
+                "hit",
+                80
+            ],
+            [
+                "weapon_type",
+                "Sword"
+            ],
+            [
+                "weapon_rank",
+                "S"
+            ],
+            [
+                "crit",
+                0
+            ],
+            [
+                "min_range",
+                20
+            ],
+            [
+                "max_range",
+                1
+            ],
+            [
+                "stat_change",
+                [
+                    [
+                        "SPD",
+                        -2
+                    ]
+                ]
+            ]
+        ]
+    }
+]

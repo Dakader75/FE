@@ -1,0 +1,85 @@
+[
+    {
+        "nid": "Rudolf",
+        "name": "Rudolf",
+        "desc": "A mercenary leader from Jehanna. He's better known as the Desert Tiger.",
+        "variant": null,
+        "level": 5,
+        "klass": "Gold_Knight",
+        "tags": [],
+        "bases": {
+            "HP": 52,
+            "SKL": 14,
+            "SPD": 19,
+            "LCK": 0,
+            "DEF": 20,
+            "RES": 8,
+            "MOV": 9,
+            "ATK": 23
+        },
+        "growths": {
+            "HP": 120,
+            "SKL": 40,
+            "SPD": 30,
+            "LCK": 0,
+            "DEF": 50,
+            "RES": 7,
+            "MOV": 0,
+            "ATK": 60
+        },
+        "starting_items": [
+            [
+                "Emperor Lance",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                true,
+                0
+            ],
+            "Lance": [
+                false,
+                181
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Duessel",
+        "affinity": "Thunder",
+        "fields": []
+    }
+]

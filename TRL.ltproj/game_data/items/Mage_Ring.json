@@ -1,0 +1,22 @@
+[
+    {
+        "nid": "Mage Ring",
+        "name": "Mage Ring",
+        "desc": "A ring with unique properties. Grants +2 Magic range.",
+        "icon_nid": "Echoes_items",
+        "icon_index": [
+            6,
+            1
+        ],
+        "components": [
+            [
+                "equippable_accessory",
+                null
+            ],
+            [
+                "status_on_equip",
+                "Canto"
+            ]
+        ]
+    }
+]

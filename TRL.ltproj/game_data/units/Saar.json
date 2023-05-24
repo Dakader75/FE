@@ -1,0 +1,87 @@
+[
+    {
+        "nid": "Saar",
+        "name": "Saar",
+        "desc": "Commander of Grado's border guard.\nHis loyalty is unshakable.",
+        "variant": "",
+        "level": 5,
+        "klass": "Hero",
+        "tags": [
+            "Boss"
+        ],
+        "bases": {
+            "HP": 34,
+            "SKL": 14,
+            "SPD": 15,
+            "LCK": 5,
+            "DEF": 9,
+            "MOV": 6,
+            "RES": 4,
+            "ATK": 12
+        },
+        "growths": {
+            "HP": 90,
+            "SKL": 50,
+            "SPD": 50,
+            "LCK": 50,
+            "DEF": 35,
+            "MOV": 0,
+            "RES": 0,
+            "ATK": 50
+        },
+        "starting_items": [
+            [
+                "Illwoon",
+                false
+            ]
+        ],
+        "learned_skills": [],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                181
+            ],
+            "Lance": [
+                false,
+                0
+            ],
+            "Axe": [
+                true,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Saar",
+        "affinity": "Wind",
+        "fields": []
+    }
+]

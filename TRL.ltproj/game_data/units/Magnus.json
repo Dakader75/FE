@@ -1,0 +1,90 @@
+[
+    {
+        "nid": "Magnus",
+        "name": "Magnus",
+        "desc": "An armoured knight from Frelia. He's quiet yet dependable.",
+        "variant": null,
+        "level": 1,
+        "klass": "Knight",
+        "tags": [],
+        "bases": {
+            "HP": 34,
+            "SKL": 12,
+            "SPD": 6,
+            "LCK": 5,
+            "DEF": 12,
+            "MOV": 4,
+            "RES": 2,
+            "ATK": 14
+        },
+        "growths": {
+            "HP": 90,
+            "SKL": 40,
+            "SPD": 20,
+            "LCK": 20,
+            "DEF": 50,
+            "MOV": 0,
+            "RES": 1,
+            "ATK": 45
+        },
+        "starting_items": [
+            [
+                "Steel Lance",
+                false
+            ]
+        ],
+        "learned_skills": [
+            [
+                1,
+                "Protector"
+            ]
+        ],
+        "unit_notes": [],
+        "wexp_gain": {
+            "Sword": [
+                false,
+                0
+            ],
+            "Lance": [
+                true,
+                71
+            ],
+            "Axe": [
+                false,
+                0
+            ],
+            "Bow": [
+                false,
+                0
+            ],
+            "Staff": [
+                false,
+                0
+            ],
+            "Light": [
+                false,
+                0
+            ],
+            "Anima": [
+                false,
+                0
+            ],
+            "Dark": [
+                false,
+                0
+            ],
+            "Default": [
+                false,
+                0
+            ],
+            "White": [
+                false,
+                0
+            ]
+        },
+        "alternate_classes": [],
+        "portrait_nid": "Magnus",
+        "affinity": "Thunder",
+        "fields": []
+    }
+]

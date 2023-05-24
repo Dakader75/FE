@@ -1,0 +1,82 @@
+[
+    {
+        "name": "Intro",
+        "trigger": "level_start",
+        "level_nid": "3",
+        "condition": "True",
+        "commands": [
+            [
+                "remove_group",
+                [
+                    "PlayerTeam",
+                    "immediate"
+                ]
+            ],
+            [
+                "comment",
+                [
+                    "# Actual dialogue content"
+                ]
+            ],
+            [
+                "chapter_title",
+                []
+            ],
+            [
+                "comment",
+                [
+                    "# Move player team onto map"
+                ]
+            ],
+            [
+                "move_cursor",
+                [
+                    "0,11"
+                ]
+            ],
+            [
+                "add_group",
+                [
+                    "PlayerTeam",
+                    "0,11",
+                    "immediate",
+                    "stack"
+                ]
+            ],
+            [
+                "move_group",
+                [
+                    "PlayerTeam",
+                    "Starting"
+                ]
+            ],
+            [
+                "comment",
+                [
+                    "# Set Cantor stats"
+                ]
+            ],
+            [
+                "for",
+                [
+                    "count",
+                    "['101', '102', '103', '104']"
+                ]
+            ],
+            [
+                "set_stats",
+                [
+                    "{count}",
+                    "HP,35,Atk,10,SKL,7,SPD,7,LCK,4,DEF,8,RES,9",
+                    "FLAG(immediate)"
+                ]
+            ],
+            [
+                "endf",
+                []
+            ]
+        ],
+        "only_once": false,
+        "priority": 20
+    }
+]
